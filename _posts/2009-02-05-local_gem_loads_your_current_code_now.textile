@@ -1,0 +1,53 @@
+---
+layout: post
+title: Local Gem Loads Your Current Code
+----
+
+The other day while actively <a href="http://github.com/cldwalker/core/tree/master">developing a gem</a>, I got tired of rake reinstalling it to test its effect in irb with some other gems. I wanted to use the edge version of my gem, version <span style="font-weight: bold;">now</span>.  So I hacked up $LOAD_PATH:
+
+<pre class="prettyprint">
+  $LOAD_PATH.unshift '/my/path/to/gem/lib'
+</pre>
+
+This effectively made my live gem directory a gem, as far as requiring files is concerned.  However once I did this in irb a couple of times and even in a file, it started to feel dirty and repetitious.  Why couldn't I just require my local gem just like I do when it's installed in my gem directories?  So I hacked on it later and out came <a href="http://github.com/cldwalker/local_gem/tree/master">LocalGem</a>.
+
+LocalGem simply maps names to file paths and when given a name, adds its corresponding path to $LOAD_PATH like above. You can setup the name-path mapping via a yaml config file or a method call.
+
+<pre class="prettyprint">
+  require 'local_gem'
+  LocalGem.setup_config do |c|
+    c.gems = {'mygem'=>'/path/to/mygem', 'anothergem'=>'/path/to/anothergem'}
+  end
+</pre>
+
+LocalGem then provides two methods, local_gem() and local_require() to act like gem() and require() but with knowledge of your local gems. You can use these two methods in one of three ways, depending on how much you want LocalGem to invade your namespace:
+
+Peace time:
+<pre class="prettyprint">
+  LocalGem.local_gem 'mygem'
+  LocalGem.local_require 'anothergem'
+</pre>
+
+Diplomacy is fading:
+<pre class="prettyprint">
+  include LocalGem
+  local_gem 'mygem'
+  local_require 'anothergem'
+</pre>
+
+You're fscked:
+<pre class="prettyprint">
+  require 'local_gem/override'
+  gem 'mygem'
+  require 'anothergem'
+</pre>
+
+Give it a whirl with:
+<pre class="prettprint">
+sudo gem install cldwalker-local_gem -s http://gems.github.com
+</pre>
+
+Since LocalGem effectively lets you make any subset of Ruby code gem-like, some other cool uses for it could be:
+<ul><li>To gemify all those cloned Github projects that aren't gems. You may want to look at <a href="http://github.com/mislav/coral/tree/master">coral</a> if you're doing this enough.</li><li>Wrap up a subsection of a gem as a local gem.</li><li>Wrap up any group of unloved Ruby files in the same directory as a local gem.</li></ul>
+
+Feel free to check the purty <a href="http://cldwalker.github.com/local_gem/doc/index.html">docs</a> and <a href="http://cldwalker.github.com/local_gem/">github page</a> as well.
