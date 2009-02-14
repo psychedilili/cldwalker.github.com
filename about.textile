@@ -1,5 +1,0 @@
----
-title: About Gabriel Horner
-layout: master
----
- TODO
