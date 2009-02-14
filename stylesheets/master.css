@@ -120,7 +120,36 @@ div.post {
   font-weight: bold;
 }
 
-pre {
+/* for inline use */
+code {
+  background-color:#F8F8FF;
+  border:1px solid #DEDEDE;
+  color:#444444;
+  font-size:120%;
+  overflow:auto;
+  padding:2px 5px;
+}
+
+pre.code {
+  background-color:#F8F8FF;
+  border:1px solid #DEDEDE;
+  color:#444444;
+  font-size:120%;
+  overflow:auto;
+  padding:5px;
+}
+
+.highlight pre {
+  background-color:#F8F8FF;
+  border:1px solid #DEDEDE;
+  color:#444444;
+  margin:1em 0;
+  overflow:auto;
+  padding:0.5em;
+  line-height:1.5em;
+}
+
+pre.mbleigh {
   background: #f8f8f8;
   border: 1px solid #E7E5DC;
   border-width: 1px 0 4px 6px;
@@ -199,12 +228,6 @@ div.related {
 #footer a {
   color: #ecb;
   font-weight: normal;
-}
-
-code {
-  background: #fff5dd;
-  font-size: 14px;
-  font-family: "Consolas","Courier New",Courier,monospace;
 }
 
 .home_box .post h1 a {
