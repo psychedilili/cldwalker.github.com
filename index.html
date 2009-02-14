@@ -1,6 +1,5 @@
 ---
 layout: master
-title: Michael Bleigh on the Web
 feed_url : http://cldwalker.github.com/atom.xml
 ---
 
@@ -16,8 +15,12 @@ feed_url : http://cldwalker.github.com/atom.xml
     -->
   </div>
 </div>
-<div class='home_box' id='home_right'>
-  <h2>Open Source (<a href='/open-source.html'>More</a>)</h2>
+<div class='home_box home_right'>
+  <h2>Available for Hire</h2>
+  Interested in hiring me? See my <a href="http://docs.google.com/Doc?id=dhjdhqhp_4sdt4jmhp">resume</a>.
+</div>
+<div class='home_box home_right'>
+  <h2>Projects (<a href='/projects.html'>More</a>)</h2>
   <div id='github-projects'>
     <div class="repo">  
       <h3> <a href="http://github.com/cldwalker/local_gem">local_gem</a></h3> 
@@ -25,6 +28,13 @@ feed_url : http://cldwalker.github.com/atom.xml
         trying the latest code on a gem.</span>
     </div>
   </div>
+</div>
+
+<div class='home_box home_right'>
+  <h2>Latest Delicious Bookmarks</h2>
+  <script
+    src="http://feeds.delicious.com/v2/js/cldwalker?icon=m&count=3&sort=date&tags&extended&name&showadd"
+    type="text/javascript"></script>
 </div>
 
 <script type="text/javascript" charset="utf-8">
@@ -36,7 +46,7 @@ feed_url : http://cldwalker.github.com/atom.xml
       return b.watchers - a.watchers;
     });
     
-    $(repos.slice(0,5)).each(function() {
+    $(repos.slice(0,3)).each(function() {
       $('#github-projects').append("\
 <div class='repo'>\
   <h3><a href='" + this.url + "'>" + this.name + "</a></h3>\

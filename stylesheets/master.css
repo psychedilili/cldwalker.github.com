@@ -199,6 +199,7 @@ div.related {
 
 .home_box {
   float: left;
+  margin-bottom: 15px;
 }
 
 #content .home_box h2 {
@@ -218,7 +219,7 @@ div.related {
   width: 29em;
 }
 
-#home_right {
+.home_right {
   width: 16em;
   margin-left: 1em;
 }
@@ -234,7 +235,7 @@ div.related {
   font-size: 0.7em;
 }
 
-.repo {
+.delicious-post, .repo {
   background: #fff5cc;
   border: 2px solid #dba;
   padding: 0.7em 1em;
