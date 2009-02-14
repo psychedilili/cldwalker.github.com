@@ -120,8 +120,7 @@ div.post {
   font-weight: bold;
 }
 
-/* for inline use */
-code {
+code.github {
   background-color:#F8F8FF;
   border:1px solid #DEDEDE;
   color:#444444;
@@ -130,19 +129,26 @@ code {
   padding:2px 5px;
 }
 
-pre.code {
+code {
+  background: #fff5dd;
+  font-size: 14px;
+  font-family: "Consolas","Courier New",Courier,monospace;
+}
+
+pre {
   background-color:#F8F8FF;
   border:1px solid #DEDEDE;
   color:#444444;
+  padding: 2px;
+}
+
+pre.code {
   font-size:120%;
   overflow:auto;
   padding:5px;
 }
 
 .highlight pre {
-  background-color:#F8F8FF;
-  border:1px solid #DEDEDE;
-  color:#444444;
   margin:1em 0;
   overflow:auto;
   padding:0.5em;

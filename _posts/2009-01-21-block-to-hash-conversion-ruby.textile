@@ -1,0 +1,35 @@
+---
+layout: post
+title: Block to Hash Conversion for Ruby Config Blocks
+---
+
+While I was busy scratching "an irb itch":http://github.com/cldwalker/alias, I came up with a handy technique for converting a method's block definition into a hash. Here's an example of using such a method:
+
+{% highlight ruby %}
+  Alias.init do |a|
+    a.verbose = true
+    a.constant = {'Array' = 'A'}
+    a.instance_method = {'String'=>{'downcase'=>'dc' },'Array'=>{'select'=>'s'}}
+  end
+{% endhighlight %}
+
+What I wanted was a quick but _clean_ way to convert the data structure described in the method's block to a hash.  So knowing about OpenStruct, I peered into its internals and saw that it stores its attributes as a hash in <notextile>@table. Since there isn't a public method for @table, I realized I was going to have to use instance_variable_get(:@table)</notextile>. Now if I only wanted to be quick, I could simply have used that. But wanting code clarity (ie not have to read OpenStruct's internal variables each time) and to avoid monkeypatching (I have been bitten), I came up with:
+
+<script src="http://gist.github.com/50171.js"></script>
+
+Using it is simple. Pass your method's block to ConfigStruct.block_to_hash() and you'll get back a hash with whatever was defined in the block:
+
+{% highlight ruby %}
+  def init(*args, &block)
+    config = ConfigStruct.block_to_hash(block)
+    #process your config ...
+  end
+     
+  init do |c|
+    c.some = "config"
+    c.info = "goes here"
+  end
+  # In init(), config = {:some=>'config', :info=>'goes here'}
+{% endhighlight %}
+
+If you decide to not pass your method a block? No worries. You get back an empty hash. To see this idea in my ruby gem, see "here":http://github.com/cldwalker/alias/blob/master/lib/alias.rb.

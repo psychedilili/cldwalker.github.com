@@ -1,0 +1,63 @@
+---
+layout: post
+title: Can We Share Our Extensions Without Monkey Patching?
+---
+
+As Ruby programmers, I think we enjoy the ease and power of being able to extend any core Ruby class.  As our ruby-fu grows, we pick up some tricks to have Hash's and Struct's to do our bidding, monkeypatched or not.  So naturally we start collecting extensions. Sometimes they're cool enough to blog about, sometimes you find out a week later that "Ruby's stdlib":http://www.ruby-doc.org/stdlib/ or "activesupport":http://as.rubyonrails.com/ already does it better.  Eventually collecting enough of them, you decide to "gem":http://rubyforge.org/ or "github":http://github.com them because you want to share what you've learned. You want others to use it. Heck, maybe even get feedback on them. So when releasing them, why do we force monkeypatching?
+ 
+{% highlight ruby %}
+	
+ class Object
+   def awesome_instance_method
+   end
+   def self.awesomer_class_method
+   end
+ end
+{% endhighlight %}
+
+Why do this when it's easy to do the same without monkeypatching?
+
+{% highlight ruby %} 
+ module Awesome
+   module Object
+     def awesome_instance_method
+     end
+
+     module ClassMethods
+       def awesomer_class_method
+       end
+     end
+   end   
+ end
+
+ # In a separate file that you will require:
+ Object.send :include, Awesome::Object
+ Object.send :extend, Awesome::Object::ClassMethods
+{% endhighlight %}
+
+No, I'm not trying to reignite "monkeypatch debates":http://www.ruby-forum.com/topic/143732. Rather, just hoping that as a community, we can release monkeypatch-agnostic extensions and let the programmer decide when to monkeypatch.
+
+So why do I think everybody monkeypatches their extensions? Take a look at some of the Ruby extension libraries out there:
+  * "activesupport":http://as.rubyonrails.com
+  * "facets":http://facets.rubyforge.org/
+  * "extlib":http://github.com/sam/extlib/tree/master
+  * "merb-extlib":http://github.com/wycats/merb-extlib/tree/master
+  * "extensions":http://extensions.rubyforge.org/rdoc/index.html
+  * "awesomeness":http://github.com/collectiveidea/awesomeness/tree/master
+  * "hubahuba":http://github.com/github/hubahuba/tree/master
+  * "quality_extensions":http://github.com/TylerRick/quality_extensions/tree/master
+  * "ruby-nuggets":http://github.com/blackwinter/ruby-nuggets/tree/master
+  * "my.rb":http://github.com/elliottcable/my.rb/tree/master
+  * "mini_facet":http://github.com/webmat/mini_facet/tree/master
+
+And there's still more on "github":http://github.com/search?type=Repositories&amp;language=rb&amp;q=description%3A%28%2Bruby+%2Bextensions%29&amp;repo=&amp;langOverride=&amp;x=0&amp;y=0&amp;start_value=1 ... 
+Of the above extensions,  ActiveSupport is the **ONLY** one that doesn't force monkeypatching:
+
+{% highlight ruby %}	
+ gem 'activesupport'
+ require 'active_support/core_ext/array/access'
+ class My; class Array < ::Array; end; end
+ My::Array.send :include, ActiveSupport::CoreExtensions::Array::Access 
+{% endhighlight %}
+
+So can we share our extensions without monkeypatching?
