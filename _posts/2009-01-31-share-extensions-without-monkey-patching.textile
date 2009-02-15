@@ -1,6 +1,8 @@
 ---
 layout: post
 title: Can We Share Our Extensions Without Monkey Patching?
+tags:
+  - ruby
 ---
 
 As Ruby programmers, I think we enjoy the ease and power of being able to extend any core Ruby class.  As our ruby-fu grows, we pick up some tricks to have Hash's and Struct's to do our bidding, monkeypatched or not.  So naturally we start collecting extensions. Sometimes they're cool enough to blog about, sometimes you find out a week later that "Ruby's stdlib":http://www.ruby-doc.org/stdlib/ or "activesupport":http://as.rubyonrails.com/ already does it better.  Eventually collecting enough of them, you decide to "gem":http://rubyforge.org/ or "github":http://github.com them because you want to share what you've learned. You want others to use it. Heck, maybe even get feedback on them. So when releasing them, why do we force monkeypatching?

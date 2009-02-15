@@ -6,6 +6,9 @@ layout: master
   {% if page.time %}	
   <span class='date'>at {{page.time}}</span>
   {% endif %}
+  {% if page.tags %}
+  <span class='tags'>Tagged with {{ page.tags | array_to_sentence_string }}</span>
+  {% endif %}
   <h1><a href='{{page.url}}'>{{page.title}}</a></h1>
   <div class='body'>{{ content }}</div>
 </div>

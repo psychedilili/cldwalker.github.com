@@ -1,6 +1,8 @@
 ---
 layout: post
 title: Local Gem Loads Your Current Code
+tags:
+  - gem
 ---
 
 The other day while actively "developing a gem":http://github.com/cldwalker/core/tree/master, I got tired of rake reinstalling it to test its effect in irb with some other gems. I wanted to use the edge version of my gem, version **now**.  So I hacked up @$LOAD_PATH@:

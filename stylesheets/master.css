@@ -101,6 +101,17 @@ span.date {
   float: left;
 }
 
+span.tags {
+  background: #6997D3;
+  display: block;
+  padding: 0.4em 0.3em 0.3em;
+  margin-left: 0.8em;
+  font-weight: bold;
+  color: white;
+  border-bottom: 3px solid #0E51A7;
+  float: left;
+}
+
 div.post {
   margin-bottom: 2em;
 }

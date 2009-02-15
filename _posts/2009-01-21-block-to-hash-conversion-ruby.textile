@@ -1,6 +1,8 @@
 ---
 layout: post
 title: Block to Hash Conversion for Ruby Config Blocks
+tags:
+  - ruby
 ---
 
 While I was busy scratching "an irb itch":http://github.com/cldwalker/alias, I came up with a handy technique for converting a method's block definition into a hash. Here's an example of using such a method:
