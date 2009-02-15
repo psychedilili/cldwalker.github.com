@@ -1,0 +1,30 @@
+---
+layout: post
+title: Lighttpd Working!
+tags:
+  - lighttpd
+---
+
+Yay! I got typo working with lighttpd and fcgi. Here’s what I did in my server environment :
+
+# Installed typo
+## installed the latest tarball from "http://rubyforge.org/projects/rubygems/":http://rubyforge.org/projects/rubygems
+## @gem install rails@
+## @svn checkout svn://leetsoft.com/typo/trunk typo@
+# Installed fcgi and lighttpd
+## @apt-get install libfcgi-ruby1.8 libpcre3-dev@
+    __note: pcre needed for mod_rewrite__
+## downloaded latest tarball (1.4.4) for "lighttpd":http://lighttpd.net/download/
+# Configuration
+## Copied the "script":http://www.bigbold.com/snippets/posts/show/504 into my script/ in the typo rails directory
+## @chmod +x script/light_rails@
+## began lighttpd with @script/light_rails -b 72.0.101.155 -a typo -p 80@
+## modified script/light_rails to use mod_status and mod_simple_vhost
+
+Make sure to modify your dns records so that your virtual host is recognized by everyone’s browsers. Otherwise you’ll get @$url could not be found. Please try again.@ from firefox.
+
+I also used the following resources:
+
+1. "rails wiki":http://wiki.rubyonrails.org/rails – search for lighttpd
+2. Naturally "lighttpd":http://lighttpd.net/documentation/
+3. "http://hieraki.simplicio.com/read/chapter/1":http://hieraki.simplicio.com/read/chapter/1

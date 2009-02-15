@@ -1,0 +1,89 @@
+---
+layout: post
+title: Multiple Databases on Rails
+tags:
+  - rails
+  - database
+---
+
+Being a tagging freak, I wanted to coalesce my database of tagged tables with typo’s nascent support of tags. Only problem: both use ‘tags’ as the tag table name. My choices were to either:
+
+* change the name of my tags table and all its joining tables as well as a hefty amount of code I’ve written for those tables
+* simply extend typo to connect to two databases.
+
+I chose the latter.
+
+Since I was defining more table classes, I made another model file under app/models/ ( called url.rb for me). I then made sure the controller I was using aware of my model file by giving it a model declaration:
+
+{% highlight ruby %}
+class ArticlesController < ApplicationController
+  model :article,:url
+  #all other code
+  # ...
+end
+{% endhighlight %}
+
+Note that I have to explicitly define the article model which was implicit until I used :model.
+
+__So what did I put in my model class?__
+
+From reading the rails wiki and the "ActiveRecord API":http://rails.rubyonrails.com/classes/ActiveRecord/Base.html I found out that any table class can establish its own database connection via @:establish_connection@. So I wrote the following
+
+{% highlight ruby%}
+class MyTags < ActiveRecord::Base
+  establish_connection({
+   :adapter  => "mysql",
+   :username => "bozo",
+   :password => "bogus",
+   :database => "tags"
+   })
+   set_table_name "tags"
+end
+{% endhighlight %}
+
+Soon enough I wanted to have a couple of tables that used my second database. From the @ActiveRecord@ API, I read that subclasses of a table class share the same connection so I figured I’d make an abstract connection class for all the tag tables. So I tried the following
+
+{% highlight ruby%}
+class TagsDB < ActiveRecord::Base
+  establish_connection({
+   :adapter  => "mysql",
+   :username => "bozo",
+   :password => "bogus",
+   :database => "tags"
+   })
+end
+
+class MyTags < TagsDB
+   set_table_name "tags"
+end
+
+class Url < TagsDB
+end
+{% endhighlight%}
+
+Wrong, instead I got this error:
+
+<pre>
+ActiveRecord::StatementInvalid (Table ‘tags.tags_a_rs’ doesn’t exist: SHOW FIELDS FROM tags_a_rs)
+</pre>
+
+I was able to get the above code to work only by making the parent class a valid table and redefining the subclasses’ table names. Since it seemed poor design to have tables inherit more than they should (table name, relationships and who knows what else) for a database connection, I reverted to defining the connection for every class:
+
+{% highlight ruby%}
+$tags_connection = {
+   :adapter  => "mysql",
+   :username => "bozo",
+   :password => "bogus",
+   :database => "tags"
+}
+
+class MyTags < ActiveRecord::Base
+  establish_connection $tags_connection
+  set_table_name "tags"
+end
+
+class Url
+  establish_connection $tags_connection
+end
+{% endhighlight%}
+This is the cleanest solution I found from what I understand of subclassing table classes.

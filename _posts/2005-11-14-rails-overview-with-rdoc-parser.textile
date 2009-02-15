@@ -1,0 +1,99 @@
+---
+layout: post
+title: Rails Overview With Rdoc Parser
+tags:
+  - rails
+  - rdoc
+---
+
+It’s been awhile since I wrote here, having been busy with my usual tagging ideas. Since last time I wrote, I’ve released two public pieces of rails-related code! : a "patch":http://dev.rubyonrails.com/ticket/2787 for nested sets as well as "my first gem":http://rubyforge.org/projects/shellable. All shameless plugs aside, I came here to share some old code I revived and a practical use I found for it. The code is "here":http://github.com/cldwalker/bin/blob/95e86c4a09469f5208163ffd1d9189fc0069b177/rails-overview.rb
+
+My goal awhile back was to be able to quickly understand any ruby code given to me. To put myself on that path I did two things: learn to debug Ruby thoroughly with @Kernel::set_trace_func@ and parse ruby files. I wanted to parse ruby files so I could get a quick overview of a file’s classes and their methods. I looked at ParseTree and then rdoc’s parser. Of the two, rdoc seemed to be a little higher level and so the core method looks like:
+
+{% highlight ruby%}
+def rdoc_parse_file(file)
+  class_hash = {}
+  content = File.open(file, "r") {|f| f.read}
+  capital_p = RDoc::ParserFactory.parser_for(RDoc::TopLevel.new(file),file,content,Options.instance,RDoc::Stats.new)
+  capital_p.scan
+  rclasses = RDoc::TopLevel.all_classes_and_modules
+  rclasses.each {|rc| index_class(rc,class_hash) }
+  RDoc::TopLevel::reset
+  class_hash
+end
+{% endhighlight %}
+
+That little bit opens a file, scans it with rdoc and then saves the methods by class with the recursive @function index_class()@. If you look at the "full version":http://github.com/cldwalker/bin/blob/95e86c4a09469f5208163ffd1d9189fc0069b177/rails-overview.rb you’ll probably laugh at how small @index_class()@ is.
+
+Since writing @rdoc_parse_file()@, I’ve been taking apart and writing rails apps. So I recently combined the two. "Overview.rb":http://github.com/cldwalker/bin/blob/95e86c4a09469f5208163ffd1d9189fc0069b177/rails-overview.rb is a script you can drop into you rails script directory to provide a handy outline of the classes and methods by directory under app/. I use it for note taking when dealing with a new rails app.
+
+A sample output of the "snippets rails app":http://snippets.dzone.com/ :
+
+<pre>
+controllers
+    UserController:
+      - show
+    PostsController:
+      - create
+      - destroy
+      - edit
+      - index
+      - show
+      - update
+    TagController:
+      - show
+    ApplicationController:
+      - admin_or_post_owner
+      - check_if_visitor_allowed
+      - get_page_number
+      - get_related_posts
+      - get_tag_info
+      - get_user_info
+      - is_ticketed
+      - redirect_back
+      - store_locations
+    LoginController:
+      - account
+      - create
+      - login
+      - logout
+      - new
+      - update
+    CommentsController:
+      - create
+helpers
+    TagsHelper: []
+    LoginHelper: []
+    UserHelper: []
+    PostsHelper: []
+    CommentsHelper: []
+    ApplicationHelper:
+      - niceify_html
+      - niceify_html_for_rss
+      - page_title
+      - rounded_box_bottom
+      - rounded_box_top
+      - tag_link
+models
+    Comment: []
+    User:
+      - authenticate
+      - change_password
+      - crypt_password
+      - find_with_count
+      - "isAdmin?" 
+      - "isAdmin?" 
+      - sha1
+    Tag:
+      - find_all_with_count
+      - find_all_with_count_for_tags
+      - find_all_with_count_for_user
+      - find_by_name_with_count
+    Post:
+      - find_related_posts
+      - pagetitle
+      - tagsspaced
+      - tagsspaced=
+</pre>
+
+Enjoy. And let me know if you tweak this script in a cool way.
