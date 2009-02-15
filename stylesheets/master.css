@@ -110,7 +110,7 @@ div.post {
 }
 
 .post h1 a {
-  text-decoration: none;
+  text-decoration: underline;
   clear: left;
   display: block;
   color: black;
@@ -132,6 +132,7 @@ code.github {
 code {
   background: #fff5dd;
   font-size: 14px;
+  color:#444444;
   font-family: "Consolas","Courier New",Courier,monospace;
 }
 
