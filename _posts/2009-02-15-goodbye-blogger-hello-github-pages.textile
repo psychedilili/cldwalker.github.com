@@ -1,0 +1,22 @@
+---
+layout: post
+title: Goodbye Blogger, Hello Github Pages
+time: 5:05pm
+tags:
+  - github
+---
+
+Less than a month ago, Github "announced cname support for github pages":http://github.com/blog/315-cname-support-for-github-pages. I thought it was pretty cool but when I read it was for only paying accounts I thought @I'll stick to my free Blogger domain redirection thank you very much.@ And how wrong I was.
+
+Over the past couple months, I've been blogging with Blogger. Being a programmer who wanted a simple, cheap blogging tool, Blogger fit the bill. It came with a decent commenting system, a semi-decent widget interface, free domain redirection and plenty of unused features. But as I've been trying to blog I've noticed how cumbersome, inefficient and disconnected I felt using Blogger's editor.Their wyswig isn't horrible, just that it can't compare with a vim/emacs editor. So as I was growing tired of writing posts locally, then copying and pasting into Blogger's editor, I came across "another programmer":http://mbleigh.com/2009/02/11/outsource-your-blog.html who'd just made the jump to github pages for blogging. Digging his theme, I decided I could sacrifice the price of a movie ticket to use Github for my blogging needs. And I'm simply loving it!. Although I'm missing out of box support for rss feeds by tag, it shouldn't be too bad to build it in.
+
+So the pros of blogging with github pages:
+* **My** choice of editor. I blog locally, @git push origin master@ and it's up.
+* Both github and I have all my web content since we're using git.
+* I can build and preview my website locally thanks to "jekyll":http://github.com/mojombo/jekyll/tree/master.
+* I'm able to use liquid and markdown or textile in any web page.
+* I can have as many custom web pages (and directories of pages) that are not blog-related.
+* Complete control of my styling, rss feeds, etc.
+* Redirection to your domain with a paid plan ($7/month is the cheapest currently).
+
+So if you're a programmer looking for these in your blog, ask yourself if an improved web presence is worth "one filler movie":http://movies.yahoo.com/movie/1809785152/info a month.
