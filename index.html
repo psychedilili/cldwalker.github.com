@@ -2,6 +2,10 @@
 layout: master
 feed_url : http://feeds2.feedburner.com/tagaholic
 title: Home
+feed_tags:
+  - ruby
+  - tag
+  - github
 ---
 
 <div class='home_box' id='home_left'>
@@ -15,7 +19,7 @@ title: Home
 </div>
 <div class='home_box home_right'>
   <h2>Available for Hire</h2>
-  Interested? See my <a href="http://docs.google.com/Doc?id=dhjdhqhp_4sdt4jmhp">resume</a>.
+  <div class="repo" style="font-size:14px">Interested? See my <a href="http://docs.google.com/Doc?id=dhjdhqhp_4sdt4jmhp">resume</a>.</div>
 </div>
 
 <div class='home_box home_right'>
@@ -27,6 +31,20 @@ title: Home
         trying the latest code on a gem.</span>
     </div>
   </div>
+</div>
+
+<div class='home_box home_right'>
+  <h2>Tags</h2>
+	<div class="repo">
+     <ul>
+		{% for tag in page.feed_tags %}
+	  <li>
+		<a href="/tag/{{tag}}.xml"><img src='/images/feed.png' alt='Subscribe'/></a>
+		<span style="padding-left:0.3em"><a href="/tag/{{tag}}.html">{{tag}}</a></span>
+	  </li>
+		{% endfor %}
+	 </ul>
+	</div>
 </div>
 
 <div class='home_box home_right'>

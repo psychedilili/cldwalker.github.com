@@ -267,11 +267,20 @@ div.related {
 .repo h3 {
   margin: 0 0 0.3em 0;
 }
-.repo h3 a {
+.repo h3 a, .repo ul li a {
   font-weight: bold;
   color: black;
   letter-spacing: 0;
   font-size: 1.1em;
+}
+.repo ul {
+	margin: 0;
+	padding-left: 0.3em;
+	list-style-type: none;
+}
+
+.repo ul li { 
+	line-height: 150%;
 }
 
 #github-projects.big .repo {
