@@ -16,21 +16,31 @@ layout: master
   <div class='body'>{{ content }}</div>
 </div>
 
-<!--
-	TODO
+{% comment %}
+{% if page.tags %}
+{% assign post_limit = 4 %}
+{% assign post_count = 1 %}
 <div class="related">
-  <h3>Related Posts</h3>
+  <h3>Similarly Tagged Posts</h3>
   <table class="post-list">
-    {% for post in site.related_posts limit:3 %}
+    {% for post in site.posts %}
+      {% assign already_tagged = false %}
+	  {% for tag in page.tags %}
+		{% if post.tags contains tag and post_count < post_limit and already_tagged == false %}
+		  {% assign already_tagged = true %}
+		  {% assign post_count = post_count + 1 %}
       <tr>
         <th><a href='{{ post.url }}'>{{ post.title }}</a></th>
         <td>{{ post.date | date_to_string }}</td>
         <td><a href='{{post.url}}#disqus_thread'>Comments</a></td>
       </tr>
+		{% endif %}
+	  {% endfor %}
     {% endfor %}
   </table>
 </div>
--->
+{% endif %}
+{% endcomment %}
 <div id="disqus_thread"></div>
 <script type="text/javascript" src="http://disqus.com/forums/tagaholic/embed.js"></script>
 <noscript><a href="http://tagaholic.disqus.com/?url=ref">View the discussion thread.</a></noscript>

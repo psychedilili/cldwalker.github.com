@@ -3,6 +3,7 @@ layout: post
 title: Rails Overview With Rdoc Parser
 tags:
   - rails
+  - ruby
   - rdoc
 ---
 
