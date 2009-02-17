@@ -1,5 +1,5 @@
 ---
 layout: nil
-tag: '<%= @tag %>'
+tag: 'rails'
 ---
 {% include tag_page.xml %}

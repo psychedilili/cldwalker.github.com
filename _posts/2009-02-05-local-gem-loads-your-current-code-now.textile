@@ -2,6 +2,7 @@
 layout: post
 title: Local Gem Loads Your Current Code
 tags:
+  - ruby
   - gem
 ---
 
