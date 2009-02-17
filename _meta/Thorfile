@@ -2,15 +2,18 @@ require 'erb'
 require 'fileutils'
 
 class Jekyll < Thor
-  desc "create_tag_pages", "Creates tag pages"
-  method_options :tags=>:optional, :local=>:boolean
-  def create_tag_pages
+  desc "tag_pages", "Creates tag pages"
+  method_options :tags=>:optional, :local=>:boolean, :xml_only=>:boolean, :html_only=>:boolean
+  def tag_pages
     tags = options['tags'] || all_tags
     tags = tags.split(/\s*,\s*/) if tags.is_a?(String)
     destination = options['local'] ? '_site' : File.expand_path(File.join(File.dirname(__FILE__), '..'))
     FileUtils.mkdir_p(destination) if options['local']
+	input_files = options['xml_only'] ? ['tag/tag.xml'] : (options['html_only'] ? ['tag/tag.html'] : 
+		['tag/tag.html', 'tag/tag.xml'])
+
     tags.each do |tag|
-      ['tag/tag.html', 'tag/tag.xml'].each do |input_file|
+      input_files.each do |input_file|
         result = create_page_string(input_file, :tag=>tag)
         destination_basename = input_file.gsub("/tag", "/#{tag}")
         destination_file = File.join(destination, destination_basename)

@@ -7,7 +7,10 @@ layout: master
   <span class='date'>at {{page.time}}</span>
   {% endif %}
   {% if page.tags %}
-  <span class='tags'>Tagged with {{ page.tags | array_to_sentence_string }}</span>
+  <span class='tags'>Tagged with
+	{% assign post = page %}
+	{% include tag_links.html %}
+  </span>
   {% endif %}
   <h1><a href='{{page.url}}'>{{page.title}}</a></h1>
   <div class='body'>{{ content }}</div>
