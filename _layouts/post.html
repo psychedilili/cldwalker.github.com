@@ -3,13 +3,13 @@ layout: master
 ---
 <div class='post'>
   <span class='date'>{{page.date | date_to_string}}</span>
-  {% if page.time %}	
+  {% if page.time %}
   <span class='date'>at {{page.time}}</span>
   {% endif %}
   {% if page.tags %}
   <span class='tags'>Tagged with
-	{% assign post = page %}
-	{% include tag_links.html %}
+  {% assign post = page %}
+  {% include tag_links.html %}
   </span>
   {% endif %}
   <h1><a href='{{page.url}}'>{{page.title}}</a></h1>
@@ -25,17 +25,17 @@ layout: master
   <table class="post-list">
     {% for post in site.posts %}
       {% assign already_tagged = false %}
-	  {% for tag in page.tags %}
-		{% if post.tags contains tag and post_count < post_limit and already_tagged == false %}
-		  {% assign already_tagged = true %}
-		  {% assign post_count = post_count + 1 %}
+    {% for tag in page.tags %}
+    {% if post.tags contains tag and post_count < post_limit and already_tagged == false %}
+      {% assign already_tagged = true %}
+      {% assign post_count = post_count + 1 %}
       <tr>
         <th><a href='{{ post.url }}'>{{ post.title }}</a></th>
         <td>{{ post.date | date_to_string }}</td>
         <td><a href='{{post.url}}#disqus_thread'>Comments</a></td>
       </tr>
-		{% endif %}
-	  {% endfor %}
+    {% endif %}
+    {% endfor %}
     {% endfor %}
   </table>
 </div>

@@ -155,20 +155,20 @@ pre {
 }
 
 .console {
-	-x-system-font:none;
-	font-family:"bitstream vera sans mono",monaco,"lucida console","courier new",courier,serif;
-	font-size: 12px;
-	background:#000000 none repeat scroll 0 0;
-	color:#EEEEEE;
-	margin:1em 0;
-	overflow-x:auto;
-	padding:1em;
-	font-size-adjust:none;
-	font-stretch:normal;
-	font-style:normal;
-	font-variant:normal;
-	font-weight:normal;
-	line-height:normal;
+  -x-system-font:none;
+  font-family:"bitstream vera sans mono",monaco,"lucida console","courier new",courier,serif;
+  font-size: 12px;
+  background:#000000 none repeat scroll 0 0;
+  color:#EEEEEE;
+  margin:1em 0;
+  overflow-x:auto;
+  padding:1em;
+  font-size-adjust:none;
+  font-stretch:normal;
+  font-style:normal;
+  font-variant:normal;
+  font-weight:normal;
+  line-height:normal;
 }
 
 pre.code {
@@ -291,13 +291,13 @@ div.related {
   font-size: 1.1em;
 }
 .repo ul {
-	margin: 0;
-	padding-left: 0.3em;
-	list-style-type: none;
+  margin: 0;
+  padding-left: 0.3em;
+  list-style-type: none;
 }
 
 .repo ul li { 
-	line-height: 150%;
+  line-height: 150%;
 }
 
 #github-projects.big .repo {

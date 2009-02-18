@@ -32,16 +32,16 @@ title: Home
 {% comment %}
 <div class='home_box home_right'>
   <h2>Tags</h2>
-	<div class="repo">
+  <div class="repo">
      <ul>
-		{% for tag in page.feed_tags %}
-	  <li>
-		<a href="/tag/{{tag}}.xml"><img src='/images/feed.png' alt='Subscribe'/></a>
-		<span style="padding-left:0.3em"><a href="/tag/{{tag}}.html">{{tag}}</a></span>
-	  </li>
-		{% endfor %}
-	 </ul>
-	</div>
+    {% for tag in page.feed_tags %}
+    <li>
+      <a href="/tag/{{tag}}.xml"><img src='/images/feed.png' alt='Subscribe'/></a>
+      <span style="padding-left:0.3em"><a href="/tag/{{tag}}.html">{{tag}}</a></span>
+    </li>
+    {% endfor %}
+   </ul>
+  </div>
 </div>{% endcomment %}
 <div class='home_box home_right'>
   <h2>Latest Delicious Bookmarks</h2>
