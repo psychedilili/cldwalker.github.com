@@ -29,6 +29,23 @@ class Jekyll < Thor
       puts "#{tag}: #{count}"
     end
   end
+  
+  desc "new_post", "quick start jekyll blog post"
+  method_options :create_only=>:optional
+  def new_post(*args)
+    basename = Date.today.to_s + "-#{args.join('-')}.textile"
+    new_file = File.join(posts_dir, basename)
+	if options['create_only']
+	  new_file_string = ''
+    else
+      title = args.map {|e| e.capitalize}.join(' ')
+	  new_file_string = "---\nlayout: post\ntitle: #{title}\n---"
+    end
+    File.open(new_file, 'w') {|f| f.write(new_file_string)}
+    unless options['create_only']
+		system(ENV['EDITOR'], new_file)
+	end
+  end
 
   def create_page_string(file, variables)
     variables.each {|k,v| instance_variable_set("@#{k}", v) }
@@ -39,9 +56,16 @@ class Jekyll < Thor
     tag_count.keys
   end
 
+  def root_dir
+	File.expand_path(File.join(File.dirname(__FILE__), '..'))
+  end
+
+  def posts_dir
+ 	File.join(root_dir, '_posts')
+  end
+
   #Returns all posts under _posts
   def posts
-    posts_dir = File.expand_path File.join(File.dirname(__FILE__), '..', '_posts')
     Dir["#{posts_dir}/**"].select {|e| e !~ /~$/ }
   end
 
