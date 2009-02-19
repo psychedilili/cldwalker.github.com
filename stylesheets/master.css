@@ -294,10 +294,12 @@ div.related {
   letter-spacing: 0;
   font-size: 1.1em;
 }
+#latest_posts ul li a {
+  font-size: 1.0em;
+}
 .repo ul {
   margin: 0;
   padding-left: 0.3em;
-  list-style-type: none;
 }
 
 .repo ul li { 
