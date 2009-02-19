@@ -131,7 +131,7 @@ div.post {
   font-weight: bold;
 }
 
-code.github {
+.github code {
   background-color:#F8F8FF;
   border:1px solid #DEDEDE;
   color:#444444;
@@ -147,7 +147,7 @@ code {
   font-family: "Consolas","Courier New",Courier,monospace;
 }
 
-pre {
+.github {
   background-color:#F8F8FF;
   border:1px solid #DEDEDE;
   color:#444444;
@@ -171,7 +171,7 @@ pre {
   line-height:normal;
 }
 
-pre.code {
+.code pre {
   font-size:120%;
   overflow:auto;
   padding:5px;
@@ -184,7 +184,7 @@ pre.code {
   line-height:1.5em;
 }
 
-pre.mbleigh {
+.mbleigh pre {
   background: #f8f8f8;
   border: 1px solid #E7E5DC;
   border-width: 1px 0 4px 6px;

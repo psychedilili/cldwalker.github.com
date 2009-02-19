@@ -63,9 +63,7 @@ end
 
 Wrong, instead I got this error:
 
-<pre>
-ActiveRecord::StatementInvalid (Table ‘tags.tags_a_rs’ doesn’t exist: SHOW FIELDS FROM tags_a_rs)
-</pre>
+@ActiveRecord::StatementInvalid (Table ‘tags.tags_a_rs’ doesn’t exist: SHOW FIELDS FROM tags_a_rs)@
 
 I was able to get the above code to work only by making the parent class a valid table and redefining the subclasses’ table names. Since it seemed poor design to have tables inherit more than they should (table name, relationships and who knows what else) for a database connection, I reverted to defining the connection for every class:
 

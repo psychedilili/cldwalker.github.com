@@ -30,7 +30,7 @@ Since writing @rdoc_parse_file()@, I’ve been taking apart and writing rails ap
 
 A sample output of the "snippets rails app":http://snippets.dzone.com/ :
 
-<pre>
+<pre class="github">
 controllers
     UserController:
       - show
