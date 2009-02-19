@@ -28,7 +28,7 @@ class Jekyll < Thor
   
   def create_tag_page(tag, template_file)
     output_file = template_file.sub("/tag", "/#{tag}")
-    result = create_page_string(template_file, :tag=>tag)
+    result = string_from_template(template_file, :tag=>tag)
     create_output_file(output_file, result)
   end
   
@@ -38,9 +38,8 @@ class Jekyll < Thor
     template_file = '_posts/new_post.textile'
     basename = Date.today.to_s + "-#{args.join('-')}"
     output_file = template_file.sub('new_post', basename)
-    
     title = args.map {|e| e.capitalize}.join(' ')
-    result = create_page_string(template_file, :title=>title)
+    result = string_from_template(template_file, :title=>title)
     output_file = create_output_file(output_file, result)
     system(ENV['EDITOR'], output_file) if options['editor']
   end
@@ -62,7 +61,7 @@ class Jekyll < Thor
     destination_file
   end
   
-  def create_page_string(file, variables)
+  def string_from_template(file, variables)
     variables.each {|k,v| instance_variable_set("@#{k}", v) }
     translated_string = ::ERB.new(File.read(file)).result(binding)
   end
