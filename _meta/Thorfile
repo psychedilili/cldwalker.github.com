@@ -1,8 +1,10 @@
 require 'erb'
 require 'fileutils'
+require File.join(File.dirname(__FILE__), 'jekyll_tags')
 
 class Jekyll < Thor
-
+  include JekyllTags
+  
   #define global options
   method_options :local=>:boolean, :verbose=>:boolean
   def initialize(*args)
@@ -30,13 +32,6 @@ class Jekyll < Thor
     create_output_file(output_file, result)
   end
   
-  desc "tag_counts", "Print post counts per tag"
-  def tag_counts
-    tag_count.each do |tag,count|
-      puts "#{tag}: #{count}"
-    end
-  end
-  
   desc "new_post TITLE IS MULTIPLE WORDS", "New jekyll blog post"
   method_options :editor=>:boolean
   def new_post(*args)
@@ -48,6 +43,13 @@ class Jekyll < Thor
     result = create_page_string(template_file, :title=>title)
     output_file = create_output_file(output_file, result)
     system(ENV['EDITOR'], output_file) if options['editor']
+  end
+  
+  desc "tag_counts", "Print post counts per tag"
+  def tag_counts
+    tag_count.each do |tag,count|
+      puts "#{tag}: #{count}"
+    end
   end
 
   def create_output_file(relative_file, output, local=false)
@@ -65,45 +67,7 @@ class Jekyll < Thor
     translated_string = ::ERB.new(File.read(file)).result(binding)
   end
 
-  def all_tags
-    tag_count.keys
-  end
-
   def root_dir
     File.expand_path(File.join(File.dirname(__FILE__), '..'))
-  end
-
-  def posts_dir
-   File.join(root_dir, '_posts')
-  end
-
-  #Returns all posts under _posts
-  def posts
-    Dir["#{posts_dir}/**"].select {|e| e !~ /~$/ }
-  end
-
-  #array of posts with their tags
-  def post_tags
-    posts.map do |e|
-      yaml = YAML::load_file(e)
-      [e, yaml['tags']]
-    end
-  end
-
-  #array of tags with their counts
-  def tag_count
-    count = {}
-    post_tags.each do |post, tags|
-      tags.each do |t|
-        count[t] ||= 0
-        count[t] += 1
-      end
-    end
-    count
-  end
-
-  # Use this method to print the output of any methods returning data structures
-  def print_method(method)
-    p send(method)
   end
 end
