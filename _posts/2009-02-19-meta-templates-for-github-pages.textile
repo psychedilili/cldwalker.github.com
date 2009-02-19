@@ -1,0 +1,74 @@
+---
+layout: post
+title: Meta Templates For Github Pages
+tags:
+  - github
+  - ruby
+---
+Whether you know it or not, your "Github pages":http://github.com/blog/272, blog or project pages, get piped through "Jekyll":http://github.com/mojombo/jekyll. Jekyll's great at generating a site from templates. But what happens when you need to generate those templates from templates?
+
+I found myself down this path as I wanted to generate multiple tag pages for my blog posts ("example page":http://tagaholic.me/tag/ruby.html). All these pages had the same content layout but __different yaml__. Although I could use an include tag for the content, I couldn't for the yaml. Realizing this I was faced with generating jekyll templates with well .. jekyll. But rather than go through markup-escape hell ie escaping @{{@ and @{%@, I decided to use "good 'ol ERB":http://ruby-doc.org/stdlib/libdoc/erb/rdoc/classes/ERB.html. Here were additional features I wanted while generating with meta-templates:
+* commandline ability to generate specific templates, pass options, arguments, etc.
+* verbose flag to see pages generated
+* local flag to generate pages locally ie for testing purposes
+
+The first was a no-brainer, "thor":http://github.com/wycats/thor/tree/master. With it's dead-easy option and command creation, I've used it for "several daily tasks":http://github.com/cldwalker/thor-tasks/tree/master.  So after "coding like a monkey":http://buzztowncenter.org/files/u2/CrazyMonkey.jpg, I came up with "these thor tasks":http://github.com/cldwalker/cldwalker.github.com/blob/master/_meta/Thorfile. "Here":http://github.com/cldwalker/cldwalker.github.com/blob/master/_meta is the directory containing all relevant files to these tasks. So let's try a task:
+<notextile>
+<pre class="console">
+ # Starting from JEKYLL_ROOT, move to the directory containg thor tasks
+ bash> cd _meta
+ 
+ # Create tag pages ruby and rails locally
+ bash> thor jekyll:tag_pages ruby rails --verbose --local
+ Created file: _site/tag/ruby.html
+ Created file: _site/tag/rails.html
+ 
+ # Creates them in jekyll root
+ bash> thor jekyll:tag_pages ruby rails --verbose
+ Created file: cldwalker.github.com/tag/ruby.html
+ Created file: cldwalker.github.com/tag/rails.html
+</pre>
+</notextile>
+
+Since you may not need to generate tag pages, you may be wondering __what can I do with these tasks__. Let's look at a task that all jekyll users can appreciate:
+<notextile>
+<pre class="console">
+  bash> thor jekyll:new_post --verbose thoughts on world peace
+  Created file: cldwalker.github.com/_posts/2009-02-19-thoughts-on-world-peace.textile
+  
+  #If we peer inside the generated file:
+  ---
+  layout: post
+  title: Thoughts On World Peace
+  ---  
+</pre>
+</notextile>
+As you can see the @new_post@ task generates the filename based on the date and title and also generates a basic skeleton which includes the given title. So let's examine this thor task:
+{% highlight ruby linenos%}
+desc "new_post TITLE IS MULTIPLE WORDS", "New jekyll blog post"
+method_options :editor=>:boolean
+def new_post(*args)
+  template_file = '_posts/new_post.textile'
+  basename = Date.today.to_s + "-#{args.join('-')}"
+  output_file = template_file.sub('new_post', basename)
+  title = args.map {|e| e.capitalize}.join(' ')
+  result = string_from_template(template_file, :title=>title)
+  output_file = create_output_file(output_file, result)
+  system(ENV['EDITOR'], output_file) if options['editor']
+end
+{% endhighlight %}
+Line by line:
+* Line 1 calls thor's @desc()@ to describe usage and description as well as mark the method as a task.
+* Line 2 defines a boolean option editor which we'll use later.
+* Line 3 allows the task any number of arguments which it uses as the title.
+* Line 4 defines the location of our "template file":http://github.com/cldwalker/cldwalker.github.com/blob/master/_meta/_posts/new_post.textile?raw=true.
+* Line 5 calculates the generated file's basename using the current date and title.
+* Line 6 makes the generated location's file smarter by giving it the same directory structure as the template.
+* Line 7 creates the title used in the file simply by capitalizing.
+* Line 8 uses my erb helper method to generate a string given the template file and its arguments.
+* Line 9 uses another helper method to generate the file given the location and string.
+* Line 10 uses the editor option to optionally open the file in our preferred editor.
+
+You may have noticed we didn't define a verbose option yet I used it in the above example. Since "my Thorfile":http://github.com/cldwalker/cldwalker.github.com/blob/master/_meta/Thorfile defines verbose and local as global options, we don't have to explicitly define them. The @string_from_template@ helper method handles those two options. You may have also noticed that in line 10 there is an options variable even though there is none defined. This comes automagically when defining your options for a thor task.
+
+If others have come up with different solutions to template generators, I'd be interested to know. I'm aware of commandline generators such as "rubigen":http://drnic.github.com/rubigen/ but it seemed easier to just roll my own.
