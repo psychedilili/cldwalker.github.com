@@ -2,51 +2,64 @@ require 'erb'
 require 'fileutils'
 
 class Jekyll < Thor
-  desc "tag_pages", "Creates tag pages"
-  method_options :tags=>:optional, :local=>:boolean, :xml_only=>:boolean, :html_only=>:boolean
-  def tag_pages
-    tags = options['tags'] || all_tags
-    tags = tags.split(/\s*,\s*/) if tags.is_a?(String)
-    destination = options['local'] ? '_site' : File.expand_path(File.join(File.dirname(__FILE__), '..'))
-    FileUtils.mkdir_p(destination) if options['local']
-    input_files = options['xml_only'] ? ['tag/tag.xml'] : (options['html_only'] ? ['tag/tag.html'] : 
-      ['tag/tag.html', 'tag/tag.xml'])
 
-    tags.each do |tag|
-      input_files.each do |input_file|
-        result = create_page_string(input_file, :tag=>tag)
-        destination_basename = input_file.gsub("/tag", "/#{tag}")
-        destination_file = File.join(destination, destination_basename)
-        FileUtils.mkdir_p File.dirname(destination_file)
-        File.open(destination_file, 'w') {|f| f.write(result) }
-      end
-    end
+  #define global options
+  method_options :local=>:boolean, :verbose=>:boolean
+  def initialize(*args)
+    super
   end
-
-  desc "tag_stats", "Print tag stats"
-  def tag_stats
+  
+  desc "tag_pages TAG1 TAG2 ...", "Creates tag pages- defaults to all tags"
+  def tag_pages(*tags)
+    tags = all_tags if tags.empty?
+    tags.each {|e|
+      create_tag_page(e, 'tag/tag.html')
+    }
+  end
+  
+  desc "tag_xml_pages TAG1 TAG2 ...", "Creates tag xml pages"
+  def tag_xml_pages(*tags)
+    tags.each {|e|
+      create_tag_page(e, 'tag/tag.xml')
+    }
+  end
+  
+  def create_tag_page(tag, template_file)
+    output_file = template_file.sub("/tag", "/#{tag}")
+    result = create_page_string(template_file, :tag=>tag)
+    create_output_file(output_file, result)
+  end
+  
+  desc "tag_counts", "Print post counts per tag"
+  def tag_counts
     tag_count.each do |tag,count|
       puts "#{tag}: #{count}"
     end
   end
   
-  desc "new_post", "quick start jekyll blog post"
-  method_options :create_only=>:optional
+  desc "new_post TITLE IS MULTIPLE WORDS", "New jekyll blog post"
+  method_options :editor=>:boolean
   def new_post(*args)
-    basename = Date.today.to_s + "-#{args.join('-')}.textile"
-    new_file = File.join(posts_dir, basename)
-    if options['create_only']
-      new_file_string = ''
-    else
-      title = args.map {|e| e.capitalize}.join(' ')
-      new_file_string = "---\nlayout: post\ntitle: #{title}\n---"
-    end
-    File.open(new_file, 'w') {|f| f.write(new_file_string)}
-    unless options['create_only']
-      system(ENV['EDITOR'], new_file)
-    end
+    template_file = '_posts/new_post.textile'
+    basename = Date.today.to_s + "-#{args.join('-')}"
+    output_file = template_file.sub('new_post', basename)
+    
+    title = args.map {|e| e.capitalize}.join(' ')
+    result = create_page_string(template_file, :title=>title)
+    output_file = create_output_file(output_file, result)
+    system(ENV['EDITOR'], output_file) if options['editor']
   end
 
+  def create_output_file(relative_file, output, local=false)
+    destination_dir = options['local'] ? '_site' : root_dir
+    FileUtils.mkdir_p(destination_dir)
+    destination_file = File.join(destination_dir, relative_file)
+    FileUtils.mkdir_p File.dirname(destination_file)
+    puts "Created file: #{destination_file}" if options['verbose']
+    File.open(destination_file, 'w') {|f| f.write(output) }
+    destination_file
+  end
+  
   def create_page_string(file, variables)
     variables.each {|k,v| instance_variable_set("@#{k}", v) }
     translated_string = ::ERB.new(File.read(file)).result(binding)
