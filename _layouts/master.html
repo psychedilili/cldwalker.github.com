@@ -5,16 +5,16 @@
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <title>Tagaholic - {{ page.title }}</title>
-    {% if page.keywords -%}
-      {% assign keywords = page.keywords -%}
-    {% else -%}
-      {% assign keywords = 'Gabriel Horner, tags, machine tags, semantic tags, rails, ruby, github, tagging, outline, tree' -%}
-    {% endif -%}
-    {% if page.description -%}
-      {% assign description = page.description -%}
-    {% else -%}
-      {% assign description = "Gabriel Horner's thoughts on tagging, ruby, rails and better knowledge management." -%}
-    {% endif -%}
+    {% if page.keywords %}
+      {% assign keywords = page.keywords %}
+    {% else %}
+      {% assign keywords = 'Gabriel Horner, tags, machine tags, semantic tags, rails, ruby, github, tagging, outline, tree' %}
+    {% endif %}
+    {% if page.description %}
+      {% assign description = page.description %}
+    {% else %}
+      {% assign description = "Gabriel Horner's thoughts on tagging, ruby, rails and better knowledge management." %}
+    {% endif %}
     <meta name="keywords" content="{{keywords | xml_escape| truncate: 160}}" />
     <meta name="description" content="{{description | strip_html | xml_escape| truncate: 160}}" />
     <link rel="stylesheet" href="/stylesheets/master.css" type="text/css" media="screen" charset="utf-8"/>
