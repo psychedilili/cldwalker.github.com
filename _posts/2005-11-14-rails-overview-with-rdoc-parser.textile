@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Rails Overview With Rdoc Parser
+keywords: rails, rdoc, parser, tree, overview
 tags:
   - rails
   - ruby

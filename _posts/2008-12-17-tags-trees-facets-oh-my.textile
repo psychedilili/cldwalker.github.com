@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Tags, Trees and Facets, Oh My!
+keywords: tags, trees, facets, outlines, semantic tags, tag hierarchy, tag tree
 tags:
   - tag
 ---

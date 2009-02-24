@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Irb History Itches Eliminated
+keywords: irb, history, readline, readline history, irbrc, config
 tags:
   - ruby
   - irb

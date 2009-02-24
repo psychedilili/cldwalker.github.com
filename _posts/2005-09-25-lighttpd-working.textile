@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Lighttpd Working!
+keywords: lighttpd, rails, typo, fcgi
 tags:
   - rails
   - lighttpd

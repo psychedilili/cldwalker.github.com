@@ -1,11 +1,13 @@
 ---
 layout: post
 title: Quicker Options For Irb Methods
+keywords: irb, console, ruby, thor, tag, options, parse, alias
+description: Although irb does come with decent auto completion, I often prefer aliasing methods. To some degree I've come up with <a href="http://github.com/cldwalker/alias">a decent solution</a> to managing method aliases but what do you do when you want to alias a method's options?
 tags:
   - ruby
   - irb
 ---
-Although irb does come with decent auto completion, I often prefer aliasing methods. To some degree I've come up with "a decent solution":http://github.com/cldwalker/alias to managing method aliases but what do you do when you want to alias a method's options?
+{{page.description}}
 
 While working on a "console-based rails app":http://github.com/cldwalker/tag-tree, I got tired of passing the same options hashes to an irb method:
 {% highlight ruby %}

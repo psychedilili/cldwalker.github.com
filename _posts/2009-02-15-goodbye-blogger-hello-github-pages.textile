@@ -2,6 +2,7 @@
 layout: post
 title: Goodbye Blogger, Hello Github Pages
 time: 5:05pm
+keywords: github, blogger, cname, jekyll, liquid, blogging, github pages
 tags:
   - github
 ---

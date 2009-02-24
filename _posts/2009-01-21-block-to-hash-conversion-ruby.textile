@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Block to Hash Conversion for Ruby Config Blocks
+keywords: irb, ruby, hash, openstruct, block, lambda, proc, config, dsl
 tags:
   - ruby
 ---

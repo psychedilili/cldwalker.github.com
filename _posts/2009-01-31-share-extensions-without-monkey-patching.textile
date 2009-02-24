@@ -1,6 +1,8 @@
 ---
 layout: post
 title: Can We Share Our Extensions Without Monkey Patching?
+keywords: ruby, monkeypatch, monkey patch, extensions, activesupport, facets, stdlib, gem, share
+description: As Ruby programmers, I think we enjoy the ease and power of being able to extend any core Ruby class. But when releasing gems we often force monkeypatching. Why do this if we want everyone to use our code?
 tags:
   - ruby
 ---
