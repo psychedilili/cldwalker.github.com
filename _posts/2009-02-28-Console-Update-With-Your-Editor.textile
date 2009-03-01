@@ -9,7 +9,7 @@ tags:
 ---
 {{page.description}}
 
-While fleshing out "my own bookmark manager":http://github.com/cldwalker/tag-tree, a console-based Rails app, I got tired of editing my database records through @update_attribute@ and @update_attributes@. Yes, you can autocomplete and alias away method calls but it __still__ didn't feel fast enough for the massive amount of retagging and annotating I was doing. So I prayed to "the flying spaghetti monster":http://en.wikipedia.org/wiki/Flying_Spaghetti_Monster and the "console_update plugin":http://github.com/cldwalker/console_update was born. (I actually didn't 'pray' but let's not delve into semantics.)
+While fleshing out "my own bookmark manager":http://github.com/cldwalker/tag-tree, a console-based Rails app, I got tired of editing my database records through @update_attribute@ and @update_attributes@. Yes, you can autocomplete and alias away method calls but it __still__ didn't feel fast enough for the massive amount of retagging and annotating I was doing. So I prayed to "some deity":http://en.wikipedia.org/wiki/Flying_Spaghetti_Monster and the "console_update plugin":http://github.com/cldwalker/console_update was born. (I actually didn't 'pray' but let's not delve into semantics.)
 
 Before I go into a long spiel about how it works you probably just want **examples**:
 <notextile>
