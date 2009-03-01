@@ -1,0 +1,65 @@
+---
+layout: post
+title: Console Update With Your Editor
+keywords: rails, database records, script/console, edit records, irb, console_update, activerecord, editor
+description: Rails' script/console makes it easy to fetch, view and edit your database records. But can you edit those records as quickly as you edit code in your text editor? Riiight, like editing our database records in an editor is gonna happen? <a href ="http://github.com/cldwalker/console_update">It already has.</a>
+tags:
+  - rails
+  - ruby
+---
+{{page.description}}
+
+While fleshing out "my own bookmark manager":http://github.com/cldwalker/tag-tree, a console-based Rails app, I got tired of editing my database records through @update_attribute@ and @update_attributes@. Yes, you can autocomplete and alias away method calls but it __still__ didn't feel fast enough for the massive amount of retagging and annotating I was doing. So I prayed to "the flying spaghetti monster":http://en.wikipedia.org/wiki/Flying_Spaghetti_Monster and the "console_update plugin":http://github.com/cldwalker/console_update was born. (I actually didn't 'pray' but let's not delve into semantics.)
+
+Before I go into a long spiel about how it works you probably just want **examples**:
+<notextile>
+<pre class="console">
+  bash> script/console
+  
+  #Set your editor if you don't have your environment variable EDITOR set.
+  ConsoleUpdate.editor = 'insert flame war here'
+  
+  # Invoke the editor on your first url object.
+  irb>> Url.first.console_update
+  
+  # In your editor you get a stringified version of your ActiveRecord objects.
+  ==============
+  ---
+  - name: http://funnyordie.com
+    id: 1
+    description: i swear i've seen this site somewhere before
+  ==============
+  # Edit with your crazy editor-fu, save and exit. Your record is updated.
+  
+  # Perhaps we only want to edit the name column
+  irb>> Url.first.console_update :only=>%w{name}
+  
+  # Perhaps we want to edit everything but the name column
+  irb>> Url.first.console_update :except=>%w{name}  
+</pre>
+</notextile>
+
+So at this point, we've edited a record. It's nice for those records that have long text fields. But what about multiple records?
+<notextile>
+<pre class="console">
+  
+  irb>> records = Url.all :limit=>10
+  # Edit multiple records just like you would with one record.
+  irb>> Url.console_update records
+  
+  # console_update takes the same options as above
+  irb>> Url.console_update records, :only=>%w{name}
+  
+  # This is nice but why not just chain it to the end of a named_scope?
+  irb>> ConsoleUpdate.enable_named_scope
+  
+  # Using the named_scope :tagged_with, fetches all urls tagged with sweetness and drops them in an editor.
+  irb>> Url.tagged_with('sweetness').console_update
+</pre>
+</notextile>
+
+You may have noticed in the first set of examples that an edited file looked like YAML. That's because it is. By default, @ConsoleUpdate@ uses YAML as a filter, but console_update is __format-agnostic__. Prefer to see your database records in a different way? "Roll your own!":http://github.com/cldwalker/console_update/blob/master/lib/console_update/filter.rb.
+
+So now for the __fascinating__ explanation of how console_update works! Well, maybe not that fascinating. Your database records are converted to an array of hashes. This array is converted by your preferred filter into a string. You edit the string as a temporary file in your preferred editor. You save the file, the file is converted back by the filter into an array of hashes, and the modified records are updated.
+
+Oh yeah, I forgot to mention that @ConsoleUpdate@ doesn't care what columns/attributes you edit. So if you have __any__ accessor methods which update associated objects when saved, your __associated objects get updated as well__. It has worked nicely for editing associated tags of my bookmarks. "Play with it on Github":http://github.com/cldwalker/console_update or just install with <span class="github">gem install cldwalker-console_update</span>.

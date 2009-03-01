@@ -61,4 +61,3 @@ irb>> tg '=irb -v g', # same as tg '=irb', :view=>:group
 {% endhighlight %}
 
 Much quicker! Although my fingers may be happy for now, the coder in me knows this solution can still be improved. I don't want a method's options lying far away from the method itself. If I start using these shortcuts on a larger scale I don't want a whole bunch of @MethodOptionParser.parse()@ calls lying around everywhere. Rather I plan to use some aop or metaprogramming techniques to cleanly abstract a method's option aliases to a simple configuration file as "I've done with my other aliasing needs":http://github.com/cldwalker/alias.
-
