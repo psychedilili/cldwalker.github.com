@@ -1,0 +1,163 @@
+---
+layout: post
+title: Hirb - Irb On The Good Stuff
+keywords: irb, rails, ruby, custom views, script/console, activerecord, tables, table views, hirb
+description: Irb is a great place for interacting with Ruby. Unfortunately, even with the colorful help of <a href="http://pablotron.org/software/wirble/">wirble</a>, it's not so great for visualizing the output of those interactions. Hirb aims to change that.
+tags:
+  - rails
+  - ruby
+  - irb
+---
+{{ page.description}}
+
+"Hirb":http://github.com/cldwalker/hirb/tree/master provides a mini view framework for console applications, designed with irb in mind. Given the output of a console application, it applies a view if there is one to apply, based on the output's class. To get a better idea of what that means, let's look at Hirb's included table view and its use with Rails:
+<notextile>
+<pre class="console">
+  bash>script/console
+  Loading local environment (Rails 2.2.2)
+  
+  # Load hirb and enable view framework
+  irb>> require 'hirb'
+  => true
+  irb>> Hirb::View.enable
+  => nil
+  
+  # This is the default config which maps output classes to their views.
+  irb>> Hirb::View.output_config
+  => {"ActiveRecord::Base"=>{:class=>"Hirb::Views::ActiveRecord_Base", :ancestor=>true}}
+  
+  # Tag is an ActiveRecord::Base descendant which inherits ActiveRecord::Base's view.
+  irb>> Tag.last
+  +-----+-------------------------+-------------+---------------+-----------+-----------+-------+
+  | id  | created_at              | description | name          | namespace | predicate | value |
+  +-----+-------------------------+-------------+---------------+-----------+-----------+-------+
+  | 907 | 2009-03-06 21:10:41 UTC |             | gem:tags=yaml | gem       | tags      | yaml  |
+  +-----+-------------------------+-------------+---------------+-----------+-----------+-------+
+  1 row in set
+  =>true
+  
+  irb>> 'this remains'
+  =>'this'
+  irb>> :the_same
+  =>:the_same
+</pre>
+</notextile>
+Note no configuration was needed for @Tag@ since Hirb is preconfigured to associate @ActiveRecord::Base@ descendants with a table view. Also notice that the above string and symbol resorted to irb's default echo mode. This happens whenever an output class has no configuration in @Hirb::View.output_config@.
+  
+Hirb not only detects objects with configured output classes but also arrays of these objects:
+<notextile>
+<pre class="console">
+  irb>> Tag.all :limit=>3, :order=>"id DESC"
+  +-----+-------------------------+-------------+-------------------+-----------+-----------+----------+
+  | id  | created_at              | description | name              | namespace | predicate | value    |
+  +-----+-------------------------+-------------+-------------------+-----------+-----------+----------+
+  | 907 | 2009-03-06 21:10:41 UTC |             | gem:tags=yaml     | gem       | tags      | yaml     |
+  | 906 | 2009-03-06 08:47:04 UTC |             | gem:tags=nomonkey | gem       | tags      | nomonkey |
+  | 905 | 2009-03-04 00:30:10 UTC |             | article:tags=ruby | article   | tags      | ruby     |
+  +-----+-------------------------+-------------+-------------------+-----------+-----------+----------+
+  3 rows in set
+  =>true
+</pre>
+</notextile>
+
+h3. Views For Everyone
+
+Although Hirb's views were built to enhance irb's echo mode, you can use them as methods:
+<notextile>
+<pre class="console">
+  #These examples don't need to have Hirb::View enabled.
+  irb>>Hirb::View.disable
+  =>nil
+  
+  # Import table() and view().
+  irb>> extend Hirb::Console
+  => main
+    
+  # Url is an ActiveRecord::Base descendant.
+  irb>> urls = Url.all :limit=>2, :order=>'id DESC'; table urls
+  +------+------------------------+------------------------+------------------------+------------------------+
+  | id   | created_at             | description            | name                   | updated_at             |
+  +------+------------------------+------------------------+------------------------+------------------------+
+  | 1548 | 2009-03-12 17:53:27... | blogger that mainta... | http://www.datawran... | 2009-03-12 18:11:48... |
+  | 1544 | 2009-03-12 07:06:19... |                        | http://rubylearning... | 2009-03-12 07:06:19... |
+  +------+------------------------+------------------------+------------------------+------------------------+  
+  2 rows in set
+  =>true
+  
+  # Produces same table as above.
+  irb>> view urls, :class=>Hirb::Helpers::ActiveRecordTable
+</pre></notextile>
+You may have noticed that most of the fields were truncated with an ellipsis. This is because those fields exceeded their allowed widths and had to be truncated. Allowed widths? Of course. Hirb's table view auto adjusts widths depending on the number of columns and has options to customize per table:
+<notextile>
+<pre class="console">
+  # Instead of seeing all of Url's columns, let's only see certain fields.
+  irb>> table urls, :fields=>[:id, :name, :description]
+  +------+-----------------------------------------------+-----------------------------------------------+
+  | id   | name                                          | description                                   |
+  +------+-----------------------------------------------+-----------------------------------------------+
+  | 1548 | http://www.datawrangling.com/some-datasets... | blogger that maintains a large collection ... |
+  | 1544 | http://rubylearning.com/blog/2009/03/12/50... |                                               |
+  +------+-----------------------------------------------+-----------------------------------------------+
+  2 rows in set
+  =>true
+  
+  # Let's vary the table width and one of the headers.
+  irb>> table urls, :max_width=>70, :fields=>[:id, :name, :description], :headers=>{:name=>"Url"}
+  +------+-----------------------------------+-----------------------------------+
+  | id   | Url                               | description                       |
+  +------+-----------------------------------+-----------------------------------+
+  | 1548 | http://www.datawrangling.com/s... | blogger that maintains a large... |
+  | 1544 | http://rubylearning.com/blog/2... |                                   |
+  +------+-----------------------------------+-----------------------------------+
+  2 rows in set
+  =>true
+  
+  # Fields don't have to be a database table's column. They can be any object method.
+  irb>> table urls, :fields=>[:id, :name, :tag_list]
+  +------+------------------------------------------------------------+-----------------------------------+
+  | id   | name                                                       | tag_list                          |
+  +------+------------------------------------------------------------+-----------------------------------+
+  | 1548 | http://www.datawrangling.com/some-datasets-available-on... | page:tags=data, page:tags=2link   |
+  | 1544 | http://rubylearning.com/blog/2009/03/12/50-ruby-related... | page:tags=person, page:tags=2link |
+  +------+------------------------------------------------------------+-----------------------------------+
+  2 rows in set
+  => true
+</pre>
+</notextile>
+In the last example, let me reiterate that <b>any method</b> can be a field. For example, @tag_list@ is actually a string version of the many tags associated with each url.
+
+h3. Configuration
+
+The variety of options that a view can offer can also be configured per output class. For example, say I want @Tag@ to have certain fields. I can put this into a configuration block when enabling Hirb:
+{% highlight ruby %}
+  Hirb::View.enable do |c|
+    c.output = {"Tag"=>{:options=>{:fields=>%w{id name tag_list}} }
+  end
+{% endhighlight %}
+
+Hirb also supports a yaml configuration file (config/hirb.yml or ~/.hirb.yml). The previous configuration block as yaml would be:
+<notextile>
+<pre class="github">
+  ---
+    :view:
+      :output:
+        Tag:
+          :options:
+            :fields:
+              - id
+              - name
+              - tag_list
+</pre>
+</notextile>
+For another yaml example, "see this one":http://github.com/cldwalker/tag-tree/blob/master/config/hirb.yml I use in my Rails app.
+
+h3. Conclusion
+
+Although this post mainly focused on a use case with a Rails console, I'd like to remind you that Hirb's views can be applied to __any Ruby class__ and __outside of irb__. The "readme":http://github.com/cldwalker/hirb/tree/master has more examples including creating your own views and using Hirb with standard Ruby objects.
+
+To install Hirb:
+<pre class="github">
+  sudo gem install cldwalker-hirb -s http://gems.github.com
+</pre>
+
+If you have some clever views you'd like to contribute, "fork away":http://github.com/cldwalker/hirb/tree/master.
