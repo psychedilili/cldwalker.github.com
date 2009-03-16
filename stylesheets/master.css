@@ -274,6 +274,14 @@ div.related {
   font-size: 0.7em;
 }
 
+.home_box #search {
+  width: 220px;
+}
+
+#search .gsc-control {
+  width: 220px;
+}
+
 .delicious-post, .repo {
   background: #fff5cc;
   border: 2px solid #dba;
