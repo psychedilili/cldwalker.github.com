@@ -1,0 +1,7 @@
+---
+layout: master
+title: About Me
+---
+I'm passionate about knowledge management, tagging, ruby and rails. One day I hope to bring back that passion back to physics.
+
+*I'm available for hire. "Here's my resume":http://docs.google.com/Doc?id=dhjdhqhp_4sdt4jmhp.*
