@@ -157,7 +157,7 @@ Although this post mainly focused on a use case with a Rails console, I'd like t
 
 To install Hirb:
 <pre class="github">
-  sudo gem install cldwalker-hirb -s http://gems.github.com
+  gem install cldwalker-hirb --source http://gems.github.com
 </pre>
 
 If you have some clever views you'd like to contribute, "fork away":http://github.com/cldwalker/hirb/tree/master.
