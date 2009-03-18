@@ -1,0 +1,299 @@
+---
+layout: post
+title: Ruby Class Trees and Rails Plugin Trees With Hirb
+description: In <a href="http://tagaholic.me/2009/03/13/hirb-irb-on-the-good-stuff.html">my last post</a>, I demonstrated how <a href="http://github.com/cldwalker/hirb">Hirb</a> can render puurty tables. In this post, I'll show Hirb's new tree view with three examples- <a href="#class_inheritance_trees">class inheritance trees</a>, <a href="#nested_class_trees">nested class trees</a> and <a href="#active_record_trees">Rails' ActiveRecord trees</a>.
+tags:
+  - ruby
+  - irb
+  - rails
+---
+{{page.description}}
+
+First, let's view a basic tree with Hirb.
+
+<notextile><pre class="console">
+  bash> irb -rubygems -rhirb
+  
+  # Import a view() method we'll use.
+  irb>> extend Hirb::Console
+  => main
+  
+  # Create a tree structure Hirb understands.
+  irb>> tree = [[0,0], [1,1], [2,2], [2,3], [1,4]]
+  => [[0,0], [1,1], [2,2], [2,3], [1,4]]
+  
+  # Render a basic tree.
+  irb>> view tree, :tree
+  0
+      1
+          2
+          3
+      4
+  => true
+  
+  # Render a directory tree.
+  irb>> view tree, :tree, :type=>:directory
+  0
+  |-- 1
+  |   |-- 2
+  |   `-- 3
+  `-- 4
+  => true
+  
+  # Render a tree with each level numbered.
+  irb>> view tree, :tree, :type=>:number
+  0. 0
+      1. 1
+          1. 2
+          2. 3
+      1. 4
+</pre></notextile>
+
+A Hirb tree consists of an array of nodes. Each node is an array consisting of it's depth/level in the tree and its value.
+
+h2(#class_inheritance_trees). Class Inheritance Trees
+
+Although that basic tree was easy to build, more complex trees require more setup. Thankfully Hirb's @ParentChildTree@ class makes tree building easy. It's based on one simple assumption: each node has a method to retrieve its immediate children. Given a node, @ParentChildTree@ uses that method to build out all the children under it. To put this class into exercise let's build a class inheritance tree for any Ruby class. Does a Ruby class have a method to retrieve it's immediate subclasses? No, but no worries. Ruby's got your back:
+
+{% highlight ruby %}
+  module InheritanceTree
+    # Retrieves objects of the current class.
+    def objects
+      class_objects = []
+      ObjectSpace.each_object(self) {|e| class_objects << e }
+      class_objects
+    end
+    
+    # Retrives immediate subclasses of the current class.
+    def class_children
+      (@class_objects ||= Class.objects).select {|e| e.superclass == self }
+    end
+  end
+  
+  Module.send :include, InheritanceTree
+  # Note that in modifying a class as ubiquitous as Module that I extend its behavior through 
+  # a traceable module. I think it's good manners to let others know you're modifying core
+  # classes: http://tagaholic.me/2009/01/31/share-extensions-without-monkey-patching.html
+{% endhighlight %}
+
+That wasn't too hard. @class_children()@ is the method we seek. It iterates over all existing classes and only picks those that are subclasses of the current class. Having extended @Module@, let's see some inheritance trees:
+
+<notextile><pre class="console">
+  # test drive :class_children
+  irb>> Numeric.class_children
+  => [Float, Integer, Date::Infinity, Rational]
+  
+  # Must explicitly pass :class_children since ParentChildTree assumes a :children method by default.
+  irb>> view Numeric, :parent_child_tree, :children_method=>:class_children, :type=>:directory
+  Numeric
+  |-- Float
+  |-- Integer
+  |   |-- Bignum
+  |   `-- Fixnum
+  |-- Date::Infinity
+  `-- Rational
+  => true
+  
+  irb>> view StandardError, :parent_child_tree, :children_method=>:class_children, :type=>:directory
+  # Just kidding. Don't want to double the length of this post.
+  
+  # We can however do a subset of that tree:
+  irb>> view RuntimeError, :parent_child_tree, :children_method=>:class_children, :type=>:directory
+  RuntimeError
+  `-- Gem::Exception
+      |-- Gem::VerificationError
+      |-- Gem::RemoteSourceException
+      |-- Gem::RemoteInstallationSkipped
+      |-- Gem::RemoteInstallationCancelled
+      |-- Gem::RemoteError
+      |-- Gem::OperationNotSupportedError
+      |-- Gem::InvalidSpecificationException
+      |-- Gem::InstallError
+      |-- Gem::GemNotFoundException
+      |-- Gem::FormatException
+      |-- Gem::FilePermissionError
+      |-- Gem::EndOfYAMLException
+      |-- Gem::DocumentError
+      |-- Gem::GemNotInHomeException
+      |-- Gem::DependencyRemovalException
+      |-- Gem::DependencyError
+      `-- Gem::CommandLineError
+  => true
+</pre></notextile>
+<br/>
+
+h2(#nested_class_trees). Nested Class Trees
+
+Seeing how easily Hirb creates trees for us, let's build another one. When I start using a new gem, it helps to get an overview of the classes and modules it defines. All we need is a method that can retrieve a class' immediate nested class (ie Gem::Error is a nested class of Gem):
+{% highlight ruby %}
+  module NestedTree
+    # Since nested classes are just constants:
+    def nested_children
+      constants.map {|e| const_get(e) }.select {|e| e.is_a?(Module) }
+    end
+    
+    def nested_name
+      self.to_s.split(":")[-1]
+    end
+  end
+  
+  Module.send :include, NestedTree
+{% endhighlight%}
+With @nested_children()@, we're ready to rock. Let's view nested classes under Hirb:
+
+<notextile>
+<pre class="console">
+  # test drive nested_children
+  irb>> Hirb.nested_children
+  => [Hirb::Util, Hirb::View, Hirb::Console, Hirb::Helpers, Hirb::Views, Hirb::HashStruct]
+
+  irb>> view Hirb, :parent_child_tree, :children_method=>:nested_children, :type=>:directory
+  Hirb
+  |-- Hirb::Util
+  |-- Hirb::View
+  |-- Hirb::Console
+  |-- Hirb::Helpers
+  |   |-- Hirb::Helpers::ObjectTable
+  |   |   `-- Hirb::Helpers::Table::TooManyFieldsForWidthError
+  |   |-- Hirb::Helpers::AutoTable
+  |   |-- Hirb::Helpers::ParentChildTree
+  |   |   |-- Hirb::Helpers::Tree::ParentlessNodeError
+  |   |   `-- Hirb::Helpers::Tree::Node
+  |   |       |-- Hirb::Helpers::Tree::Node::MissingValueError
+  |   |       `-- Hirb::Helpers::Tree::Node::MissingLevelError
+  |   |-- Hirb::Helpers::Table
+  |   |   `-- Hirb::Helpers::Table::TooManyFieldsForWidthError
+  |   |-- Hirb::Helpers::ActiveRecordTable
+  |   |   `-- Hirb::Helpers::Table::TooManyFieldsForWidthError
+  |   `-- Hirb::Helpers::Tree
+  |       |-- Hirb::Helpers::Tree::ParentlessNodeError
+  |       `-- Hirb::Helpers::Tree::Node
+  |           |-- Hirb::Helpers::Tree::Node::MissingValueError
+  |           `-- Hirb::Helpers::Tree::Node::MissingLevelError
+  |-- Hirb::Views
+  |   `-- Hirb::Views::ActiveRecord_Base
+  `-- Hirb::HashStruct
+  => true
+</pre></notextile>
+Sweet! A nice visualization of Hirb's classes. But wouldn't it be nice if a nested class only showed its nested name? That's what we defined @nested_name()@ for:
+
+<notextile><pre class="console">
+>> view Hirb, :parent_child_tree, :children_method=>:nested_children, :type=>:directory,
+  :value_method=>:nested_name
+Hirb
+|-- Util
+|-- View
+|-- Console
+|-- Helpers
+|   |-- ObjectTable
+|   |   `-- TooManyFieldsForWidthError
+|   |-- AutoTable
+|   |-- ParentChildTree
+|   |   |-- ParentlessNodeError
+|   |   `-- Node
+|   |       |-- MissingValueError
+|   |       `-- MissingLevelError
+|   |-- Table
+|   |   `-- TooManyFieldsForWidthError
+|   |-- ActiveRecordTable
+|   |   `-- TooManyFieldsForWidthError
+|   `-- Tree
+|       |-- ParentlessNodeError
+|       `-- Node
+|           |-- MissingValueError
+|           `-- MissingLevelError
+|-- Views
+|   `-- ActiveRecord_Base
+`-- HashStruct
+=> true
+</pre></notextile>
+
+Better! Note that we passed a :value_method option to tell @ParentChildTree@ what method to call to represent a node. We didn't have to specify this in the inheritance trees because it defaults to @name()@ which Ruby classes have defined.
+
+h2(#active_record_trees). ActiveRecord Trees
+
+Having had to build our children methods for our last two tree type examples, this example should be easy. Let's setup a tree-enabled Rails app to use "acts_as_tree":http://github.com/rails/acts_as_tree/tree/master :
+
+<notextile><pre class="console">
+  # generate rails app
+  bash> rails tree
+  bash> cd tree
+
+  # generate model
+  bash> script/generate model category name:string parent_id:integer
+  bash> rake db:migrate
+
+  # install plugin
+  bash> script/plugin install git://github.com/rails/acts_as_tree.git
+
+  # modify app/models/category.rb to look like:
+  # class Category < ActiveRecord::Base
+  #   acts_as_tree
+  # end
+</pre></notextile>
+
+With this app setup, let's fire up script/console to create some records:
+
+<notextile><pre class="console">
+  bash> script/console
+  Loading development environment (Rails 2.2.2)
+
+  ## Create some categories
+  irb>> conf.echo = false
+  irb>> Category.create(:name=>'root')
+  irb>> _.children.create(:name=>'gems')
+  irb>> _.children.create(:name=>'hirb')
+  irb>> _.parent.children.create(:name=>'utility_belt')
+  irb>> Category.root.children.create(:name=>'plugins')
+  irb>> _.children.create(:name=>'acts_as_tree')
+  irb>> conf.echo = true
+
+  # Enable Hirb so we get table views for ActiveRecord objects.
+  irb>> require 'hirb'; Hirb::View.enable
+  => nil
+
+  # Let's see what we've created.
+  irb>> Category.all
+  +----+-------------------------+--------------+-----------+-------------------------+
+  | id | created_at              | name         | parent_id | updated_at              |
+  +----+-------------------------+--------------+-----------+-------------------------+
+  | 5  | 2009-03-18 20:41:43 UTC | root         |           | 2009-03-18 20:46:52 UTC |
+  | 6  | 2009-03-18 20:46:27 UTC | gems         | 5         | 2009-03-18 20:46:27 UTC |
+  | 7  | 2009-03-18 20:48:06 UTC | hirb         | 6         | 2009-03-18 20:48:06 UTC |
+  | 8  | 2009-03-18 20:48:28 UTC | utility_belt | 6         | 2009-03-18 20:48:28 UTC |
+  | 9  | 2009-03-18 20:54:24 UTC | plugins      | 5         | 2009-03-18 20:54:24 UTC |
+  | 10 | 2009-03-18 20:54:38 UTC | acts_as_tree | 9         | 2009-03-18 20:54:38 UTC |
+  +----+-------------------------+--------------+-----------+-------------------------+
+  => true
+</pre></notextile>
+
+With our app and records setup, it's time to see the trees:
+
+<notextile><pre class="console">
+  irb>> extend Hirb::Console
+  => main
+
+  # View tree from root node.
+  irb>> view Category.root, :parent_child_tree, :type=>:directory
+  root
+  |-- gems
+  |   |-- hirb
+  |   `-- utility_belt
+  `-- plugins
+      `-- acts_as_tree
+  => true
+
+  # We can view a tree from any node:
+  irb>> view Category.find_by_name('gems'), :parent_child_tree, :type=>:directory
+  gems
+  |-- hirb
+  `-- utility_belt
+  => true
+</pre></notextile>
+
+Sweet! Hirb's trees should work fine with other tree plugins that have a children method ie "rails' nested set plugin":http://github.com/rails/acts_as_nested_set/tree/master and the "awesome nested_set plugin":http://github.com/collectiveidea/awesome_nested_set/tree/master. Don't forget to pass a :children_method option as we did in previous examples when nodes don't retrieve their children with @children()@.
+
+As always, I encourage you to "fork and share":http://github.com/cldwalker/hirb your custom views for irb. "Some food for thought":http://rubyquiz.com/quiz40.html for more tree visualizations. If you haven't already:
+<pre class="github">
+  gem install cldwalker-hirb --source http://gems.github.com
+</pre>
