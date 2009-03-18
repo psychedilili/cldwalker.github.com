@@ -1,6 +1,7 @@
 ---
 layout: post
-title: Ruby Class Trees and Rails Plugin Trees With Hirb
+title: Ruby Class and Rails Plugin Trees With Hirb
+keywords: ruby, rails, hirb, class inheritance trees, nested class trees, plugin trees, rails trees, irb trees, activerecord trees
 description: In <a href="http://tagaholic.me/2009/03/13/hirb-irb-on-the-good-stuff.html">my last post</a>, I demonstrated how <a href="http://github.com/cldwalker/hirb">Hirb</a> can render puurty tables. In this post, I'll show Hirb's new tree view with three examples- <a href="#class_inheritance_trees">class inheritance trees</a>, <a href="#nested_class_trees">nested class trees</a> and <a href="#active_record_trees">Rails' ActiveRecord trees</a>.
 tags:
   - ruby
