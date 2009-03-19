@@ -1,8 +1,8 @@
 ---
 layout: post
 title: Ruby Class and Rails Plugin Trees With Hirb
-keywords: ruby, rails, hirb, class inheritance trees, nested class trees, plugin trees, rails trees, irb trees, activerecord trees
-description: In <a href="http://tagaholic.me/2009/03/13/hirb-irb-on-the-good-stuff.html">my last post</a>, I demonstrated how <a href="http://github.com/cldwalker/hirb">Hirb</a> can render puurty tables. In this post, I'll show Hirb's new tree view with three examples- <a href="#class_inheritance_trees">class inheritance trees</a>, <a href="#nested_class_trees">nested class trees</a> and <a href="#active_record_trees">Rails' ActiveRecord trees</a>.
+keywords: ruby, rails, hirb, class inheritance trees, nested class trees, plugin trees, rails trees, irb trees, activerecord trees, visualizing trees in irb
+description: In <a href="http://tagaholic.me/2009/03/13/hirb-irb-on-the-good-stuff.html">my last post</a>, I demonstrated how <a href="http://github.com/cldwalker/hirb">Hirb</a> can render puurty tables with automated views. In this post, I'll show Hirb's new tree view using its console methods and these three examples- <a href="#class_inheritance_trees">class inheritance trees</a>, <a href="#nested_class_trees">nested class trees</a> and <a href="#active_record_trees">Rails' ActiveRecord trees</a>.
 tags:
   - ruby
   - irb
@@ -52,7 +52,7 @@ First, let's view a basic tree with Hirb.
 
 A Hirb tree consists of an array of nodes. Each node is an array consisting of it's depth/level in the tree and its value.
 
-h2(#class_inheritance_trees). Class Inheritance Trees
+h3(#class_inheritance_trees). Class Inheritance Trees
 
 Although that basic tree was easy to build, more complex trees require more setup. Thankfully Hirb's @ParentChildTree@ class makes tree building easy. It's based on one simple assumption: each node has a method to retrieve its immediate children. Given a node, @ParentChildTree@ uses that method to build out all the children under it. To put this class into exercise let's build a class inheritance tree for any Ruby class. Does a Ruby class have a method to retrieve it's immediate subclasses? No, but no worries. Ruby's got your back:
 
@@ -123,7 +123,7 @@ That wasn't too hard. @class_children()@ is the method we seek. It iterates over
 </pre></notextile>
 <br/>
 
-h2(#nested_class_trees). Nested Class Trees
+h3(#nested_class_trees). Nested Class Trees
 
 Seeing how easily Hirb creates trees for us, let's build another one. When I start using a new gem, it helps to get an overview of the classes and modules it defines. All we need is a method that can retrieve a class' immediate nested class (ie Gem::Error is a nested class of Gem):
 {% highlight ruby %}
@@ -211,7 +211,7 @@ Hirb
 
 Better! Note that we passed a :value_method option to tell @ParentChildTree@ what method to call to represent a node. We didn't have to specify this in the inheritance trees because it defaults to @name()@ which Ruby classes have defined.
 
-h2(#active_record_trees). ActiveRecord Trees
+h3(#active_record_trees). ActiveRecord Trees
 
 Having had to build our children methods for our last two tree type examples, this example should be easy. Let's setup a tree-enabled Rails app to use "acts_as_tree":http://github.com/rails/acts_as_tree/tree/master :
 
@@ -293,6 +293,14 @@ With our app and records setup, it's time to see the trees:
 </pre></notextile>
 
 Sweet! Hirb's trees should work fine with other tree plugins that have a children method ie "rails' nested set plugin":http://github.com/rails/acts_as_nested_set/tree/master and the "awesome nested_set plugin":http://github.com/collectiveidea/awesome_nested_set/tree/master. Don't forget to pass a :children_method option as we did in previous examples when nodes don't retrieve their children with @children()@.
+
+h3. Conclusion
+
+In this post, we focused on using Hirb with its console methods. If you didn't read "the previous post":http://tagaholic.me/2009/03/13/hirb-irb-on-the-good-stuff.html, know that any of these views can be automatically echoed based on the output's class. For the last example, we could trigger an automated directory tree for any Category nodes with:
+
+<notextile><pre class="console">
+  irb>> Hirb::View.enable {|c| c.output = {"Category"=>{:class=>"Hirb::Helpers::ParentChildTree", :options=>{:type=>:directory}}} }
+</pre></notextile>
 
 As always, I encourage you to "fork and share":http://github.com/cldwalker/hirb your custom views for irb. "Some food for thought":http://rubyquiz.com/quiz40.html for more tree visualizations. If you haven't already:
 <pre class="github">
