@@ -13,14 +13,14 @@ site_pages:
 <url>
   <loc>http://tagaholic.me{{site_page}}</loc>
   <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
-  <changefreq>daily</changefreq>
+  <changefreq>hourly</changefreq>
 </url>
 {% endfor %}
 {% for post in site.posts %}
 <url>
   <loc>http://tagaholic.me{{ post.url }}</loc>
   <lastmod>{{ post.date | date_to_xmlschema }}</lastmod>
-  <changefreq>daily</changefreq>
+  <changefreq>hourly</changefreq>
 </url>
 {% endfor %}
 </urlset>
