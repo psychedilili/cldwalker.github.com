@@ -50,6 +50,25 @@ class Jekyll < Thor
       puts "#{tag}: #{count}"
     end
   end
+  
+  desc "json", "generate json for posts + tags"
+  method_options :tags=>:boolean
+  def json
+    posts_array = YAML::load_file("post_tags.yml")
+    if options[:tags]
+      machine_tags = posts_array.map {|e| e[1]}.flatten.uniq.sort.map {|e| {:name=>e} }
+      File.open(root_dir + '/machine_tags.json', 'w') {|f| f.write machine_tags.to_yaml }
+    else
+      require 'activesupport'
+      posts_array = posts_array.map {|post, tags|
+        blank, date, slug = File.basename(post).split(/(\d\d\d\d-\d\d-\d\d)-(.*)\.(\w+)/)
+        new_post = "/" + date.gsub("-", "/") + "/#{slug}.html"
+        title = slug.split('-').map {|w| w.capitalize! || w }.join(' ')
+        {:url=>new_post, :tags=>tags, :title=>title}
+      }
+      File.open(root_dir + '/posts.json', 'w') {|f| f.write posts_array.to_json }
+    end
+  end
 
   def create_output_file(relative_file, output, local=false)
     destination_dir = options['local'] ? '_site' : root_dir

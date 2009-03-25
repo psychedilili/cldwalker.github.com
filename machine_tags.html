@@ -1,0 +1,87 @@
+---
+layout: master
+title: Blog
+full_posts: 1
+---
+
+<a href='http://feeds2.feedburner.com/tagaholic' class='float-right'><img src='/images/subscribe.png' alt='Subscribe to XML Feed'/></a>
+
+<h2>Blog Post Search With Machine Tags</h2>
+<form action="javascript:machine_tag_search($('#machine_tag').val())">
+  <input type="text" name="machine_tag" id="machine_tag"/>
+  <input value="Machine Tag Search" type="submit"/>
+  <input value="All Posts" type="button" onclick="javascript:machine_tag_search('')"/>
+</form>
+<div id="result"></div>
+<script src="/javascripts/jquery.enumerable.js"></script>
+<script src="/javascripts/machine_tags.js"></script>
+<script type="text/javascript" charset="utf-8">
+$(function() {
+  if (initial_machine_tag() != null) {
+    machine_tag_search(initial_machine_tag().pop());
+  }
+  else { machine_tag_search(''); }
+  // $("a .machine_tag_prefix").toggle();
+});
+</script>
+
+<h3>Machine Tag Tree</h3>
+<div id="tree_description">
+  This is a tree representation of the above machine tags for my blog posts.
+  First level nodes are namespaces and second level nodes are predicates belonging to the parent namespace. Each predicate has a brief description and a comma delimited list of values under it.
+</div>
+<div id="machine_tag_tree">
+<ul>
+<li>ruby
+    <ul>
+    <li>gem
+      <ul>
+      <li>description: ruby gem</li>
+      <li>values: console_update, hirb, jekyll, local_gem, thor</li>
+      </ul>      
+    </li>
+    <li>lib
+      <ul>
+      <li>description: core or standard ruby library</li>
+      <li>values: irb, ostruct, rdoc
+      </ul>
+    </li>
+    <li>tags
+      <ul>
+      <li>description: default predicate</li>
+      <li>values: block, inheritance, monkeypatch, script</li>
+      </ul>
+    </li>
+    </ul>
+  </li>
+<li>rails
+  <ul>
+  <li>gem
+    <ul>
+    <li>values: activerecord, activesupport</li>
+    </ul>
+  </li>
+  <li>plugin
+    <ul>
+    <li>description: rails plugin</li>
+    <li>values: acts_as_tree
+    </ul>
+  </li>
+  <li>tags
+    <ul>
+    <li>values: lighttpd, script</li>
+    </ul>
+  </li>
+  </ul>
+</li>
+<li>post
+    <ul>
+    <li>tags
+      <ul>
+      <li>values: database, github, options, parse, table, template, tree, tag</li>
+      </ul>
+    </li>
+    </ul>
+</li>
+</ul>
+</div>

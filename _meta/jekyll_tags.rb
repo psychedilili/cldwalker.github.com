@@ -34,7 +34,7 @@ module JekyllTags
   end
 
   # Use this method to print the output of any methods returning data structures
-  def print_method(method)
+  def debug(method)
     p send(method)
   end
 end
