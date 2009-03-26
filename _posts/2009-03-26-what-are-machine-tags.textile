@@ -1,0 +1,65 @@
+---
+layout: post
+title: What Are Machine Tags?
+keywords: machine tags, flickr machine tags, machine tag introduction, semantic tags, machine tagging, object tagging, triple tags
+description: Have you heard of machine tags? Unless you use Flickr actively, probably not. A machine tag, Flickr's name for a <a href="http://en.wikipedia.org/wiki/Machine_tag#Triple_tags">triple tag</a>, is a tag with meta information ie how it's related to other tags. What difference can that make? A world of a difference.
+tags: 
+  - tag
+---
+{{ page.description}}
+
+As "was explained in a Flickr group post":http://www.flickr.com/groups/api/discuss/72157594497877875, a machine tag is a tag consisting of a namespace, predicate and value in the format: 
+<pre class="console" style="font-size: 1.3em">[namespace]:[predicate]=[value]</pre>
+The namespace and predicate are the meta information of a tag and the value is the conventional tag we're used to. Depending on the nomenclature you're used to, think of a namespace as a tag's class or type and the predicate as its property, attribute or facet. Aside from "some reasonable character restrictions Flickr sets":http://www.flickr.com/groups/api/discuss/72157594497877875 on namespace and predicate, machine tags are just tags.
+
+So how about an example? Here are some machine tags from a "flickr photo":http://www.flickr.com/photos/21187328@N07/3373935050/
+<div style="text-align:center">!http://farm4.static.flickr.com/3649/3373935050_59d6316cf9_m_d.jpg!</div>
+* astro:name=NGC 4565
+* astro:orientation=11.73
+* astro:RA=189.083922302
+
+For these machine tags, @astro@ is the namespace; @name@, @orientation@ and @RA@ are the predicates; and you can guess the values (everything after '='). So aside from seeing that the photo has some astronomy-specific metadata associated with it, what's the big deal? 
+# The metadata is __structured__. So structured that we can represent the example machine tags in a table:
+<notextile>
+<pre class="console">
++-----------+-------------+---------------+
+| namespace | predicate   | value         |
++-----------+-------------+---------------+
+| astro     | name        | NGC 4565      |
+| astro     | orientation | 11.73         |
+| astro     | RA          | 189.083922302 |
++-----------+-------------+---------------+
+</pre>
+</notextile>
+Or in a tree:
+<notextile>
+<pre class="console">
+  astro
+  |-- name
+  |   `-- NGC 4565
+  |-- orientation
+  |   `-- 11.73
+  `-- RA
+      `-- 189.083922302
+</pre>
+</notextile>
+Another testament to this structure is "an astrophotography group":http://www.nmm.ac.uk/visit/exhibitions/astronomy-photographer-of-the-year/showcase/ that uses the example machine tags to make photos viewable with Google Sky. 
+# The effort required to add structured metadata opens this up to __everyone__. A user doesn't have to be a developer who knows about rdf, owl or yet another metadata language. They __simply have to know how a colon and equal sign delimit their metadata__ and they are able to metadata away. Flickr is a great example of this. "Browse the 100+ machine tag namespaces":http://husk.org/code/machine-tag-browser.html that Flickr users have created.
+# Since machine tag syntax is simple and structured, it's easy for developers to make powerful queries into your structured metadata. Take for example flickr's "machine tag searches":http://code.flickr.com/blog/2008/07/18/wildcard-machine-tag-urls/:
+## ["Flickr photos with an astro namespace: astro:*=":http://www.flickr.com/photos/tags/astro:*=]
+## ["Flickr photos with an astro namespace and name predicate: astro:name=":[http://www.flickr.com/photos/tags/astro:name=]
+## ["Flickr photos with a name predicate: *:name=":http://www.flickr.com/photos/tags/*:name=]
+## ["Flickr photos with a value bob: *:=bob":http://www.flickr.com/photos/tags/*:=bob]
+# __For programmers/developers__: If you look at the example machine tags as one unit, you basically have an astro object with three attributes. How much easier can it be to have users create data you can use? If a group of machine tags can represent an object, then aren't the aforementioned machine tag queries approximating SQL-like searches in the form of urls?
+
+So aside from Flickr, who uses machine tags?:
+* "My Rails plugin":http://github.com/cldwalker/has_machine_tags/tree/master enables Rails applications to machine tag.
+* "A Delicious user":http://delicious.com/adulau "explains his machine tag namespaces":http://www.foo.be/cgi-bin/wiki.pl/MachineTag.
+* Here is a "RDF format for machine tags":http://weborganics.co.uk/RDF-3T/.
+* "Astrometry robot":http://www.nmm.ac.uk/visit/exhibitions/astronomy-photographer-of-the-year/astro-robot/ crawls Flickr photos and annotates them with machine tags.
+* "A univerity-based group":http://journal.code4lib.org/articles/74 organizes their ceramic images with machine tags.
+* "Blogger":http://adactio.com/journal/1274/ let's users associate photos with any of his blog posts using Flickr's machine tags.
+* "Another blogger":http://clagnut.com/blog/1907/ who does the same.
+* "My console application":http://github.com/cldwalker/tag-tree/tree/master manages bookmarks with machine tags.
+
+If you know of additional machine tag projects or metadata alternatives that provide the flexibility and structure that machine tags do, feel free to comment them.
