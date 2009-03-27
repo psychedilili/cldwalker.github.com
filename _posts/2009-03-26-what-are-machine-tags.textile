@@ -2,7 +2,7 @@
 layout: post
 title: What Are Machine Tags?
 keywords: machine tags, flickr machine tags, machine tag introduction, semantic tags, machine tagging, object tagging, triple tags
-description: Have you heard of machine tags? Unless you use Flickr actively, probably not. A machine tag, Flickr's name for a <a href="http://en.wikipedia.org/wiki/Machine_tag#Triple_tags">triple tag</a>, is a tag with meta information ie how it's related to other tags. What difference can that make? A world of a difference.
+description: Have you heard of machine tags? Unless you use Flickr actively, probably not. A machine tag, Flickr's name for a <a href="http://en.wikipedia.org/wiki/Machine_tag#Triple_tags">triple tag</a>, is a tag with meta information i.e. how it's related to other tags. What difference can that make? A world of a difference.
 tags: 
   - tag
 ---
