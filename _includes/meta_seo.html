@@ -3,9 +3,6 @@
 {% else %}
   {% assign keywords = 'Gabriel Horner, tags, machine tags, semantic tags, rails, ruby, github, tagging, outline, tree' %}
 {% endif %}
-{% capture description %}Tagaholic - {{page.title }} - Gabriel Horner's thoughts on tagging, ruby, rails and better knowledge management{% endcapture %}
-{% if page.description %}
-  {% assign description = page.description %}
-{% endif %}
+{% capture description %}{% if page.description %}{{page.description}}{% else %}Tagaholic - {{page.title }} - Gabriel Horner's thoughts on tagging, ruby, rails and better knowledge management {% endif %}{% endcapture %}
 <meta name="keywords" content="{{keywords | xml_escape| truncate: 160}}" />
-<meta name="description" content="{{description | strip_html | xml_escape| truncate: 160}}" />
+<meta name="description" content="{{description | strip_html | xml_escape| truncate: 200}}" />
