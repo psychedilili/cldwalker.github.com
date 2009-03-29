@@ -41,7 +41,13 @@ function machine_tag_search_posts(machine_tag, posts) {
   var rows = [];
   $.each(machine_tags, function(i,tag) {
     var mtag = machine_tag_fields(tag);
-    var tag_rows = [{tag: mtag.namespace, level:0}, {tag: mtag.predicate, level:1}, {tag: mtag.value, level:2}];
+    var tag_rows = [{tag: mtag.namespace,mtag: mtag, level:0}, {tag: mtag.predicate,mtag: mtag, level:1}, 
+      {tag: mtag.value, mtag: mtag,level:2}];
+    var tag_rows = $.grep(tag_rows, function(e) { 
+      return ! $(rows).any(function() { return this.tag == e.tag && this.level == e.level && this.mtag.namespace == e.mtag.namespace &&
+        (e.level == 2 ? this.mtag.predicate == e.mtag.predicate : true)
+        });
+    });
     var tagged_records = $.grep(posts, function(post, j) { return $.inArray(tag, post.tags) != -1});
     $.each(tagged_records, function(j,e) { tag_rows.push({level: 3, record: e}); });
     $.merge(rows, tag_rows);
@@ -59,18 +65,25 @@ function create_table(rows, options) {
   var result = "<table id='"+options.table_id+"'><caption>"+options.caption+"</caption>\
   <thead>\
     <tr>\
-      <th width='30'>Tag Hierarchy</th>\
+      <th width='30'>Tag Space</th>\
       <th>Post</th>\
+      <th><a href='javascript:void($(\"a .machine_tag_prefix\").toggle())'>Toggle: Machine Tags/Tags</a></th>\
     </tr>\
   </thead><tbody>" +
   $.map(rows, function(e,i) {
     return "<tr id='"+ e.id + "'" + (typeof e.parent_id == 'number' ? " class='child-of-"+e.parent_id+"'" : '' ) +
     "><td>" + (e.tag ? e.tag : '')+ "</td><td>"+ (e.record ? "<a href='"+e.record.url+"'>"+e.record.title+"</a>" : '') + 
-    "</td></tr>";
+    "</td><td>"+ (e.record ? create_tag_links(e.record.tags) : '') + "</td></tr>";
   }).join(" ") + "</tbody></table>";
   return result;
 }
 
+function create_tag_links(tags) {
+  return $.map(tags, function(f) { 
+    return "<a href=\"javascript:machine_tag_search('" + f + "')" + "\">" +  "<span style='padding:0px; display:none' \
+    class='machine_tag_prefix'>" + f.split('=')[0] + "=</span>" + f.split('=')[1] + "</a>"
+  }).join(', ');
+}
 function initial_machine_tag() {
   return location.href.match(/#([a-z:=*]+)$/);
 }

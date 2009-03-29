@@ -13,34 +13,6 @@ full_posts: 1
   <input value="All Posts" type="button" onclick="javascript:machine_tag_search('')"/>
 </form>
 <div id="result"></div>
-<table id="example">
-  <caption>All Posts</caption>
-  <thead>
-    <tr>
-      <th width="30">Tag Hierarchy</th>
-      <th>Post</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr id="node-1">
-      <td>ruby</td>
-      <td></td>
-    </tr>
-    <tr id="node-1-1" class="child-of-node-1">
-      <td>lib</td>
-      <td></td>
-    </tr>
-    <tr id="node-1-1-1" class="child-of-node-1-1">
-      <td>irb</td>
-      <td></td>
-    </tr>
-    <tr id="node-1-1-1-1" class="child-of-node-1-1-1">
-      <td></td>
-      <td><a href="/2005/10/08/irb-history-itches-eliminated.html">Irb History Itches Eliminated</a></td>
-    </tr>
-  </tbody>
-</table>
-
 <script src="/javascripts/jquery.enumerable.js"></script>
 <script src="/javascripts/machine_tags.js"></script>
 <script type="text/javascript" src="/javascripts/jquery.treeTable.js"></script>
@@ -48,9 +20,6 @@ full_posts: 1
 <link href="/stylesheets/treetable.css" rel="stylesheet" type="text/css" />
 <script type="text/javascript" charset="utf-8">
 $(function() {
-  $("#example").treeTable(
-    {initialState: "expanded"}
-  );
 });
 // $(function() {
 //   if (initial_machine_tag() != null) {
