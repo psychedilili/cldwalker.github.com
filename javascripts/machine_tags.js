@@ -57,6 +57,7 @@ function machine_tag_search_posts(machine_tag, posts) {
   var table = create_table(rows, {caption: (machine_tag == '' ? "All posts" : "Posts tagged with '"+ machine_tag +"'"),
     table_id: 'machine_tag_table'});
   $("#result").append(table);
+  $("a.machine_tag_search").click(function() { machine_tag_search($(this).text())});
   $("#machine_tag_table").treeTable({initialState: "expanded"});
   location.href = location.href.replace(/#([a-z:=*]+)?$/, '') + "#" + machine_tag;
 }
@@ -65,14 +66,14 @@ function create_table(rows, options) {
   var result = "<table id='"+options.table_id+"'><caption>"+options.caption+"</caption>\
   <thead>\
     <tr>\
-      <th width='30'>Tag Space</th>\
-      <th>Post</th>\
-      <th><a href='javascript:void($(\"a .machine_tag_prefix\").toggle())'>Toggle: Machine Tags/Tags</a></th>\
+      <th width='30'>Tag Space <a href='javascript:void($(\"tr[level=2]\").each(function(){$(this).toggleBranch()}))'>\
+      (Collapse/Expand)</a></th><th>Posts</th>\
+      <th>Post Tags <a href='javascript:void($(\"a .machine_tag_prefix\").toggle())'>(Toggle Machine Tags)</a></th>\
     </tr>\
   </thead><tbody>" +
   $.map(rows, function(e,i) {
-    return "<tr id='"+ e.id + "'" + (typeof e.parent_id == 'number' ? " class='child-of-"+e.parent_id+"'" : '' ) +
-    "><td>" + (e.tag ? e.tag : '')+ "</td><td>"+ (e.record ? "<a href='"+e.record.url+"'>"+e.record.title+"</a>" : '') + 
+    return "<tr id='"+ e.id + "'" + (typeof e.parent_id != 'undefined' ? " class='child-of-"+e.parent_id+"'" : '' ) +
+    "level='"+e.level+"'><td>" + (e.tag ? e.tag : '')+ "</td><td>"+ (e.record ? "<a href='"+e.record.url+"'>"+e.record.title+"</a>" : '') + 
     "</td><td>"+ (e.record ? create_tag_links(e.record.tags) : '') + "</td></tr>";
   }).join(" ") + "</tbody></table>";
   return result;
@@ -80,10 +81,11 @@ function create_table(rows, options) {
 
 function create_tag_links(tags) {
   return $.map(tags, function(f) { 
-    return "<a href=\"javascript:machine_tag_search('" + f + "')" + "\">" +  "<span style='padding:0px; display:none' \
+    return "<a class='machine_tag_search' href='#'><span style='padding:0px; display:none' \
     class='machine_tag_prefix'>" + f.split('=')[0] + "=</span>" + f.split('=')[1] + "</a>"
   }).join(', ');
 }
+
 function initial_machine_tag() {
   return location.href.match(/#([a-z:=*]+)$/);
 }
@@ -91,7 +93,7 @@ function initial_machine_tag() {
 // adds parents + ids
 function prep_table(array) {
   $(array).each(function(i,e) {
-    e.id = i;
+    e.id = "node-"+ i;
   });
   $(array).each(function(i,e) {
     if (parent = $.grep(array.slice(0, i).reverse(), 
@@ -115,7 +117,7 @@ function machine_tag_search_posts_old(machine_tag, posts) {
     var result = "<h3>" + 
     ((machine_tag == '') ? "All posts" : "Posts tagged with '"+ machine_tag +"'") + 
     "</h3>" + "<table class='post-list'><thead>" + "<tr><th>Posts</th><th></th><th style='text-align:right'><a href=\
-    'javascript:void($(\"a .machine_tag_prefix\").toggle())'>Toggle: Machine Tags/Tags</a></th></tr></thead><tbody>" +
+    'javascript:void($(\"a .machine_tag_prefix\").toggle())'>Toggle: Tags/Machine Tags</a></th></tr></thead><tbody>" +
     $.map(matching_posts, function(e,i) {
       return "<tr><th><a href='" +e.url+ "'>" +e.title+ "</a><th>\
       <td>"+ $.map(e.tags, function(f) { 

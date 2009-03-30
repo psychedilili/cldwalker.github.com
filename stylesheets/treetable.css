@@ -33,6 +33,7 @@ table thead tr th {
  * ------------------------------------------------------------------------- */
 table tbody tr td {
   cursor: default;
+  border-right: 1px solid #888;
   padding: .3em 1.5em;
 }
 
