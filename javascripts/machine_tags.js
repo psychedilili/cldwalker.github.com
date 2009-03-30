@@ -1,54 +1,21 @@
-function has_tags(tag, tag_array) {
-  return $(tag_array).any(function() {return this == tag});
-}
 
-function has_machine_tags(tag, tag_array) {
-  return $(tag_array).any(function() {return !! this.match(tag.replace(/\*/g, '.*')) });  
-}
 
-function machine_tag_search(machine_tag) {
-  $.getJSON("/posts.json", function(posts) {
-    machine_tag_search_posts(machine_tag, posts);
-  });
-}
+//demo functions
 
-function find_machine_tags(wildcard_machine_tag, posts) {
-  var machine_tags = [];
-  var machine_tag_query = wildcard_machine_tag.replace(/\*/g, '.*');
-  $.each(posts, function(i,e) {
-    $.each(e.tags, function(j,f) {
-      if ((!! f.match(machine_tag_query)) && ($.inArray(f, machine_tags) == -1)) {
-        machine_tags.push(f);
-      }
-    });
-    // var matching_tags = $.grep(e.tags, function(f) {
-    //   return !! f.match(machine_tag.replace(/\*/g, '.*')) 
-    // });
-    // $.merge(machine_tags, matching_tags);
-  });
-  machine_tags.sort();
-  return machine_tags;
-}
-
-function machine_tag_fields(machine_tag) {
-  var fields = machine_tag.split(/[:=]/);
-  return {namespace: fields[0], predicate: fields[1], value: fields[2]};
-}
-
-function machine_tag_search_posts(machine_tag, posts) {
+$.machine_tag_search_posts = function(machine_tag, posts) {
   $('#result').html('');
-  var machine_tags = find_machine_tags(machine_tag, posts);
+  var machine_tags = $.machineTagSearchRecordTags(machine_tag, posts);
   var rows = [];
   $.each(machine_tags, function(i,tag) {
-    var mtag = machine_tag_fields(tag);
-    var tag_rows = [{tag: mtag.namespace,mtag: mtag, level:0}, {tag: mtag.predicate,mtag: mtag, level:1}, 
-      {tag: mtag.value, mtag: mtag,level:2}];
-    var tag_rows = $.grep(tag_rows, function(e) { 
-      return ! $(rows).any(function() { return this.tag == e.tag && this.level == e.level && this.mtag.namespace == e.mtag.namespace &&
-        (e.level == 2 ? this.mtag.predicate == e.mtag.predicate : true)
-        });
-    });
+    var mtag = $.machine_tag_fields(tag);
     var tagged_records = $.grep(posts, function(post, j) { return $.inArray(tag, post.tags) != -1});
+    var tag_rows = [{tag: mtag.namespace,mtag: mtag, level:0}, {tag: mtag.predicate,mtag: mtag, level:1}, 
+      {tag: mtag.value, mtag: mtag,level:2, record_count: $(tagged_records).size()}];
+    var tag_rows = $.grep(tag_rows, function(e) { 
+      return ! $.machineTag.any(rows, function(f) { return f.tag == e.tag && f.level == e.level && f.mtag.namespace == e.mtag.namespace &&
+        (e.level == 2 ? f.mtag.predicate == e.mtag.predicate : true)
+      });
+    });
     $.each(tagged_records, function(j,e) { tag_rows.push({level: 3, record: e}); });
     $.merge(rows, tag_rows);
   });
@@ -57,7 +24,7 @@ function machine_tag_search_posts(machine_tag, posts) {
   var table = create_table(rows, {caption: (machine_tag == '' ? "All posts" : "Posts tagged with '"+ machine_tag +"'"),
     table_id: 'machine_tag_table'});
   $("#result").append(table);
-  $("a.machine_tag_search").click(function() { machine_tag_search($(this).text())});
+  $("a.machine_tag_search").click(function() { $.machineTagSearch($(this).text())});
   $("#machine_tag_table").treeTable({initialState: "expanded"});
   location.href = location.href.replace(/#([a-z:=*]+)?$/, '') + "#" + machine_tag;
 }
@@ -66,14 +33,15 @@ function create_table(rows, options) {
   var result = "<table id='"+options.table_id+"'><caption>"+options.caption+"</caption>\
   <thead>\
     <tr>\
-      <th width='30'>Tag Space <a href='javascript:void($(\"tr[level=2]\").each(function(){$(this).toggleBranch()}))'>\
+      <th>Tag Space <a href='javascript:void($(\"tr[level=2]\").each(function(){$(this).toggleBranch()}))'>\
       (Collapse/Expand)</a></th><th>Posts</th>\
       <th>Post Tags <a href='javascript:void($(\"a .machine_tag_prefix\").toggle())'>(Toggle Machine Tags)</a></th>\
     </tr>\
   </thead><tbody>" +
   $.map(rows, function(e,i) {
     return "<tr id='"+ e.id + "'" + (typeof e.parent_id != 'undefined' ? " class='child-of-"+e.parent_id+"'" : '' ) +
-    "level='"+e.level+"'><td>" + (e.tag ? e.tag : '')+ "</td><td>"+ (e.record ? "<a href='"+e.record.url+"'>"+e.record.title+"</a>" : '') + 
+    "level='"+e.level+"'><td>" + (e.tag ? e.tag : '')+ (e.record_count ? " ("+e.record_count+")" : '') +
+     "</td><td>"+ (e.record ? "<a href='"+e.record.url+"'>"+e.record.title+"</a>" : '') + 
     "</td><td>"+ (e.record ? create_tag_links(e.record.tags) : '') + "</td></tr>";
   }).join(" ") + "</tbody></table>";
   return result;
@@ -86,10 +54,6 @@ function create_tag_links(tags) {
   }).join(', ');
 }
 
-function initial_machine_tag() {
-  return location.href.match(/#([a-z:=*]+)$/);
-}
-
 // adds parents + ids
 function prep_table(array) {
   $(array).each(function(i,e) {
@@ -99,6 +63,19 @@ function prep_table(array) {
     if (parent = $.grep(array.slice(0, i).reverse(), 
       function(f) { return f.level < e.level})[0]) {
         e.parent_id = parent.id;
+    }
+  });
+  $(array).each(function(i,e) {
+    if (e.level < 2) {
+      var record_count_sum = 0;
+      var child_index = i + 1;
+      while(array[child_index] && e.level < array[child_index].level) {
+        if (array[child_index].record_count) {
+          record_count_sum += array[child_index].record_count;
+        }
+        child_index += 1;
+      }
+      if (record_count_sum > 0) { e.record_count = record_count_sum; }
     }
   });
   return;

@@ -7,22 +7,24 @@ full_posts: 1
 <a href='http://feeds2.feedburner.com/tagaholic' class='float-right'><img src='/images/subscribe.png' alt='Subscribe to XML Feed'/></a>
 
 <h2>Blog Post Search With Machine Tags</h2>
-<form action="javascript:machine_tag_search($('#machine_tag_query').val())">
+<form action="javascript:$.machineTagSearch($('#machine_tag_query').val())">
   <input type="text" name="machine_tag" id="machine_tag_query"/>
   <input value="Machine Tag Search" type="submit"/>
 </form>
 <p/>
 <div id="result"></div>
-<script src="/javascripts/jquery.enumerable.js"></script>
+<script src="/javascripts/jquery.machineTag.js"></script>
 <script src="/javascripts/machine_tags.js"></script>
 <script type="text/javascript" src="/javascripts/jquery.treeTable.js"></script>
 <link href="/stylesheets/jquery.treeTable.css" rel="stylesheet" type="text/css" />
 <link href="/stylesheets/treetable.css" rel="stylesheet" type="text/css" />
 <script type="text/javascript" charset="utf-8">
 $(function() {
-  if (initial_machine_tag() != null) {
-    machine_tag_search(initial_machine_tag().pop());
-  }
+  $.machineTagSearch.defaultOptions = {
+    jsonUrl: '/posts.json', 
+    callback: function(machine_tag, records) {$.machine_tag_search_posts(machine_tag, records)}
+  };
+  $.machineTagSearchLocation();
 });
 </script>
 
