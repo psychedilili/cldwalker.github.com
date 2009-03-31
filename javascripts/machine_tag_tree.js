@@ -1,7 +1,7 @@
 var displayMachineTagTreeOptions = {recordName: 'Records'};
 function displayMachineTagTree(wildcard_machine_tag, records, options) {
   var options = $.extend(displayMachineTagTreeOptions, options || {});
-  $('#result').html('');
+  $('#tag_tree').html('');
   var rows = $.createMachineTagTree(wildcard_machine_tag, records);
   $.temp = rows;
   if ($(rows).size() == 0) {
@@ -12,7 +12,7 @@ function displayMachineTagTree(wildcard_machine_tag, records, options) {
     var table_html = createTable(rows, $.extend(options, {caption: (wildcard_machine_tag == '' ? "All "+options.recordName : 
       options.recordName+" tagged with '"+ wildcard_machine_tag +"'"), table_id: 'machine_tag_table'}));
   }
-  $("#result").append(table_html);
+  $("#tag_tree").append(table_html);
   $("a.machine_tag_search").click(function() { $.machineTagSearch($(this).text());});
   $("a.machine_tag_href_search").click(function() { $.machineTagSearch(this.href.match(/#(.*?)$/).pop());});
   $("#machine_tag_table").treeTable({initialState: "expanded", indent:15});
@@ -35,7 +35,6 @@ function machineTagQuery(tree_node) {
     case 1: href = base_href + mtag.predicate + $.machineTag.value_delimiter + "*"; break;
     default: href = base_href+ mtag.predicate + $.machineTag.value_delimiter + mtag.value;
   }
-  // console.log(tree_node.tag + ": "+ href)
   return href;
 }
 

@@ -1,0 +1,14 @@
+<form action="javascript:void($.machineTagSearch($('#machine_tag_query').val()))">
+  <input type="text" name="machine_tag" id="machine_tag_query"/>
+  <input value="Machine Tag Search" type="submit"/>
+  <span id="machine_tag_search_spinner" class="spinner" style="display:none"> &nbsp;&nbsp;&nbsp;&nbsp;</span>
+</form>
+<p/>
+<script src="/javascripts/jquery.machineTag.js"></script>
+<script src="/javascripts/machine_tag_tree.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.treeTable.js"></script>
+<link href="/stylesheets/jquery.treeTable.css" rel="stylesheet" type="text/css" />
+<link href="/stylesheets/treetable.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" charset="utf-8">
+function toggleSpinner() { return $("#machine_tag_search_spinner").toggle();}
+</script>

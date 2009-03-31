@@ -7,23 +7,12 @@ full_posts: 1
 <a href='http://feeds2.feedburner.com/tagaholic' class='float-right'><img src='/images/subscribe.png' alt='Subscribe to XML Feed'/></a>
 
 <h2>Blog Post Search With Machine Tags</h2>
-<form action="javascript:void($.machineTagSearch($('#machine_tag_query').val()))">
-  <input type="text" name="machine_tag" id="machine_tag_query"/>
-  <input value="Machine Tag Search" type="submit"/>
-  <span id="machine_tag_search_spinner" class="spinner" style="display:none"> &nbsp;&nbsp;&nbsp;&nbsp;</span>
-</form>
-<p/>
-<div id="result"></div>
-<script src="/javascripts/jquery.machineTag.js"></script>
-<script src="/javascripts/machine_tag_tree.js"></script>
-<script type="text/javascript" src="/javascripts/jquery.treeTable.js"></script>
-<link href="/stylesheets/jquery.treeTable.css" rel="stylesheet" type="text/css" />
-<link href="/stylesheets/treetable.css" rel="stylesheet" type="text/css" />
+{% include tag_tree.html %}
+<div id="tag_tree"></div>
 <script type="text/javascript" charset="utf-8">
-function toggleSpinner() { return $("#machine_tag_search_spinner").toggle();}
 $(function() {
-  displayMachineTagTreeOptions = {recordName: 'Bookmarks'};
-  $.machineTagSearch.defaultOptions = {jsonUrl: '/feeds/bookmarks.json', displayCallback: displayMachineTagTree, 
+  displayMachineTagTreeOptions = {recordName: 'Posts'};
+  $.machineTagSearch.defaultOptions = {jsonUrl: '/feeds/posts.json', displayCallback: displayMachineTagTree, 
     beforeSearch: toggleSpinner, afterSearch: toggleSpinner}
   $.machineTagSearchLocation();
 });

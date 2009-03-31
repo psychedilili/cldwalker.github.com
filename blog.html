@@ -6,6 +6,19 @@ full_posts: 1
 
 <a href='http://feeds2.feedburner.com/tagaholic' class='float-right'><img src='/images/subscribe.png' alt='Subscribe to XML Feed'/></a>
 
+<h3>All Posts</h3>
+<table class='post-list'>
+  {% for post in site.posts %}
+  <tr>
+    <th><a href='{{ post.url }}'>{{ post.title }}</a></th>
+    <td>{% include tag_links.html%}</td>
+    <td>{{ post.date | date_to_string }}</td>
+    <td><a href='{{post.url}}#disqus_thread'>Comments</a></td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% comment %}
 {% for post in site.posts %}
   {% if forloop.index < page.full_posts %}
   <div class='post'>
@@ -14,19 +27,8 @@ full_posts: 1
     <div class='body'>{{post.content}}</div>
     <a href='{{post.url}}#disqus_thread'>View Comments</a>
   </div>
-  {% else %}
-    {% if forloop.index == page.full_posts %}
-    <h3>All Posts</h3>
-    <table class='post-list'>
-    {% endif %}
-    <tr>
-      <th><a href='{{ post.url }}'>{{ post.title }}</a></th>
-      <td>{% include tag_links.html%}</td>
-      <td>{{ post.date | date_to_string }}</td>
-      <td><a href='{{post.url}}#disqus_thread'>Comments</a></td>
-    </tr>
   {% endif %}
 {% endfor %}
-</table>
+{% endcomment %}
 <p/>
 <div style="font-size: 12px; color: #0E51A7">Yes, the dates on those last posts are correct. They were ported over from my old domain, chwhat.com</div>

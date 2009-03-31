@@ -1,0 +1,19 @@
+---
+layout: master
+title: Blog
+full_posts: 1
+---
+
+<a href='http://feeds2.feedburner.com/tagaholic' class='float-right'><img src='/images/subscribe.png' alt='Subscribe to XML Feed'/></a>
+
+<h2>Search My Bookmarks With Machine Tags</h2>
+{% include tag_tree.html %}
+<div id="tag_tree"></div>
+<script type="text/javascript" charset="utf-8">
+$(function() {
+  displayMachineTagTreeOptions = {recordName: 'Bookmarks'};
+  $.machineTagSearch.defaultOptions = {jsonUrl: '/feeds/bookmarks.json', displayCallback: displayMachineTagTree, 
+    beforeSearch: toggleSpinner, afterSearch: toggleSpinner}
+  $.machineTagSearchLocation();
+});
+</script>
