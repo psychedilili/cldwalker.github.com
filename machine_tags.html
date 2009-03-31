@@ -14,16 +14,13 @@ full_posts: 1
 <p/>
 <div id="result"></div>
 <script src="/javascripts/jquery.machineTag.js"></script>
-<script src="/javascripts/machine_tags.js"></script>
+<script src="/javascripts/machine_tag_tree.js"></script>
 <script type="text/javascript" src="/javascripts/jquery.treeTable.js"></script>
 <link href="/stylesheets/jquery.treeTable.css" rel="stylesheet" type="text/css" />
 <link href="/stylesheets/treetable.css" rel="stylesheet" type="text/css" />
 <script type="text/javascript" charset="utf-8">
 $(function() {
-  $.machineTagSearch.defaultOptions = {
-    jsonUrl: '/posts.json', 
-    callback: function(machine_tag, records) {$.machine_tag_search_posts(machine_tag, records)}
-  };
+  $.machineTagSearch.defaultOptions = {jsonUrl: '/posts.json', callback: displayMachineTagTree};
   $.machineTagSearchLocation();
 });
 </script>
