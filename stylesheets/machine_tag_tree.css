@@ -10,7 +10,7 @@ table {
 
 /* Caption
  * ------------------------------------------------------------------------- */
-table caption {
+table caption, .caption {
   font-size: 1.7em;
   font-weight: bold;
 }
@@ -52,10 +52,7 @@ table span {
   padding: .2em 0 .2em 1.5em;
 }
 
-table span.file {
-  background-image: url(../images/page_white_text.png);
-}
-
-table span.folder {
-  background-image: url(../images/folder.png);
+.spinner {
+  background: url(../images/spinner.gif) no-repeat 0 center;
+  vertical-align: middle; 
 }
