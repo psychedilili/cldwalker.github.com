@@ -13,7 +13,8 @@ function displayMachineTagTree(wildcard_machine_tag, records, options) {
       options.recordName+" tagged with '"+ wildcard_machine_tag +"'"), table_id: 'machine_tag_table'}));
   }
   $("#result").append(table_html);
-  $("a.machine_tag_search").click(function() { $.machineTagSearch($(this).text())});
+  $("a.machine_tag_search").click(function() { $.machineTagSearch($(this).text());});
+  $("a.machine_tag_href_search").click(function() { $.machineTagSearch(this.href.match(/#(.*?)$/).pop());});
   $("#machine_tag_table").treeTable({initialState: "expanded", indent:15});
 };
 
@@ -23,6 +24,19 @@ function singularize(string) {
 
 function truncate(string,length) {
   return (string.length > length)  ? string.slice(0, length - 3) + '...' : string;
+}
+
+function machineTagQuery(tree_node) {
+  var href = null;
+  var mtag = tree_node.mtag;
+  var base_href = tree_node.mtag.namespace+ $.machineTag.predicate_delimiter;
+  switch (tree_node.level) {
+    case 0: href = base_href + "*"; break;
+    case 1: href = base_href + mtag.predicate + $.machineTag.value_delimiter + "*"; break;
+    default: href = base_href+ mtag.predicate + $.machineTag.value_delimiter + mtag.value;
+  }
+  // console.log(tree_node.tag + ": "+ href)
+  return href;
 }
 
 function createTable(rows, options) {
@@ -35,10 +49,13 @@ function createTable(rows, options) {
     </tr>\
   </thead><tbody>" +
   $.map(rows, function(e,i) {
+    tag_cell = (e.tag ? e.tag : '')+ (e.record_count ? " ("+e.record_count+")" : '');
+    if (e.tag) tag_cell = "<a class='machine_tag_href_search' href='#" + machineTagQuery(e) + "'>"+ tag_cell + "</a>";
+    
     return "<tr id='"+ e.id + "'" + (typeof e.parent_id != 'undefined' ? " class='child-of-"+e.parent_id+"'" : '' ) +
-    "level='"+e.level+"'><td>" + (e.tag ? e.tag : '')+ (e.record_count ? " ("+e.record_count+")" : '') +
-     "</td><td>"+ (e.record ? "<a href='"+e.record.url+"'>"+truncate(e.record.title, 50)+"</a>" : '') + 
-    "</td><td>"+ (e.record ? createTagLinks(e.record.tags) : '') + "</td></tr>";
+      "level='"+e.level+"'><td>" + tag_cell +"</td><td>"+ 
+      (e.record ? "<a href='"+e.record.url+"'>"+truncate(e.record.title, 50)+"</a>" : '') + 
+      "</td><td>"+ (e.record ? createTagLinks(e.record.tags) : '') + "</td></tr>";
   }).join(" ") + "</tbody></table>";
   return result;
 };
