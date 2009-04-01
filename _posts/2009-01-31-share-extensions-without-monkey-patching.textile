@@ -4,7 +4,11 @@ title: Can We Share Our Extensions Without Monkey Patching?
 keywords: ruby, monkeypatch, monkey patch, extensions, activesupport, facets, stdlib, gem, share
 description: As Ruby programmers, I think we enjoy the ease and power of being able to extend any core Ruby class. But when releasing gems we often force monkeypatching. Why do this if we want everyone to use our code?
 tags:
-  - ruby
+  - gem:topic=monkeypatch
+  - gem:name=activesupport
+  - gem:tags=rails
+  - post:lang=ruby
+  - post:type=thoughts
 ---
 
 As Ruby programmers, I think we enjoy the ease and power of being able to extend any core Ruby class.  As our ruby-fu grows, we pick up some tricks to have Hash's and Struct's to do our bidding, monkeypatched or not.  So naturally we start collecting extensions. Sometimes they're cool enough to blog about, sometimes you find out a week later that "Ruby's stdlib":http://www.ruby-doc.org/stdlib/ or "activesupport":http://as.rubyonrails.com/ already does it better.  Eventually collecting enough of them, you decide to "gem":http://rubyforge.org/ or "github":http://github.com them because you want to share what you've learned. You want others to use it. Heck, maybe even get feedback on them. So when releasing them, why do we force monkeypatching?

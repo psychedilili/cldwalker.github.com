@@ -4,9 +4,13 @@ title: Hirb - Irb On The Good Stuff
 keywords: irb, rails, ruby, custom views, script/console, activerecord, tables, table views, hirb
 description: Irb is a great place for interacting with Ruby. Unfortunately, even with the colorful help of <a href="http://pablotron.org/software/wirble/">wirble</a>, it's not so great for visualizing the output of those interactions. Hirb aims to change that.
 tags:
-  - rails
-  - ruby
-  - irb
+  - gem:name=hirb
+  - lib:name=irb
+  - gem:name=activerecord
+  - gem:tags=rails
+  - gem:topic=table
+  - post:lang=ruby
+  - post:type=tutorial
 ---
 {{ page.description}}
 

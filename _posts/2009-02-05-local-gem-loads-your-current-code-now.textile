@@ -4,8 +4,9 @@ title: Local Gem Loads Your Current Code
 keywords: ruby gem, local_gem, ruby, require, load, load_path, edge
 description: The other day while actively <a href="http://github.com/cldwalker/core/tree/master">developing a gem</a>, I got tired of rake reinstalling it to test its effect in irb with some other gems. I wanted to use the edge version of my gem, version <b>now</b>.
 tags:
-  - ruby
-  - gem
+  - gem:name=local_gem
+  - post:lang=ruby
+  - post:type=tutorial
 ---
 {{page.description}}
 

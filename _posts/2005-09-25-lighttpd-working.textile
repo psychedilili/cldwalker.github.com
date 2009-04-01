@@ -3,8 +3,9 @@ layout: post
 title: Lighttpd Working!
 keywords: lighttpd, rails, typo, fcgi
 tags:
-  - rails
-  - lighttpd
+  - post:tags=rails
+  - post:tags=lighttpd
+  - post:type=tutorial
 ---
 
 Yay! I got typo working with lighttpd and fcgi. Here’s what I did in my server environment :

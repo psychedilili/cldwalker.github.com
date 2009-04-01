@@ -4,8 +4,12 @@ title: Quicker Options For Irb Methods
 keywords: irb, console, ruby, thor, tag, options, parse, alias
 description: Although irb does come with decent auto completion, I often prefer aliasing methods. To some degree I've come up with <a href="http://github.com/cldwalker/alias">a decent solution</a> to managing method aliases but what do you do when you want to alias a method's options?
 tags:
-  - ruby
-  - irb
+  - gem:name=thor
+  - lib:name=irb
+  - post:type=tutorial
+  - gem:topic=parse
+  - gem:topic=options
+  - post:lang=ruby
 ---
 {{page.description}}
 

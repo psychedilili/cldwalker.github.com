@@ -4,7 +4,8 @@ title: Goodbye Blogger, Hello Github Pages
 time: 5:05pm
 keywords: github, blogger, cname, jekyll, liquid, blogging, github pages
 tags:
-  - github
+  - post:tags=github
+  - post:type=thoughts
 ---
 
 Less than a month ago, Github "announced cname support for github pages":http://github.com/blog/315-cname-support-for-github-pages. I thought it was pretty cool but when I read it was for only paying accounts I thought __I'll stick to my free Blogger domain redirection thank you very much.__ And how wrong I was.

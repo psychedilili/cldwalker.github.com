@@ -3,8 +3,9 @@ layout: post
 title: Irb History Itches Eliminated
 keywords: irb, history, readline, readline history, irbrc, config
 tags:
-  - ruby
-  - irb
+  - lib:name=irb
+  - post:type=snippet
+  - post:lang=ruby
 ---
 
 When I read programming articles, I like to find the final source code so I don’t copy and paste several times. I’m laaaayzy like that. So for this little irb bit, you can find the relevant irb code "here":http://github.com/cldwalker/irbfiles/blob/master/.irb/history_methods.rb.
