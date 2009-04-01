@@ -56,3 +56,7 @@ table span {
   background: url(../images/spinner.gif) no-repeat 0 center;
   vertical-align: middle; 
 }
+
+.record_tags_column {
+  max-width:200px;
+}

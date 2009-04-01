@@ -58,7 +58,8 @@ function createTable(rows, options) {
     return "<tr id='"+ e.id + "'" + (typeof e.parent_id != 'undefined' ? " class='child-of-"+e.parent_id+"'" : '' ) +
       "level='"+e.level+"'><td>" + tag_cell +"</td><td>"+ 
       (e.record ? "<a href='"+e.record.url+"'>"+truncate(e.record.title, 50)+"</a>" : '') + 
-      "</td><td>"+ (e.record ? createTagLinks(e.record.tags) : '') + "</td>" + comments_column +"</tr>";
+      "</td><td>"+ (e.record ? "<div class='record_tags_column'>"+createTagLinks(e.record.tags)+"</div>" : '') + 
+      "</td>" + comments_column +"</tr>";
   }).join(" ") + "</tbody></table>";
   return result;
 };

@@ -10,17 +10,17 @@ title: Blog
 <input value="All Posts" type="button" onclick="javascript:$('#tag_tree').html('');$('#all_posts').show()" />
 <div id="tag_tree"></div>
 
-  <script type="text/javascript" charset="utf-8">
-  $(function() {
-    displayMachineTagTreeOptions = {recordName: 'Posts'};
-    $.machineTagSearch.defaultOptions = {
-      jsonUrl: '/feeds/posts.json', beforeSearch: toggleSpinner, afterSearch: toggleSpinner,
-      displayCallback: function(wildcard_machine_tag, records, options) {
-        displayMachineTagTree(wildcard_machine_tag, records, options); $('#all_posts').hide();}
-    };
-    $.machineTagSearchLocation();
-  });
-  </script>
+<script type="text/javascript" charset="utf-8">
+$(function() {
+  displayMachineTagTreeOptions = {recordName: 'Posts'};
+  $.machineTagSearch.defaultOptions = {
+    jsonUrl: '/feeds/posts.json', beforeSearch: toggleSpinner, afterSearch: toggleSpinner,
+    displayCallback: function(wildcard_machine_tag, records, options) {
+      displayMachineTagTree(wildcard_machine_tag, records, options); $('#all_posts').hide();}
+  };
+  $.machineTagSearchLocation();
+});
+</script>
   
 <div id="all_posts">
 <table>
@@ -36,7 +36,13 @@ title: Blog
   <tbody>
   {% for post in site.posts %}
   <tr>
-    <td><a href='{{ post.url }}'>{{ post.title }}</a></td>
+    <td>
+      <a class='float-right' href='javascript:void($("#description_{{forloop.index}}").toggle())'>Description</a>
+      <a href='{{ post.url }}'>{{ post.title }}</a>
+      <div id="description_{{forloop.index}}" class='table_post_description'>
+        {% if post.description %}{{post.description}}{% else %}No description.{% endif %}
+      </div>
+    </td>
     <td>{% include tag_links.html%}</td>
     <td>{{ post.date | date_to_string }}</td>
     <td><a href='{{post.url}}#disqus_thread'>Comments</a></td>

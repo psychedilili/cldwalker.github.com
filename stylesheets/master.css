@@ -330,6 +330,12 @@ div.related {
   font-style:italic;
 }
 
+.table_post_description {
+  display: none;
+  padding-top:15px;
+  max-width:340px;
+}
+
 .float-left { float: left; }
 .float-right { float: right; }
 
