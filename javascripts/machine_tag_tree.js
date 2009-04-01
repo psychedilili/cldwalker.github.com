@@ -44,17 +44,21 @@ function createTable(rows, options) {
     <tr>\
       <th width='140'>Machine Tags <a href='javascript:void($(\"tr[level=2]\").each(function(){$(this).toggleBranch()}))'>\
       (Collapse/Expand)</a></th><th>"+ options.recordName +"</th><th>"+ singularize(options.recordName) +
-      " Tags <a href='javascript:void($(\"a .machine_tag_prefix\").toggle())'>(Toggle Machine Tags)</a></th>\
-    </tr>\
+      " Tags <a href='javascript:void($(\"a .machine_tag_prefix\").toggle())'>(Toggle Machine Tags)</a></th>" +
+      (options.comments_column ? '<th width="90">Comments</th>' : '') +
+    "</tr>\
   </thead><tbody>" +
   $.map(rows, function(e,i) {
     tag_cell = (e.tag ? e.tag : '')+ (e.record_count ? " ("+e.record_count+")" : '');
     if (e.tag) tag_cell = "<a class='machine_tag_href_search' href='#" + machineTagQuery(e) + "'>"+ tag_cell + "</a>";
+    comments_column = (options.comments_column ?
+      (e.record ? "<td><a href='" + e.record.url+ "#disqus_thread'>Comments</a></td>" : "<td></td>")
+      : '');
     
     return "<tr id='"+ e.id + "'" + (typeof e.parent_id != 'undefined' ? " class='child-of-"+e.parent_id+"'" : '' ) +
       "level='"+e.level+"'><td>" + tag_cell +"</td><td>"+ 
       (e.record ? "<a href='"+e.record.url+"'>"+truncate(e.record.title, 50)+"</a>" : '') + 
-      "</td><td>"+ (e.record ? createTagLinks(e.record.tags) : '') + "</td></tr>";
+      "</td><td>"+ (e.record ? createTagLinks(e.record.tags) : '') + "</td>" + comments_column +"</tr>";
   }).join(" ") + "</tbody></table>";
   return result;
 };

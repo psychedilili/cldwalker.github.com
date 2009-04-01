@@ -1,22 +1,50 @@
 ---
 layout: master
 title: Blog
-full_posts: 1
 ---
 
 <a href='http://feeds2.feedburner.com/tagaholic' class='float-right'><img src='/images/subscribe.png' alt='Subscribe to XML Feed'/></a>
 
-<h3>All Posts</h3>
-<table class='post-list'>
+<h2>Blog Post Search With <a href="/2009/03/26/what-are-machine-tags.html">Machine Tags</a></h2>
+{% include tag_tree.html %}
+<input value="All Posts" type="button" onclick="javascript:$('#tag_tree').html('');$('#all_posts').show()" />
+<div id="tag_tree"></div>
+
+  <script type="text/javascript" charset="utf-8">
+  $(function() {
+    displayMachineTagTreeOptions = {recordName: 'Posts'};
+    $.machineTagSearch.defaultOptions = {
+      jsonUrl: '/feeds/posts.json', beforeSearch: toggleSpinner, afterSearch: toggleSpinner,
+      displayCallback: function(wildcard_machine_tag, records, options) {
+        displayMachineTagTree(wildcard_machine_tag, records, options); $('#all_posts').hide();}
+    };
+    $.machineTagSearchLocation();
+  });
+  </script>
+  
+<div id="all_posts">
+<table>
+  <caption>All Posts</caption>
+  <thead>
+    <tr>
+      <th>Posts</th>
+      <th>Tags</th>
+      <th>Date</th>
+      <th width='90'>Comments</th>
+    </tr>
+  </thead>
+  <tbody>
   {% for post in site.posts %}
   <tr>
-    <th><a href='{{ post.url }}'>{{ post.title }}</a></th>
+    <td><a href='{{ post.url }}'>{{ post.title }}</a></td>
     <td>{% include tag_links.html%}</td>
     <td>{{ post.date | date_to_string }}</td>
     <td><a href='{{post.url}}#disqus_thread'>Comments</a></td>
   </tr>
   {% endfor %}
+  </tbody>
 </table>
+</div>
 
 {% comment %}
 {% for post in site.posts %}
