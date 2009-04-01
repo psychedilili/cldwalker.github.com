@@ -51,12 +51,3 @@ table span {
   background-repeat: no-repeat;
   padding: .2em 0 .2em 1.5em;
 }
-
-.spinner {
-  background: url(../images/spinner.gif) no-repeat 0 center;
-  vertical-align: middle; 
-}
-
-.record_tags_column {
-  max-width:200px;
-}

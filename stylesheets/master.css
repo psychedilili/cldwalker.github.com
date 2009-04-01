@@ -323,11 +323,26 @@ div.related {
   vertical-align: top;
 }
 
+.float-left { float: left; }
+.float-right { float: right; }
+
+a img { border: 0; }
 #machine_tag_tree ul {
   list-style-type:disc
 }
+
+/* blog tag_tree */
 #tree_description {
   font-style:italic;
+}
+
+.spinner {
+  background: url(../images/spinner.gif) no-repeat 0 center;
+  vertical-align: middle; 
+}
+
+.record_tags_column {
+  max-width:200px;
 }
 
 .table_post_description {
@@ -335,8 +350,3 @@ div.related {
   padding-top:15px;
   max-width:340px;
 }
-
-.float-left { float: left; }
-.float-right { float: right; }
-
-a img { border: 0; }

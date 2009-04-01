@@ -1,3 +1,30 @@
+// Creates an array of tree node objects to display the results of a machine tag search.
+// Nodes are either tag or record nodes. Tag nodes represent different parts of a machine tag (namespace, predicate, value).
+// Each tree node can have the following attributes:
+//  * level (all nodes): Indicates level in a tree. A top level has a value of 0.
+//  * tag (tag node): Indicates a tag fields' value.
+//  * mtag (tag node): A tag's machine tag.
+//  * record_count (tag node): Record count under a tag. Only set for a value tag node.
+//  * record (record node): Reference to record.
+$.createMachineTagTree = function(wildcard_machine_tag, records) {
+  var machine_tags = $.machineTagSearchRecordTags(wildcard_machine_tag, records);
+  var rows = [];
+  $.each(machine_tags, function(i,tag) {
+    var mtag = $.machineTag(tag);
+    var tagged_records = $.grep(records, function(post, j) { return $.inArray(tag, post.tags) != -1});
+    var tag_rows = [{tag: mtag.namespace,mtag: mtag, level:0}, {tag: mtag.predicate,mtag: mtag, level:1}, 
+      {tag: mtag.value, mtag: mtag,level:2, record_count: $(tagged_records).size()}];
+    var tag_rows = $.grep(tag_rows, function(e) { 
+      return ! $.machineTag.any(rows, function(f) { return f.tag == e.tag && f.level == e.level && f.mtag.namespace == e.mtag.namespace &&
+        (e.level == 2 ? f.mtag.predicate == e.mtag.predicate : true)
+      });
+    });
+    $.each(tagged_records, function(j,e) { tag_rows.push({level: 3, record: e}); });
+    $.merge(rows, tag_rows);
+  });
+  return rows;
+};
+
 var displayMachineTagTreeOptions = {recordName: 'Records'};
 function displayMachineTagTree(wildcard_machine_tag, records, options) {
   var options = $.extend(displayMachineTagTreeOptions, options || {});
@@ -13,6 +40,7 @@ function displayMachineTagTree(wildcard_machine_tag, records, options) {
       options.recordName+" tagged with '"+ wildcard_machine_tag +"'"), table_id: 'machine_tag_table'}));
   }
   $("#tag_tree").append(table_html);
+  $("a.machine_tag_search").hideMachineTags();
   $("a.machine_tag_search").click(function() { $.machineTagSearch($(this).text());});
   $("a.machine_tag_href_search").click(function() { $.machineTagSearch(this.href.match(/#(.*?)$/).pop());});
   $("#machine_tag_table").treeTable({initialState: "expanded", indent:15});
@@ -44,7 +72,7 @@ function createTable(rows, options) {
     <tr>\
       <th width='140'>Machine Tags <a href='javascript:void($(\"tr[level=2]\").each(function(){$(this).toggleBranch()}))'>\
       (Collapse/Expand)</a></th><th>"+ options.recordName +"</th><th>"+ singularize(options.recordName) +
-      " Tags <a href='javascript:void($(\"a .machine_tag_prefix\").toggle())'>(Toggle Machine Tags)</a></th>" +
+      " Tags <a href='javascript:void($.toggleHiddenMachineTags())'>(Toggle Machine Tags)</a></th>" +
       (options.comments_column ? '<th width="90">Comments</th>' : '') +
     "</tr>\
   </thead><tbody>" +
@@ -66,10 +94,7 @@ function createTable(rows, options) {
 
 function createTagLinks(tags) {
   return $.map(tags, function(f) {
-    var mtag = $.machineTag(f);
-    return "<a class='machine_tag_search' href='#'><span style='padding:0px; display:none' \
-    class='machine_tag_prefix'>" + mtag.namespace +$.machineTag.predicate_delimiter +mtag.predicate +
-    $.machineTag.value_delimiter + "</span>" + mtag.value + "</a>"
+    return "<a class='machine_tag_search' href='#'>" + f + "</a>";
   }).join(', ');
 };
 

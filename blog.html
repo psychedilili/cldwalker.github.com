@@ -12,6 +12,8 @@ title: Blog
 
 <script type="text/javascript" charset="utf-8">
 $(function() {
+  $("a.machine_tag_search").hideMachineTags();
+  $("a.machine_tag_search").click(function() { $.machineTagSearch($(this).text());});  
   displayMachineTagTreeOptions = {recordName: 'Posts'};
   $.machineTagSearch.defaultOptions = {
     jsonUrl: '/feeds/posts.json', beforeSearch: toggleSpinner, afterSearch: toggleSpinner,
