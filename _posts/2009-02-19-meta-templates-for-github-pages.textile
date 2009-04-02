@@ -25,14 +25,14 @@ The first was a no-brainer, "thor":http://github.com/wycats/thor/tree/master. Wi
  bash> cd _meta
  
  # Create tag pages ruby and rails locally
- bash> thor jekyll:tag_pages ruby rails --verbose --local
- Created file: _site/tag/ruby.html
- Created file: _site/tag/rails.html
+ bash> thor jekyll:tag_xml_pages ruby rails --verbose --local
+ Created file: _site/tag/ruby.xml
+ Created file: _site/tag/rails.xml
  
  # Creates them in jekyll root
- bash> thor jekyll:tag_pages ruby rails --verbose
- Created file: cldwalker.github.com/tag/ruby.html
- Created file: cldwalker.github.com/tag/rails.html
+ bash> thor jekyll:tag_xml_pages ruby rails --verbose
+ Created file: cldwalker.github.com/tag/ruby.xml
+ Created file: cldwalker.github.com/tag/rails.xml
 </pre>
 </notextile>
 

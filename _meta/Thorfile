@@ -11,14 +11,6 @@ class Jekyll < Thor
     super
   end
   
-  desc "tag_pages TAG1 TAG2 ...", "Creates tag pages- defaults to all tags"
-  def tag_pages(*tags)
-    tags = all_tags if tags.empty?
-    tags.each {|e|
-      create_tag_page(e, 'tag/tag.html')
-    }
-  end
-  
   desc "tag_xml_pages TAG1 TAG2 ...", "Creates tag xml pages"
   def tag_xml_pages(*tags)
     tags.each {|e|

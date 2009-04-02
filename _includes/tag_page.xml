@@ -12,7 +12,8 @@
  </author>
  
   {% for post in site.posts %}
-    {% if post.tags contains page.tag %}
+    {% for tag in post.tags %}
+    {% if tag contains page.tag %}
  <entry>
    <title>{{ post.title }}</title>
    <link href="http://tagaholic.me{{ post.url }}"/>
@@ -21,6 +22,7 @@
    <content type="html">{{ post.content | xml_escape }}</content>
  </entry>
     {% endif %}
+    {% endfor %}
  {% endfor %}
  
 </feed>
