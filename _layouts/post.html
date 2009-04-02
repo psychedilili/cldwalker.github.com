@@ -8,9 +8,12 @@ layout: master
   <span class='date'>at {{page.time}}</span>
   {% endif %}
   {% if page.tags %}
-  <span class='tags'>Tagged with
-  {% assign post = page %}
-  {% include tag_links.html %}
+  <span class='tags'> Tagged With
+  <a class='machine_tag_toggle collapsed' href="javascript:toggleMachineTags()">
+    &nbsp;&nbsp;&nbsp;
+  </a>
+  &nbsp;
+  {% assign post = page %}{% include tag_links.html %}
   </span>
   {% endif %}
   <h1><a href='{{page.url}}'>{{page.title}}</a></h1>
@@ -18,6 +21,17 @@ layout: master
 </div>
 <script type="text/javascript" charset="utf-8">
 $("a.machine_tag_search").hideMachineTags();
+function toggleMachineTags() {
+  var machine_tag_prefixes = $("span.machine_tag_prefix");
+  if (machine_tag_prefixes[0].style.display == 'none') {
+    $(machine_tag_prefixes).show();
+    $("a.machine_tag_toggle").removeClass("collapsed").addClass("expanded");
+  }
+  else {
+    $(machine_tag_prefixes).hide();
+    $("a.machine_tag_toggle").removeClass("expanded").addClass("collapsed");
+  }
+};
 </script>
 
 {% comment %}

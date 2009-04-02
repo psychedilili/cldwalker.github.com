@@ -72,7 +72,7 @@ function createTable(rows, options) {
     <tr>\
       <th width='140'>Machine Tags <a href='javascript:void($(\"tr[level=2]\").each(function(){$(this).toggleBranch()}))'>\
       (Collapse/Expand)</a></th><th>"+ options.recordName +"</th><th>"+ singularize(options.recordName) +
-      " Tags <a href='javascript:void($.toggleHiddenMachineTags())'>(Toggle Machine Tags)</a></th>" +
+      " Tags / <a href='javascript:void($.toggleHiddenMachineTags())'>Machine Tags</a></th>" +
       (options.comments_column ? '<th width="90">Comments</th>' : '') +
     "</tr>\
   </thead><tbody>" +

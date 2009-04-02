@@ -30,7 +30,7 @@ $(function() {
   <thead>
     <tr>
       <th>Posts</th>
-      <th>Tags</th>
+      <th>Tags / <a href='javascript:void($.toggleHiddenMachineTags())'>Machine Tags</a></th>
       <th>Date</th>
       <th width='90'>Comments</th>
     </tr>
@@ -45,7 +45,7 @@ $(function() {
         {% if post.description %}{{post.description}}{% else %}No description.{% endif %}
       </div>
     </td>
-    <td>{% include tag_links.html%}</td>
+    <td><div class='record_tags_column'>{% include tag_links.html%}</div></td>
     <td>{{ post.date | date_to_string }}</td>
     <td><a href='{{post.url}}#disqus_thread'>Comments</a></td>
   </tr>

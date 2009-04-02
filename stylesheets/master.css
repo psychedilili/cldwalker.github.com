@@ -93,23 +93,20 @@ a:visited {
 
 span.date {
   background: #6997D3;
-  display: block;
-  padding: 0.4em 0.3em 0.3em;
+  padding: 0.2em;
   font-weight: bold;
   color: white;
   border-bottom: 3px solid #0E51A7;
-  float: left;
 }
 
 span.tags {
   background: #6997D3;
-  display: block;
-  padding: 0.4em 0.3em 0.3em;
+  padding: 0.2em 0.3em;
   margin-left: 0.8em;
   font-weight: bold;
   color: white;
   border-bottom: 3px solid #0E51A7;
-  float: left;
+  line-height: 220%;
 }
 
 div.post {
@@ -327,6 +324,19 @@ div.related {
 .float-right { float: right; }
 
 a img { border: 0; }
+
+a.machine_tag_toggle {
+  text-decoration: none;
+}
+
+a.machine_tag_toggle.collapsed {
+  background-image: url(../images/toggle-expand-light.png);
+}
+
+a.machine_tag_toggle.expanded {
+  background-image: url(../images/toggle-collapse-light.png);
+}
+
 #machine_tag_tree ul {
   list-style-type:disc
 }
@@ -342,11 +352,11 @@ a img { border: 0; }
 }
 
 .record_tags_column {
-  max-width:200px;
+  max-width: 200px;
 }
 
 .table_post_description {
   display: none;
-  padding-top:15px;
-  max-width:340px;
+  padding-top: 15px;
+  max-width: 340px;
 }
