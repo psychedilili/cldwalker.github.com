@@ -94,7 +94,7 @@ function createTable(rows, options) {
 
 function createTagLinks(tags) {
   return $.map(tags, function(f) {
-    return "<a class='machine_tag_search' href='#'>" + f + "</a>";
+    return "<a class='machine_tag_search' href='#"+ f+"'>" + f + "</a>";
   }).join(', ');
 };
 
