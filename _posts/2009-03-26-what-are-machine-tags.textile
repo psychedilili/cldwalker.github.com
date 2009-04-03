@@ -48,7 +48,7 @@ Another testament to this structure is "an astrophotography group":http://www.nm
 # The effort required to add structured metadata opens this up to __everyone__. A user doesn't have to be a developer who knows about rdf, owl or yet another metadata language. They __simply have to know how a colon and equal sign delimit their metadata__ and they are able to metadata away. Flickr is a great example of this. "Browse the 100+ machine tag namespaces":http://husk.org/code/machine-tag-browser.html that Flickr users have created.
 # Since machine tag syntax is simple and structured, it's easy for developers to make powerful queries into your structured metadata. Take for example flickr's "machine tag searches":http://code.flickr.com/blog/2008/07/18/wildcard-machine-tag-urls/:
 ## ["Flickr photos with an astro namespace: astro:*=":http://www.flickr.com/photos/tags/astro:*=]
-## ["Flickr photos with an astro namespace and name predicate: astro:name=":[http://www.flickr.com/photos/tags/astro:name=]
+## ["Flickr photos with an astro namespace and name predicate: astro:name=":http://www.flickr.com/photos/tags/astro:name=]
 ## ["Flickr photos with a name predicate: *:name=":http://www.flickr.com/photos/tags/*:name=]
 ## ["Flickr photos with a value bob: *:=bob":http://www.flickr.com/photos/tags/*:=bob]
 # __For programmers/developers__: If you look at the example machine tags as one unit, you basically have an astro object with three attributes. How much easier can it be to have users create data you can use? If a group of machine tags can represent an object, then aren't the aforementioned machine tag queries approximating SQL-like searches in the form of urls?
