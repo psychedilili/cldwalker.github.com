@@ -1,6 +1,7 @@
 (function($) {
   $.githubSortInit = function(github_user) {
     if(typeof github_user == 'undefined') {github_user = location.href.match(/([^\/]+)\/?$/)[1];}
+    displayBookmarkletStatus(github_user);
     $.getJSON("http://github.com/api/v1/json/"+github_user +"?callback=?", function(json) {
       loadRepoStats(json);
       $('li.project').each(function(i,e){ $(e).attr('id','repo-'+ i) });
@@ -25,6 +26,10 @@
   };
 
   //private methods
+  function displayBookmarkletStatus(github_user) {
+    $("ul.projects").before("<div id='bookmarklet_status' style='text-align:center;padding:2px;margin-top:20px;border:1px solid #D8D8D8;\
+      background-color: #F0F0F0;'>Loading sort for "+github_user+"...<img src='http://github.com/images/modules/ajax/indicator.gif'/></div>");
+  };
 function detect(array, callback) {
   return $.grep(array,callback)[0];
 };
@@ -47,19 +52,20 @@ function loadRepoStats(json) {
 function sourceSortPlugin() {
   var _s = document.createElement('script');
   _s.type='text/javascript';
-  _s.src='http://plugins.jquery.com/files/jquery.selso-1.0.1.js.txt';
+  // original source: 'http://plugins.jquery.com/files/jquery.selso-1.0.1.js.txt'
+  _s.src='http://localhost:4000/javascripts/jquery.selso.js';
   document.getElementsByTagName('head')[0].appendChild(_s);
 };
 
 function createSortBox() {
-  $('ul.projects').before("\
+  $('#bookmarklet_status').replaceWith("\
   <style type='text/css'>\
     .desc_sort {\
-      background: url(http://tablesorter.com/themes/blue/asc.gif) no-repeat 0 center;\
+      background: url(http://localhost:4000/images/arrow-down.gif) no-repeat 0 center;\
       padding: 0 10px;\
     }\
     .asc_sort {\
-      background: url(http://tablesorter.com/themes/blue/desc.gif) no-repeat 0 center;\
+      background: url(http://localhost:4000/images/arrow-up.gif) no-repeat 0 center;\
       padding: 0 10px;\
     }\
     .sort_label {\
@@ -91,7 +97,7 @@ function createSortBox() {
     | <span class='sort_label'>FORKS</span>\
     <a class='forks_sort asc_sort' style='display:none' href=\"javascript:$.githubRepoSort('forks', 'asc')\"></a>\
     <a class='forks_sort desc_sort' href=\"javascript:$.githubRepoSort('forks', 'desc')\"></a>\
-    </div>\
+  </div>\
     ");
 };
 })(jQuery);
