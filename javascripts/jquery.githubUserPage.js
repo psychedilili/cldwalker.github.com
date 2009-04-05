@@ -1,8 +1,15 @@
 (function($) {
-  $.githubSortInit = function(github_user) {
-    if(typeof github_user == 'undefined') {github_user = location.href.match(/([^\/]+)\/?$/)[1];}
-    displayBookmarkletStatus(github_user);
-    $.getJSON("http://github.com/api/v1/json/"+github_user +"?callback=?", function(json) {
+  var plugin_domain;
+
+  // These options are mainly useful while developing on the bookmarklet.
+  //Options:
+  // * user: github user i.e. defunkt, defaults to scraping it from the current url
+  // * domain: domain from which images and javascript dependencies are served, defaults to tagaholic.me
+  $.githubUserPage = function(options) {
+    options = $.extend({domain: 'tagaholic.me', user: location.href.match(/([^\/]+)\/?$/)[1]}, options || {})
+    plugin_domain = options.domain;
+    displayBookmarkletStatus(options.user);
+    $.getJSON("http://github.com/api/v1/json/"+options.user +"?callback=?", function(json) {
       loadRepoStats(json);
       $('li.project').each(function(i,e){ $(e).attr('id','repo-'+ i) });
       sourceSortPlugin();
@@ -28,7 +35,7 @@
   //private methods
   function displayBookmarkletStatus(github_user) {
     $("ul.projects").before("<div id='bookmarklet_status' style='text-align:center;padding:2px;margin-top:20px;border:1px solid #D8D8D8;\
-      background-color: #F0F0F0;'>Loading sort for "+github_user+"...<img src='http://github.com/images/modules/ajax/indicator.gif'/></div>");
+      background-color: #F0F0F0;'>Fetching data for "+github_user+"...<img src='http://github.com/images/modules/ajax/indicator.gif'/></div>");
   };
 
   function detect(array, callback) {
@@ -54,7 +61,7 @@
     var _s = document.createElement('script');
     _s.type='text/javascript';
     // original source: 'http://plugins.jquery.com/files/jquery.selso-1.0.1.js.txt'
-    _s.src='http://tagaholic.me/javascripts/jquery.selso.js';
+    _s.src='http://'+ plugin_domain +'/javascripts/jquery.selso.js';
     document.getElementsByTagName('head')[0].appendChild(_s);
   };
 
@@ -62,11 +69,11 @@
     $('#bookmarklet_status').replaceWith("\
     <style type='text/css'>\
       .desc_sort {\
-        background: url(http://tagaholic.me/images/arrow-down.gif) no-repeat 0 center;\
+        background: url(http://"+plugin_domain+"/images/arrow-down.gif) no-repeat 0 center;\
         padding: 0 10px;\
       }\
       .asc_sort {\
-        background: url(http://tagaholic.me/images/arrow-up.gif) no-repeat 0 center;\
+        background: url(http://"+plugin_domain+"/images/arrow-up.gif) no-repeat 0 center;\
         padding: 0 10px;\
       }\
       .sort_label {\
