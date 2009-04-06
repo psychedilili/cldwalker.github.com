@@ -4,13 +4,15 @@
   // These options are mainly useful while developing on the bookmarklet.
   //Options:
   // * user: github user i.e. defunkt, defaults to scraping it from the current url
-  // * domain: domain from which images and javascript dependencies are served, defaults to tagaholic.me
+  // * domain: domain from which images and javascript dependencies are served, defaults to tagaholic.me, images
+  //   are assumed to be under /images and javascript files under /javascripts
   $.githubUserPage = function(options) {
     options = $.extend({domain: 'tagaholic.me', user: location.href.match(/([^\/]+)\/?$/)[1]}, options || {})
     plugin_domain = options.domain;
     displayBookmarkletStatus(options.user);
     $.getJSON("http://github.com/api/v1/json/"+options.user +"?callback=?", function(json) {
       loadRepoStats(json);
+      // Adding ids to the repo boxes because they are required by the sort plugin and repos don't have them.
       $('li.project').each(function(i,e){ $(e).attr('id','repo-'+ i) });
       sourceSortPlugin();
       createSortBox();
@@ -50,8 +52,8 @@
   function loadRepoStats(json) {
     $('div.title').each(function() {
       var repo_div = $(this);
-      var repo_obj = detect(json.user.repositories, function(e) { 
-        return e.url.match( new RegExp(repo_div.text()+ '$') ) 
+      var repo_obj = detect(json.user.repositories, function(e) {
+        return e.name == repo_div.text();
       });
       if (repo_obj) {addRepo(repo_div, repo_obj);}
     });
