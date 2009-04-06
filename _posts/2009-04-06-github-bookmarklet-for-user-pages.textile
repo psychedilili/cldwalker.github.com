@@ -3,7 +3,7 @@ layout: post
 title: Github Bookmarklet For User Pages
 time: 10:46am
 keywords: jQuery plugin, bookmarklet, github bookmarklet, sort repositories, github user page
-description: I have a confession to make. I use <a href="http://github.com">github</a> <b>all the time</b>. In order to feed the addiction, I decided to logically awesomeize github's user page. What ensued was a jQuery plugin/bookmarklet which enhances the github user page with repository sorting. And yes, my addiction has only got worse.
+description: I have a confession to make. I use <a href="http://github.com">github</a> <b>all the time</b>. In order to feed the addiction, I decided to logically awesomeize github's user page. What ensued was a jQuery plugin/bookmarklet which enhances the github user page with repository sorting. And yes, my addiction has only gotten worse.
 tags:
   - post:tags=github
   - post:type=tutorial

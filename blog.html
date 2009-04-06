@@ -8,10 +8,19 @@ title: Blog
 <h2>Blog Post Search With <a href="/2009/03/26/what-are-machine-tags.html">Machine Tags</a></h2>
 {% include tag_tree.html %}
 <input value="All Posts" type="button" onclick="javascript:$('#tag_tree').html('');$('#all_posts').show()" />
+<input value="Toggle Machine Tag Help" type="button" onclick="javascript:$('#machine_tag_help').toggle();void(0)" />
+<div style="display:none" id="machine_tag_help">
+<p>
+You can search these posts with a wildcard machine tag. For example, <a class='machine_tag_href_search' href="#post:*">post:*</a> returns all machine tags that have post as its namespace while <a class='machine_tag_href_search' href="#post:type=*">post:type=*</a> returns all machine tags that have post as its namespace and type as its predicate.  Search results are displayed as machine tag branches with each branch containing all posts that have that particular machine tag. A machine tag branch is organized by namespace, predicate and value. For example, the <a class='machine_tag_href_search' href='#post:lang=ruby'>post:lang=ruby</a> branch's ancestry is <code>post(namespace) > lang(predicate) > ruby(value)</code>.<br/>
+So why display posts with machine tag trees? Because I can you give an endless number of ways to view my blog posts. For starters: <a class='machine_tag_href_search' href="#post:lang=*">Blog posts by programming language</a>, <a class='machine_tag_href_search' href="#post:type=*">posts by post type</a>, <a class='machine_tag_href_search' href='#gem:name=*'>posts about specific ruby gems</a>, and <a class='machine_tag_href_search' href='#lib:name=*'>posts about specific core/standard ruby libraries</a>.
+</p>
+
+</div>
 <div id="tag_tree"></div>
 
 <script type="text/javascript" charset="utf-8">
 $(function() {
+  $("a.machine_tag_href_search").click(function() { $.machineTagSearch(this.href.match(/#(.*?)$/).pop());});
   $("a.machine_tag_search").hideMachineTags();
   $("a.machine_tag_search").click(function() { $.machineTagSearch($(this).text());});  
   displayMachineTagTreeOptions = {recordName: 'Posts'};
@@ -23,7 +32,7 @@ $(function() {
   $.machineTagSearchLocation();
 });
 </script>
-  
+
 <div id="all_posts">
 <table>
   <caption>All Posts</caption>
