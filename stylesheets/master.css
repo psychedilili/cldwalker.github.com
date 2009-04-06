@@ -238,7 +238,7 @@ div.related {
   margin-bottom: 15px;
 }
 
-h2.home_box_title, h2.delicious-banner {
+#content h2.home_box_title, h2.delicious-banner {
   background: #6997D3;
   padding: 0.3em 0.5em;
   border-bottom: 3px solid #0E51A7;
