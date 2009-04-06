@@ -51,11 +51,12 @@ Here's a quick explanation of how it works:
 
 h2. Gotta Go
 
-If you enjoyed this bookmarklet, you may also enjoy these bookmarklets:
+If you enjoyed this bookmarklet, you may also enjoy these bookmarklets/web commands:
 * "githubber":http://github.com/sandro/githubber/tree/master tests markdown on a readme.
 * "github-tagger":http://github.com/bumi/github-tagger/tree/master adds tagging ability to github.
 * "github-bookmarklet":http://github.com/dougal/github-bookmarklet/tree/master searches github.
 * "this queriac command":http://queri.ac/commands/ghthis searches the current project when you're browsing around in it. You'll need either firefox or have queriac setup to use it as is.
+* "another queriac command":http://queri.ac/commands/git provides a quick interface to github's search options. Requires queriac.
 
 If you have github bookmarklets/web commands you'd like to share, please share below.
 
