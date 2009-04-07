@@ -28,7 +28,7 @@ h2. Install
 
 So if you like the bookmarklet and want to use it again, here are some ways to install/reuse this bookmarklet:
 * You can drag the above bookmarklet link to your bookmarks toolbar. When you're on a github user page, click on it to start the bookmarklet.
-* If you're on firefox, you can use the "ubiquity extension":https://ubiquity.mozilla.com/ to create a command to execute the bookmarklet as a command from your address bar.
+* If you're on firefox, you can use the "ubiquity extension":https://ubiquity.mozilla.com/ to execute the bookmarklet as a command. *Update:* "Ubiquity command is here":http://gist.github.com/91353
 * For a browser-independent web command similar to ubiquity, I'd recommend "queriac":http://queri.ac. Since I use it often and am its primary developer, I'm slightly biased. Here's the "queriac command for this bookmarklet":http://queriac/commands/ghuser.
 * If you want the bookmarklet on all the time, you can make a greasemonkey script from this bookmarklet and put it up on "their script repository":http://userscripts.org/.
 
@@ -52,11 +52,11 @@ Here's a quick explanation of how it works:
 h2. Gotta Go
 
 If you enjoyed this bookmarklet, you may also enjoy these bookmarklets/web commands:
-* "githubber":http://github.com/sandro/githubber/tree/master tests markdown on a readme.
-* "github-tagger":http://github.com/bumi/github-tagger/tree/master adds tagging ability to github.
+* "githubber":http://github.com/sandro/githubber/tree/master is a bookmarklet that tests markdown on a readme.
+* "github-tagger":http://github.com/bumi/github-tagger/tree/master is a greasekmonkey script that adds tagging ability to github.
 * "github-bookmarklet":http://github.com/dougal/github-bookmarklet/tree/master searches github.
-* "this queriac command":http://queri.ac/commands/ghthis searches the current project when you're browsing around in it. You'll need either firefox or have queriac setup to use it as is.
-* "another queriac command":http://queri.ac/commands/git provides a quick interface to github's search options. Requires queriac.
+* "ghthis":http://queri.ac/commands/ghthis is a queriac bookmarklet that searches the current project when you're browsing around in it. You'll need either firefox or have queriac setup to use it as is.
+* "queriac search command":http://queri.ac/commands/git provides a quick interface to github's search options. Requires queriac.
 
 If you have github bookmarklets/web commands you'd like to share, please share below.
 
