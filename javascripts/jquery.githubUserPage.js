@@ -1,5 +1,6 @@
 (function($) {
   var plugin_domain;
+  var forked_repository_ids;
 
   // These options are mainly useful while developing on the bookmarklet.
   //Options:
@@ -13,10 +14,12 @@
     $.getJSON("http://github.com/api/v1/json/"+options.user +"?callback=?", function(json) {
       loadRepoStats(json);
       // Adding ids to the repo boxes because they are required by the sort plugin and repos don't have them.
+      // Also needed for toggling forked repos.
       $('li.project').each(function(i,e){ $(e).attr('id','repo-'+ i) });
       sourceSortPlugin();
       createSortBox();
       setupForkedToggle();
+      addRepoStats(json.user.repositories);
     });
   };
 
@@ -113,7 +116,6 @@
     ");
   };
 
-  var forked_repository_ids;
   function setupForkedToggle() {
     forked_repository_ids = $.grep($('li.project'), function(e) {return $(e).find('div.meta').text().match('Forked from')}).map(
       function(f) { return '#'+$(f).attr('id') });
@@ -122,5 +124,31 @@
       void(0);
     });
     $("#toggle_forked_repositories").html("Toggle "+$(forked_repository_ids).size()+ " Forked Repositories");
+  };
+
+  function sum(array) {
+    var total = 0;
+    $.each(array, function() { total += this});
+    return total;
+  };
+
+  function average(array) { return (sum(array) / $(array).size()).toFixed(1);}
+
+  function addRepoStats(repositories) {
+    var nonforked_repos = $.grep(repositories, function(e) { return !e.fork });
+    var forked_repos = $.grep(repositories, function(e) { return e.fork });
+    addStat("Non-Fork/Fork:", $(nonforked_repos).size()+" / "+$(forked_repos).size() );
+
+    var nonforked_watcher_average = average(nonforked_repos.map(function(e) {return e.watchers}));
+    var forked_watcher_average = average(forked_repos.map(function(e) {return e.watchers}));
+    addStat("Watcher Average:", nonforked_watcher_average+" / "+ forked_watcher_average );
+
+    var nonforked_fork_average = average(nonforked_repos.map(function(e) {return e.forks}));
+    var forked_fork_average = average(forked_repos.map(function(e) {return e.forks}));
+    addStat("Fork Average:", nonforked_fork_average+" / "+forked_fork_average );
+  };
+
+  function addStat(label, data) {
+    $('div.info').append("<div class='field'><label>"+label+"</label><div> "+data+" </div></div>");
   };
 })(jQuery);
