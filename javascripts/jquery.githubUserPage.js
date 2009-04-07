@@ -16,6 +16,7 @@
       $('li.project').each(function(i,e){ $(e).attr('id','repo-'+ i) });
       sourceSortPlugin();
       createSortBox();
+      setupForkedToggle();
     });
   };
 
@@ -50,7 +51,7 @@
   };
 
   function loadRepoStats(json) {
-    $('div.title').each(function() {
+    $('div.title', 'li.project').each(function() {
       var repo_div = $(this);
       var repo_obj = detect(json.user.repositories, function(e) {
         return e.name == repo_div.text();
@@ -106,8 +107,20 @@
       <a class='watchers_sort desc_sort' href=\"javascript:$.githubRepoSort('watchers', 'desc')\"></a>\
       | <span class='sort_label'>FORKS</span>\
       <a class='forks_sort asc_sort' style='display:none' href=\"javascript:$.githubRepoSort('forks', 'asc')\"></a>\
-      <a class='forks_sort desc_sort' href=\"javascript:$.githubRepoSort('forks', 'desc')\"></a>\
+      <a class='forks_sort desc_sort' href=\"javascript:$.githubRepoSort('forks', 'desc')\"></a>\<br/>\
+      <a id='toggle_forked_repositories'>Toggle Forked Repositories</a><br/>\
     </div>\
-      ");
+    ");
+  };
+
+  var forked_repository_ids;
+  function setupForkedToggle() {
+    forked_repository_ids = $.grep($('li.project'), function(e) {return $(e).find('div.meta').text().match('Forked from')}).map(
+      function(f) { return '#'+$(f).attr('id') });
+    $("#toggle_forked_repositories").click( function(){
+      $(forked_repository_ids.join(',')).toggle();
+      void(0);
+    });
+    $("#toggle_forked_repositories").html("Toggle "+$(forked_repository_ids).size()+ " Forked Repositories");
   };
 })(jQuery);
