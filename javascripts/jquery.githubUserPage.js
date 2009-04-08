@@ -36,6 +36,15 @@
       $('li.project').selso({orderBy:'span.forks_num', type:'num', direction:sort_direction});
       $("a.forks_sort").toggle();
     }
+    else if (field == 'date') {
+      $('li.project').selso({type: 'num', direction: sort_direction,
+        extract: function(obj) {
+          var date_time = $(obj).find('div.meta abbr').attr('title').match(/(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)/);
+          return Date.UTC(date_time[1], date_time[2], date_time[3], date_time[4], date_time[5], date_time[6]);
+        }
+      });
+      $("a.date_sort").toggle();
+    }
   };
 
   //private methods
@@ -101,7 +110,7 @@
       }\
     </style>\
     <div id='sort_links'>\
-      <span id='sort_links_label'>Sort Repositories:</span>\
+      <span id='sort_links_label'>SORT:</span>\
       <span class='sort_label'>NAME</span>\
       <a class='name_sort asc_sort' style='display:none' href=\"javascript:$.githubRepoSort('name', 'asc')\"></a>\
       <a class='name_sort desc_sort' href=\"javascript:$.githubRepoSort('name', 'desc')\"></a>\
@@ -110,7 +119,10 @@
       <a class='watchers_sort desc_sort' href=\"javascript:$.githubRepoSort('watchers', 'desc')\"></a>\
       | <span class='sort_label'>FORKS</span>\
       <a class='forks_sort asc_sort' style='display:none' href=\"javascript:$.githubRepoSort('forks', 'asc')\"></a>\
-      <a class='forks_sort desc_sort' href=\"javascript:$.githubRepoSort('forks', 'desc')\"></a>\<br/>\
+      <a class='forks_sort desc_sort' href=\"javascript:$.githubRepoSort('forks', 'desc')\"></a>\
+      | <span class='sort_label'>UPDATED</span>\
+      <a class='date_sort asc_sort' style='display:none' href=\"javascript:$.githubRepoSort('date', 'asc')\"></a>\
+      <a class='date_sort desc_sort' href=\"javascript:$.githubRepoSort('date', 'desc')\"></a><br/>\
       <a id='toggle_forked_repositories'>Toggle Forked Repositories</a><br/>\
     </div>\
     ");
