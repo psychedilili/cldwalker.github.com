@@ -18,11 +18,16 @@ Copy the bookmarklet:
 
     <a style="padding-left: 30px;font-size:150%" href='javascript:(function(){$.getScript("http://tagaholic.me/javascripts/jquery.githubUserPage.js",function(){$.githubUserPage()})})()'>Github User Page Bookmarklet</a>
 
-When you're on a github user page ("exemplar awesome dude":http://github.com/defunkt), paste the above bookmarklet in your address bar and hit @enter@. While you're waiting for it to fetch the user's data, you'll see a bookmarklet status box. Once it's loaded you should notice two major changes: a sort box above the first repository and the number of watchers and forks in their upper right hand corner of each repository. For defunkt's page, it'll look like this:
+When you're on a github user page ("exemplar awesome dude":http://github.com/defunkt), paste the above bookmarklet in your address bar and hit @enter@. While you're waiting for it to fetch the user's data, you'll see a bookmarklet status box. Once it's loaded you should notice three major changes: a sort box above the first repository, additional user stats and the number of watchers and forks in the upper right hand corner of each repository. For defunkt's page, it'll look like this:
 
 <img alt="bookmarklet example" src="/images/post-ghub_bookmarklet_example.gif"></img>
 
-With the sort box, you can now sort a user's repositories by name, fork count or watchers count in ascending or descending order!
+With the sort box, you can now sort a user's repositories by name, fork count, watchers count, or last updated date in ascending or descending order!
+
+*Update*: I've added some more features:
+* Sort by last updated date.
+* The visibility of forked repositories can be toggled with the toggle link.
+* Added additional user stats after 'Member Since'. These stats compare non-forked versus forked repositories. For the above snapshot in the watcher average stat, 48.2 refers to the average number of watchers for defunkt's non-forked repositories while 3.8 refers to the average number for his forked repositories. Fork Average refers to average number of forks.
 
 h2. Install
 
@@ -47,7 +52,8 @@ Here's a quick explanation of how it works:
 # Fetches the user's json data per "the github api":http://github.com/guides/the-github-api.
 # Iterates over the page's repositories, adding additional repo stats from the json object.
 # Load "the sort plugin":http://plugins.jquery.com/project/selso which we use to sort the repositories.
-# Replace the status box with a sort box that allows sorting on multiple repository fields.
+# Replace the status box with a box that allows sorting on multiple repository fields and toggling of forked repositories.
+# Calculate and display some additional user stats.
 
 h2. Gotta Go
 
