@@ -54,7 +54,12 @@
   };
 
   function detect(array, callback) {
-    return $.grep(array,callback)[0];
+    var first_match = false;
+    $.each(array, function() {
+      var val = callback.call(this, this);
+      if(val) { first_match = this; return false}
+    });
+    return first_match;
   };
 
   function addRepo(repo_div, json_repo) {
