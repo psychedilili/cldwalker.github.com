@@ -1,0 +1,97 @@
+---
+layout: post
+title: Building DRY Gems With Thor And Jeweler
+keywords: DRY gems, gem configuration, ruby gem management, thor bundle, thor jeweler tasks
+tags:
+  - post:lang=ruby
+  - post:type=tutorial
+  - gem:name=thor
+  - gem:name=jeweler
+description: Being <a href="http://en.wikipedia.org/wiki/Don%27t_repeat_yourself">DRY</a> is a concept I try to embrace as a programmer. Lately when creating new gems, I've noticed that I copy, paste and tweak the same boilerplate gemspecs/Rakefiles. Fed up with this non-DRY gem configuration, I came up with a gemspec config file solution. With this <a href="http://github.com/cldwalker/dotfiles/blob/master/.gems.yml">yaml config file</a> and some thor tasks, I'm able to generate gem specifications for any of my gems.
+---
+{{ page.description}}
+
+Before going any further, let me disclaim that while this post uses "thor":http://github.com/wycats/thor and "jeweler":http://github.com/technicalpickles/jeweler, they could be replaced with similar gems i.e sake for thor and any gem creator that takes @Gem::Specification@ objects for jeweler. Having said that, the idea of a gemspec config file is solely dependent on "my GemspecBuilder class":http://github.com/cldwalker/thor-tasks/blob/8901b806cbdacd30b6dcbf92ca2968de892c785d/jeweler.thor/gemspec_builder.rb. If there's interest from others I can package it up as gem.
+
+h2. Rant
+
+If you've been using jeweler like I have, you start each new gem by copying your boilerplate Rakefile which contains a special section for your jeweler config. Taken from the jeweler readme, a Rakefile can as easy as:
+
+{% highlight ruby %}
+  begin
+    require 'jeweler'
+    Jeweler::Tasks.new do |gemspec|
+      gemspec.name = "the-perfect-gem"
+      gemspec.summary = "TODO"
+      gemspec.email = "josh@technicalpickles.com"
+      gemspec.homepage = "http://github.com/technicalpickles/the-perfect-gem"
+      gemspec.description = "TODO"
+      gemspec.authors = ["Josh Nichols"]
+    end
+  rescue LoadError
+    puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
+  end
+{% endhighlight %}
+
+While this is easy, it's not DRY once you start copying and pasting Rakefiles across your gems. Sure, your name and email are unlikely to change. But what if you want to have other default gemspec attributes such as files, has_rdoc and extra_rdoc_files? And if you want to change some of your default attributes later? What if you'd like to reuse some of the information in your gem specifications to create a gem's web page? Do you feel yet that maybe you should've had a more DRY setup? So instead of having copy and paste configurations spread across my gems, I have __one__ "configuration file for them":http://github.com/cldwalker/dotfiles/blob/master/.gems.yml. Since this config file has "one section for common gemspec attributes":http://github.com/cldwalker/dotfiles/blob/b8bc31b4bd0844fcec9e71441eaed76e42f9529b/.gems.yml#L1-12, gemspec management becomes easy and DRY.
+
+h2. How It Works
+
+Using the gemspec config file and a given or detected gem name, "GemspecBuilder.build":http://github.com/cldwalker/thor-tasks/blob/8901b806cbdacd30b6dcbf92ca2968de892c785d/jeweler.thor/gemspec_builder.rb#L17 creates a @Gem::Specification@ object. "Jeweler's task class uses this object":http://github.com/cldwalker/thor-tasks/blob/8901b806cbdacd30b6dcbf92ca2968de892c785d/jeweler.thor/main.thor#L17 to create a @Jeweler@ object. To run a jeweler task, I invoke thor to delegate the correct task to the @Jeweler@ object. My thor tasks look like this:
+
+<notextile><pre class="console">
+  # cd into one of my gems
+  bash> cd hirb
+  
+  # equivalent to jeweler's rake version
+  bash> thor jeweler:version
+  Current version: 0.1.2
+  
+  # equivalent to jeweler's rake gemspec
+  bash> thor jeweler:gemspec
+  hirb.gemspec is valid.
+  Generated: hirb.gemspec
+  
+  # equivalent to jeweler's rake build
+  bash> thor jeweler:build
+  Successfully built RubyGem
+  Name: hirb
+  Version: 0.1.2
+  File: hirb-0.1.2.gem
+  
+  # equivalent to jeweler's rake version:bump:patch
+  bash> thor jeweler:bump patch
+  Current version: 0.1.2
+  Updated version: 0.1.3  
+</pre></notextile>
+
+If you aren't familiar with thor, you may be wondering why I didn't just stop with making the above Rakefile leaner:
+
+{% highlight ruby %}
+  begin
+    require 'jeweler'
+    require 'gemspec_builder' #if it were packaged as a gem
+    Jeweler::Tasks.new(GemspecBuilder.build)
+  rescue LoadError
+    puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
+  end
+{% endhighlight %}
+
+What thor provides that rake and sake can't provide is letting you write your tasks as Ruby. This is quite powerful when you want pass arguments and options to your tasks (and testing tasks and sharing task libraries, etc...). Also, thor like sake, allows you to install your ruby tasks to be invoked from anywhere. This allows me to use my jeweler tasks without putting __any__ jeweler (gem creator specific) tasks in my gem's Rakefile. I think this is a good thing since I leave potential forkers of my gem with a *choice* of what gem creator they want to use for recreating my gemspec. In the same vein, I forgot to mention that one gemspec config file gives you the painless *choice* of switching gem creators when the need arises.
+
+h2. Install
+
+If you're using jeweler as your gem creator, you can give this idea a try:
+
+# @sudo gem install thor@
+# @git clone git://github.com/cldwalker/thor-tasks.git@
+# @cd thor-tasks@
+# @thor install jeweler.thor@ 
+# Create a ~/.gems.yml. "GemspecBuilder":http://github.com/cldwalker/thor-tasks/blob/master/jeweler.thor/gemspec_builder.rb contains documentation about what the config file should look like. Use "mine as an example":http://github.com/cldwalker/dotfiles/blob/master/.gems.yml. 
+# Try adding one of your jeweler gemspecs to ~/.gems.yml. Should be copy and pasting for the most part.
+# @cd your_gem_path@
+# Execute your jeweler tasks as demonstrated above. @thor list jeweler@ to list your jeweler tasks.
+
+A few additional notes:
+* Currently, the thor jeweler tasks ship with "some internals of jeweler's tasks":http://github.com/cldwalker/thor-tasks/blob/8901b806cbdacd30b6dcbf92ca2968de892c785d/jeweler.thor/jeweler_common_tasks.rb. This hopefully is temporary until jeweler takes "my patch":http://github.com/cldwalker/jeweler/commit/eb893e32d5ec671815d1581838d4fcc89855824c or does something similar.
+* @GemspecBuilder@ and the thor-jeweler tasks are wrapped as "a thor bundle":http://github.com/cldwalker/thor-tasks/blob/8901b806cbdacd30b6dcbf92ca2968de892c785d/jeweler.thor. I thought I would mention it since little has been written about them since "their announcement":http://yehudakatz.com/2009/01/13/some-thor-news/.
