@@ -178,11 +178,10 @@ code {
   margin:1em 0;
   overflow:auto;
   padding:0.5em;
-  line-height:1.5em;
+  line-height:0.7em;
   background-color:#F8F8FF;
   border:1px solid #DEDEDE;
   color:#444444;
-  padding: 2px;
 }
 
 .mbleigh pre {
