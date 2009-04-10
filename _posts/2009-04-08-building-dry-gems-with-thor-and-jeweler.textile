@@ -95,3 +95,38 @@ If you're using jeweler as your gem creator, you can give this idea a try:
 A few additional notes:
 * Currently, the thor jeweler tasks ship with "some internals of jeweler's tasks":http://github.com/cldwalker/thor-tasks/blob/8901b806cbdacd30b6dcbf92ca2968de892c785d/jeweler.thor/jeweler_common_tasks.rb. This hopefully is temporary until jeweler takes "my patch":http://github.com/cldwalker/jeweler/commit/eb893e32d5ec671815d1581838d4fcc89855824c or does something similar.
 * @GemspecBuilder@ and the thor-jeweler tasks are wrapped as "a thor bundle":http://github.com/cldwalker/thor-tasks/blob/8901b806cbdacd30b6dcbf92ca2968de892c785d/jeweler.thor. I thought I would mention it since little has been written about them since "their announcement":http://yehudakatz.com/2009/01/13/some-thor-news/.
+
+*UPDATE*: While discussing this one gemspec config file idea, "technicalpickles":http://technicalpickles.com/ brought up a valid concern. If I only ship my gemspec and not the meta-gemspec (like in the first Rakefile above), it makes it harder for my contributors to regenerate my gemspec i.e. they have to edit it by hand. If you're familiar with gemspecs, you know the main attributes that are hard to regenerate are ones that list files. For those I agree it would be nice to give your potential contributers the file globs. My proposal is to ship an optional meta-gemspec yaml file which contains those precious file globs (unless Gem::Specification offers a globs attribute hash any time soon). You could then provide a rake task in your Rakefile as follows:
+
+{% highlight ruby %}
+desc "Update gemspec from existing one by regenerating path globs specified in *.gemspec.yml or defaults to liberal file globs."
+task :gemspec_update  do
+  if (gemspec_file = Dir['*.gemspec'][0])
+    original_gemspec = eval(File.read(gemspec_file))
+    if File.exists?("#{gemspec_file}.yml")
+      require 'yaml'
+      YAML::load_file("#{gemspec_file}.yml").each do |attribute, globs|
+        original_gemspec.send("#{attribute}=", FileList[globs])
+      end
+    else
+      # liberal defaults
+      original_gemspec.files = FileList["**/*"]
+      test_directories = original_gemspec.test_files.grep(/\//).map {|e| e[/^[^\/]+/]}.compact.uniq
+      original_gemspec.test_files = FileList["{#{test_directories.join(',')}}/**/*"] unless test_directories.empty?
+    end
+    File.open(gemspec_file, 'w') {|f| f.write(original_gemspec.to_ruby) }
+    puts "Updated gemspec."
+  else
+    puts "No existing gemspec file found."
+  end
+end
+{% endhighlight%}
+
+The meta-gemspec yaml file would literally just be extracted from my gemspec config file:
+<notextile><pre class="console">
+  :files:
+    - "[A-Z]*"
+    - "{bin,lib,test}/**/*"
+  :test_files:
+    - "test/**/*"
+</pre></notextile>
