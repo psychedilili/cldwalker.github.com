@@ -15,7 +15,7 @@ Before going any further, let me disclaim that while this post uses "thor":http:
 
 h2. Rant
 
-If you've been using jeweler like I have, you start each new gem by copying your boilerplate Rakefile which contains a special section for your jeweler config. Taken from the jeweler readme, a Rakefile can as easy as:
+If you've been using jeweler like I have, you start each new gem by copying your boilerplate Rakefile which contains a special section for your jeweler config. Taken from the jeweler readme, a Rakefile can be as easy as:
 
 <notextile> {% highlight ruby %}
   begin
