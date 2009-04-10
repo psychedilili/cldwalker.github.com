@@ -61,7 +61,7 @@ h3(#class_inheritance_trees). Class Inheritance Trees
 
 Although that basic tree was easy to build, more complex trees require more setup. Thankfully Hirb's @ParentChildTree@ class makes tree building easy. It's based on one simple assumption: each node has a method to retrieve its immediate children. Given a node, @ParentChildTree@ uses that method to build out all the children under it. To put this class into exercise let's build a class inheritance tree for any Ruby class. Does a Ruby class have a method to retrieve it's immediate subclasses? No, but no worries. Ruby's got your back:
 
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
   module InheritanceTree
     # Retrieves objects of the current class.
     def objects
@@ -80,7 +80,7 @@ Although that basic tree was easy to build, more complex trees require more setu
   # Note that in modifying a class as ubiquitous as Module that I extend its behavior through 
   # a traceable module. I think it's good manners to let others know you're modifying core
   # classes: http://tagaholic.me/2009/01/31/share-extensions-without-monkey-patching.html
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 That wasn't too hard. @class_children()@ is the method we seek. It iterates over all existing classes and only picks those that are subclasses of the current class. Having extended @Module@, let's see some inheritance trees:
 
@@ -131,7 +131,7 @@ That wasn't too hard. @class_children()@ is the method we seek. It iterates over
 h3(#nested_class_trees). Nested Class Trees
 
 Seeing how easily Hirb creates trees for us, let's build another one. When I start using a new gem, it helps to get an overview of the classes and modules it defines. All we need is a method that can retrieve a class' immediate nested class (ie Gem::Error is a nested class of Gem):
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
   module NestedTree
     # Since nested classes are just constants:
     def nested_children
@@ -144,7 +144,7 @@ Seeing how easily Hirb creates trees for us, let's build another one. When I sta
   end
   
   Module.send :include, NestedTree
-{% endhighlight%}
+{% endhighlight %} </notextile>
 With @nested_children()@, we're ready to rock. Let's view nested classes under Hirb:
 
 <notextile>

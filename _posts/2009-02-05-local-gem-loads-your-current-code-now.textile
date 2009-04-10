@@ -12,42 +12,42 @@ tags:
 
 So I hacked up @$LOAD_PATH@:
 
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
   $LOAD_PATH.unshift '/my/path/to/gem/lib'
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 This effectively made my live gem directory a gem, as far as requiring files is concerned.  However once I did this in irb a couple of times and even in a file, it started to feel dirty and repetitious.  Why couldn't I just require my local gem just like I do when it's installed in my gem directories?  So I hacked on it later and out came "LocalGem":http://github.com/cldwalker/local_gem/tree/master.
 
 LocalGem simply maps names to file paths and when given a name, adds its corresponding path to @$LOAD_PATH@ like above. You can setup the name-path mapping via a yaml config file or a method call.
 
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
   require 'local_gem'
   LocalGem.setup_config do |c|
     c.gems = {'mygem'=>'/path/to/mygem', 'anothergem'=>'/path/to/anothergem'}
   end
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 LocalGem then provides two methods, @local_gem()@ and @local_require()@ to act like @gem()@ and @require()@ but with knowledge of your local gems. You can use these two methods in one of three ways, depending on how much you want LocalGem to invade your namespace:
 
 Peace time:
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
   LocalGem.local_gem 'mygem'
   LocalGem.local_require 'anothergem'
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 Diplomacy is fading:
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
   include LocalGem
   local_gem 'mygem'
   local_require 'anothergem'
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 You're fscked:
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
   require 'local_gem/override'
   gem 'mygem'
   require 'anothergem'
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 Give it a whirl with:
 <pre class="code"> sudo gem install cldwalker-local_gem -s http://gems.github.com </pre>

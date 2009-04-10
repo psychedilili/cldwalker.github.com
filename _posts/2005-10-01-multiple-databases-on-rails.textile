@@ -18,13 +18,13 @@ I chose the latter.
 
 Since I was defining more table classes, I made another model file under app/models/ ( called url.rb for me). I then made sure the controller I was using aware of my model file by giving it a model declaration:
 
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
 class ArticlesController < ApplicationController
   model :article,:url
   #all other code
   # ...
 end
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 Note that I have to explicitly define the article model which was implicit until I used :model.
 
@@ -32,7 +32,7 @@ __So what did I put in my model class?__
 
 From reading the rails wiki and the "ActiveRecord API":http://rails.rubyonrails.com/classes/ActiveRecord/Base.html I found out that any table class can establish its own database connection via @:establish_connection@. So I wrote the following
 
-{% highlight ruby%}
+<notextile> {% highlight ruby%}
 class MyTags < ActiveRecord::Base
   establish_connection({
    :adapter  => "mysql",
@@ -42,11 +42,11 @@ class MyTags < ActiveRecord::Base
    })
    set_table_name "tags"
 end
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 Soon enough I wanted to have a couple of tables that used my second database. From the @ActiveRecord@ API, I read that subclasses of a table class share the same connection so I figured I’d make an abstract connection class for all the tag tables. So I tried the following
 
-{% highlight ruby%}
+<notextile> {% highlight ruby%}
 class TagsDB < ActiveRecord::Base
   establish_connection({
    :adapter  => "mysql",
@@ -62,7 +62,7 @@ end
 
 class Url < TagsDB
 end
-{% endhighlight%}
+{% endhighlight %} </notextile>
 
 Wrong, instead I got this error:
 
@@ -70,7 +70,7 @@ Wrong, instead I got this error:
 
 I was able to get the above code to work only by making the parent class a valid table and redefining the subclasses’ table names. Since it seemed poor design to have tables inherit more than they should (table name, relationships and who knows what else) for a database connection, I reverted to defining the connection for every class:
 
-{% highlight ruby%}
+<notextile> {% highlight ruby%}
 $tags_connection = {
    :adapter  => "mysql",
    :username => "bozo",
@@ -86,5 +86,5 @@ end
 class Url
   establish_connection $tags_connection
 end
-{% endhighlight%}
+{% endhighlight %} </notextile>
 This is the cleanest solution I found from what I understand of subclassing table classes.

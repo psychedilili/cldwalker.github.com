@@ -14,7 +14,7 @@ tags:
 {{page.description}}
 
 While working on a "console-based rails app":http://github.com/cldwalker/tag-tree, I got tired of passing the same options hashes to an irb method:
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
 # An irb method that wraps around an object I access often:
 def tg(query, options={})
   TagGroup.new(query, options)
@@ -22,18 +22,18 @@ end
 irb>> tg '=irb', :view=>:result
 irb>> tg '=irb', :view=>:description_result
 irb>> tg '=irb', :view=>:group
-{% endhighlight%}
+{% endhighlight %} </notextile>
 
 If I knew that @tg()@'s second argument would always be a hash with certain keys and values, why couldn't I just alias them in the same way a shell's command has aliased options?
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
 irb>> tg '=irb -v result'
 # or possibly even
 irb>> tg '=irb -v r'
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 Handling aliasing for this simple case isn't too hard. But what happens if certain options are boolean flags, if some options are required while other's aren't, if some options need default values ... So rather than reinvent an inferior wheel, I remembered a simple yet powerful "option parser":http://github.com/wycats/thor/blob/master/lib/thor/options.rb embedded within "thor":http://github.com/wycats/thor. 
 A few examples:
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
 # Parse a boolean and optional option
 irb>> parser = Thor::Options.new(:foo=>:optional, :verbose=>:boolean)
 irb>> parser.parse("some args -f fighter -v more args")
@@ -42,26 +42,26 @@ irb>> parser.parse("some args -f fighter -v more args")
 irb>> parser = Thor::Options.new(:foo=>'lish', :num=>:numeric)
 irb>> parser.parse("some args --num 10")
 =>  {'foo'=>'lish', :num=>10}
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 More examples can be found in "thor's tests":http://github.com/wycats/thor/blob/master/spec/options_spec.rb.
 
 Although thor's option parser could handle aliasing option keys well, it didn't do anything for aliasing option arguments. It also didn't have a way of returning values as symbols. So I "wrote a MethodOptionParser class":http://github.com/cldwalker/tag-tree/blob/master/lib/irb/method_option_parser.rb to handle these needs. This class simply wraps around @Thor::Options@, adding the features I needed and provides one method, @MethodOptionParser.parse()@ to do all the work. To update my previous definition of @tg()@:
-{% highlight ruby%}
+<notextile> {% highlight ruby%}
 def tg(query, options={})
   # :view key contains values it expects and thus we can alias.
   args, options = MethodOptionParser.parse(query, :view=>[:result, :group, :count, :description_result])
   TagGroup.new(args.join(" "), options)
 end
-{% endhighlight%}
+{% endhighlight %} </notextile>
 
 @MethodOptionParser.parse()@ takes a string or array of arguments and a hash of expected options for the arguments and returns the optionless arguments along with the parsed options. Remember, the expected options can be __any__ options which @Thor::Options@ recognizes.
 
 With this improved @tg()@, the first example can now be:
-{% highlight ruby%}
+<notextile> {% highlight ruby%}
 irb>> tg '=irb -v r'  # same as tg '=irb', :view=>:result
 irb>> tg '=irb -v d', # same as tg '=irb', :view=>:description_result
 irb>> tg '=irb -v g', # same as tg '=irb', :view=>:group
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 Much quicker! Although my fingers may be happy for now, the coder in me knows this solution can still be improved. I don't want a method's options lying far away from the method itself. If I start using these shortcuts on a larger scale I don't want a whole bunch of @MethodOptionParser.parse()@ calls lying around everywhere. Rather I plan to use some aop or metaprogramming techniques to cleanly abstract a method's option aliases to a simple configuration file as "I've done with my other aliasing needs":http://github.com/cldwalker/alias.

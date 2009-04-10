@@ -13,7 +13,7 @@ tags:
 
 As Ruby programmers, I think we enjoy the ease and power of being able to extend any core Ruby class.  As our ruby-fu grows, we pick up some tricks to have Hash's and Struct's to do our bidding, monkeypatched or not.  So naturally we start collecting extensions. Sometimes they're cool enough to blog about, sometimes you find out a week later that "Ruby's stdlib":http://www.ruby-doc.org/stdlib/ or "activesupport":http://as.rubyonrails.com/ already does it better.  Eventually collecting enough of them, you decide to "gem":http://rubyforge.org/ or "github":http://github.com them because you want to share what you've learned. You want others to use it. Heck, maybe even get feedback on them. So when releasing them, why do we force monkeypatching?
  
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
 
  class Object
    def awesome_instance_method
@@ -21,11 +21,11 @@ As Ruby programmers, I think we enjoy the ease and power of being able to extend
    def self.awesomer_class_method
    end
  end
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 Why do this when it's easy to do the same without monkeypatching?
 
-{% highlight ruby %} 
+<notextile> {% highlight ruby %} 
  module Awesome
    module Object
      def awesome_instance_method
@@ -41,7 +41,7 @@ Why do this when it's easy to do the same without monkeypatching?
  # In a separate file that you will require:
  Object.send :include, Awesome::Object
  Object.send :extend, Awesome::Object::ClassMethods
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 No, I'm not trying to reignite "monkeypatch debates":http://www.ruby-forum.com/topic/143732. Rather, just hoping that as a community, we can release monkeypatch-agnostic extensions and let the programmer decide when to monkeypatch.
 
@@ -61,11 +61,11 @@ So why do I think everybody monkeypatches their extensions? Take a look at some 
 And there's still more on "github":http://github.com/search?type=Repositories&amp;language=rb&amp;q=description%3A%28%2Bruby+%2Bextensions%29&amp;repo=&amp;langOverride=&amp;x=0&amp;y=0&amp;start_value=1 ... 
 Of the above extensions,  ActiveSupport is the **ONLY** one that doesn't force monkeypatching:
 
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
  gem 'activesupport'
  require 'active_support/core_ext/array/access'
  class My; class Array < ::Array; end; end
  My::Array.send :include, ActiveSupport::CoreExtensions::Array::Access 
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 So can we share our extensions without monkeypatching?

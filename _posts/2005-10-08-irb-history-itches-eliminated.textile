@@ -14,30 +14,30 @@ Irb, ruby’s interactive shell, is awesome for interactive programming. You can
 
 From the ruby garden I found out where my history was stored, @Readline::HISTORY@. Wanting to make command history access as intuitive as possible, I wanted to pull up commands by the command numbers seen in irb’s prompt. Noticing that @Readline::HISTORY@ starts out with previous history, I saved its original size for later use. To pull up commands inclusively between two numbers I did the following:
 
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
 $original_history_size = Readline::HISTORY.size
 def history_list(first_num,second_num=Readline::HISTORY.size - 1)
   Readline::HISTORY.to_a[(first_num + $original_history_size - 1) .. (second_num +
 $original_history_size - 1) ]
 end
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 And what if wanted to print these out in a more readable format or eval some of the lines to bring back the code to a previous state?
 
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
 def print_history(*args)
   puts history_list(*args).join("\n")
 end
 def eval_history(*args)
   eval %[ #{history_list(*args).join("\n")} ]
 end
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 Now, what if I wanted to only eval certain lines of the code say lines 1,4,8-12,15. Well I wrote a brief @Array@ method, @multislice@, that literally would take the previous string ‘1,4,8-12,15’ and return back the 1st,4th,8th-12th and 15th elements of an array. With @multislice@ I wrote a method similar to @history_list@.
 
 As I wrote these methods I wondered if I’d satisified all my itches for a more rapid irb programming environment. Wellll, all except one: editing already entered irb code, without the hassle of consciously pasting code and naming a temporary file. So naturally I used an automatically generated tempfile using tempfile.rb. First I wrote a method to edit a string:
 
-{% highlight ruby%}
+<notextile> {% highlight ruby%}
 def edit(string=nil,editor=ENV['EDITOR'])
   editor ||= raise "editor must be given or defined by EDITOR environment variable"
   tempfile = Tempfile.new('edit')
@@ -45,14 +45,14 @@ def edit(string=nil,editor=ENV['EDITOR'])
   system("#{editor} #{tempfile.path}")
   File.open(tempfile.path) {|f| f.read }
 end
-{% endhighlight %}
+{% endhighlight %} </notextile>
 
 And then another to edit specified commands:
 
-{% highlight ruby %}
+<notextile> {% highlight ruby %}
 def edit_history(*args)
   history_string = history_list_or_slice(*args).join("\n")
   edit(history_string)
 end
-{% endhighlight %}
+{% endhighlight %} </notextile>
 So for now my irb itches are satisfied. Are yours?
