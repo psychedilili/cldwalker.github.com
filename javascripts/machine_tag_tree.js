@@ -25,25 +25,37 @@ $.createMachineTagTree = function(wildcard_machine_tag, records) {
   return rows;
 };
 
-var displayMachineTagTreeOptions = {recordName: 'Records'};
-function displayMachineTagTree(wildcard_machine_tag, records, options) {
-  var options = $.extend(displayMachineTagTreeOptions, options || {});
-  $('#tag_tree').html('');
+// Given a wildcard machine tag, returns the matching records in a tree table. The table has three columns: machine tags, primary, tags.
+// Takes the following options:
+//   * recordName: capitalized name to give the records, defaults to Records
+//   * tag_tree_id: css id for the div containing the generated table, defaults to tag_tree
+//   * table_id: css id for the generated table, defaults to machine_tag_table
+//   * caption : caption/title for the table
+//   * formatter : hash of columns to functions used to format the respective column,
+//     hash keys are machine_tags_column, primary_column, tags_column
+var machineTagTreeOptions = {};
+function machineTagTree(wildcard_machine_tag, records, options) {
+  var options = $.extend({recordName: 'Records', tag_tree_id: 'tag_tree', table_id: 'machine_tag_table', 
+    wildcard_machine_tag: wildcard_machine_tag},machineTagTreeOptions, options || {});
+  $('#'+options.tag_tree_id).html('');
   var rows = $.createMachineTagTree(wildcard_machine_tag, records);
-  $.temp = rows;
+  displayMachineTagTree(rows, options);
+}
+
+function displayMachineTagTree(rows, options) {
   if ($(rows).size() == 0) {
-    var table_html = "<div class='caption'>No " + options.recordName.toLowerCase() + " found for '" + wildcard_machine_tag+ "'</div>";
+    var table_html = "<div class='caption'>No " + options.recordName.toLowerCase() + " found for '" + options.wildcard_machine_tag+ "'</div>";
+    $("#"+options.tag_tree_id).append(table_html);
   }
   else {
     setupTreeTable(rows);
-    var table_html = createTable(rows, $.extend(options, {caption: (wildcard_machine_tag == '' ? "All "+options.recordName : 
-      options.recordName+" tagged with '"+ wildcard_machine_tag +"'"), table_id: 'machine_tag_table'}));
+    var table_html = createTable(rows, options);
+    $("#"+options.tag_tree_id).append(table_html);
+    $("a.machine_tag_search").hideMachineTags();
+    $("a.machine_tag_search").click(function() { $.machineTagSearch($(this).text());});
+    $("a.machine_tag_href_search").click(function() { $.machineTagSearch(this.href.match(/#(.*?)$/).pop());});
+    $("#"+options.table_id).treeTable({initialState: "expanded", indent:15});
   }
-  $("#tag_tree").append(table_html);
-  $("a.machine_tag_search").hideMachineTags();
-  $("a.machine_tag_search").click(function() { $.machineTagSearch($(this).text());});
-  $("a.machine_tag_href_search").click(function() { $.machineTagSearch(this.href.match(/#(.*?)$/).pop());});
-  $("#machine_tag_table").treeTable({initialState: "expanded", indent:15});
 };
 
 function singularize(string) {
@@ -67,30 +79,44 @@ function machineTagQuery(tree_node) {
 }
 
 function createTable(rows, options) {
-  var result = "<table id='"+options.table_id+"'><caption>"+options.caption+"</caption>\
+  var options = $.extend({ recordName: 'Records', table_id: 'machine_tag_table', caption: 'Machine Tag Search Results', 
+    formatter: { primary_column: defaultPrimaryColumnFormatter, tags_column: defaultTagsColumnFormatter,
+    machine_tags_column: defaultMachineTagsColumnFormatter}
+    }, options || {});
+  if (options.wildcard_machine_tag) options.caption = "All "+options.recordName+" for wildcard machine tag '"+
+    options.wildcard_machine_tag +"'";
+  var table = "<table id='"+options.table_id+"'><caption>"+options.caption+"</caption>\
   <thead>\
     <tr>\
       <th width='140'>Machine Tags <a href='javascript:void($(\"tr[level=2]\").each(function(){$(this).toggleBranch()}))'>\
-      (Collapse/Expand)</a></th><th>"+ options.recordName +"</th><th>"+ singularize(options.recordName) +
-      " Tags / <a href='javascript:void($.toggleHiddenMachineTags())'>Machine Tags</a></th>" +
-      (options.comments_column ? '<th width="90">Comments</th>' : '') +
-    "</tr>\
+      (Collapse/Expand)</a></th>\
+      <th>"+ options.recordName +"</th>\
+      <th>"+singularize(options.recordName)+" Tags / <a href='javascript:void($.toggleHiddenMachineTags())'>Machine Tags</a></th>\
+    </tr>\
   </thead><tbody>" +
   $.map(rows, function(e,i) {
-    tag_cell = (e.tag ? e.tag : '')+ (e.record_count ? " ("+e.record_count+")" : '');
-    if (e.tag) tag_cell = "<a class='machine_tag_href_search' href='#" + machineTagQuery(e) + "'>"+ tag_cell + "</a>";
-    comments_column = (options.comments_column ?
-      (e.record ? "<td><a href='" + e.record.url+ "#disqus_thread'>Comments</a></td>" : "<td></td>")
-      : '');
-    
     return "<tr id='"+ e.id + "'" + (typeof e.parent_id != 'undefined' ? " class='child-of-"+e.parent_id+"'" : '' ) +
-      "level='"+e.level+"'><td>" + tag_cell +"</td><td>"+ 
-      (e.record ? "<a href='"+e.record.url+"'>"+truncate(e.record.title, 50)+"</a>" : '') + 
-      "</td><td>"+ (e.record ? "<div class='record_tags_column'>"+createTagLinks(e.record.tags)+"</div>" : '') + 
-      "</td>" + comments_column +"</tr>";
+      "level='"+e.level+"'>" +
+      "<td>"+(e.tag ? options.formatter.machine_tags_column.call(this, e) : '')+"</td>"+
+      "<td>"+(e.record ? options.formatter.primary_column.call(this, e.record) : '')+"</td>" +
+      "<td>"+(e.record ? options.formatter.tags_column.call(this, e.record) : '')+"</td>" +
+      "</tr>";
   }).join(" ") + "</tbody></table>";
-  return result;
+  return table;
 };
+
+function defaultMachineTagsColumnFormatter(row) {
+  var link_text = row.tag + (row.record_count ? " ("+row.record_count+")" : '');
+  return "<a class='machine_tag_href_search' href='#" + machineTagQuery(row) + "'>"+ link_text + "</a>";
+}
+
+function defaultPrimaryColumnFormatter(record) {
+  return "<a href='"+record.url+"'>"+truncate(record.title || record.url, 50)+"</a>";
+}
+
+function defaultTagsColumnFormatter(record) {
+  return "<div class='record_tags_column'>"+createTagLinks(record.tags)+"</div>";
+}
 
 function createTagLinks(tags) {
   return $.map(tags, function(f) {

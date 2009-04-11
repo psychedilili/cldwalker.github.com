@@ -23,11 +23,11 @@ $(function() {
   $("a.machine_tag_href_search").click(function() { $.machineTagSearch(this.href.match(/#(.*?)$/).pop());});
   $("a.machine_tag_search").hideMachineTags();
   $("a.machine_tag_search").click(function() { $.machineTagSearch($(this).text());});  
-  displayMachineTagTreeOptions = {recordName: 'Posts'};
+  machineTagTreeOptions = {recordName: 'Posts'};
   $.machineTagSearch.defaultOptions = {
     jsonUrl: '/feeds/posts.json', beforeSearch: toggleSpinner, afterSearch: toggleSpinner,
     displayCallback: function(wildcard_machine_tag, records, options) {
-      displayMachineTagTree(wildcard_machine_tag, records, options); $('#all_posts').hide();}
+      machineTagTree(wildcard_machine_tag, records, options); $('#all_posts').hide();}
   };
   $.machineTagSearchLocation();
 });
@@ -61,6 +61,8 @@ $(function() {
   {% endfor %}
   </tbody>
 </table>
+<p/>
+<div style="font-size: 12px; color: #0E51A7">Yes, the dates on those last posts are correct. They were ported over from my old domain, chwhat.com</div>
 </div>
 
 {% comment %}
@@ -75,5 +77,3 @@ $(function() {
   {% endif %}
 {% endfor %}
 {% endcomment %}
-<p/>
-<div style="font-size: 12px; color: #0E51A7">Yes, the dates on those last posts are correct. They were ported over from my old domain, chwhat.com</div>
