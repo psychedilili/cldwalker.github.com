@@ -23,11 +23,11 @@ $(function() {
   $("a.machine_tag_href_search").click(function() { $.machineTagSearch(this.href.match(/#(.*?)$/).pop());});
   $("a.machine_tag_search").hideMachineTags();
   $("a.machine_tag_search").click(function() { $.machineTagSearch($(this).text());});  
-  machineTagTreeOptions = {recordName: 'Posts'};
+  $.machineTagTree.defaultOptions = {recordName: 'Posts'};
   $.machineTagSearch.defaultOptions = {
     jsonUrl: '/feeds/posts.json', beforeSearch: toggleSpinner, afterSearch: toggleSpinner,
     displayCallback: function(wildcard_machine_tag, records, options) {
-      machineTagTree(wildcard_machine_tag, records, options); $('#all_posts').hide();}
+      $.machineTagTree(wildcard_machine_tag, records, options); $('#all_posts').hide();}
   };
   $.machineTagSearchLocation();
 });
