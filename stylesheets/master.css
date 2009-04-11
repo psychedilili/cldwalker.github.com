@@ -340,10 +340,11 @@ a.machine_tag_toggle.expanded {
   list-style-type:disc
 }
 
-/* blog tag_tree */
 #tree_description {
   font-style:italic;
 }
+
+/* blog tag_tree */
 
 .spinner {
   background: url(../images/spinner.gif) no-repeat 0 center;

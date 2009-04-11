@@ -46,7 +46,6 @@ class Jekyll < Thor
   desc "json", "generate json for posts + tags"
   method_options :tags=>:boolean
   def json
-    # posts_array = YAML::load_file("post_tags.yml")
     posts_array = post_tags
     if options[:tags]
       machine_tags = posts_array.map {|e| e[1]}.flatten.uniq.sort.map {|e| {:name=>e} }
