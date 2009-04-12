@@ -65,12 +65,12 @@
   };
 
   function createTable(rows, options) {
-    var options = $.extend({ recordName: 'Records', tableId: 'machine_tag_table', caption: 'Machine Tag Search Results', 
-      formatter: { record_column: recordColumnFormatter, record_tags_column: recordTagsColumnFormatter,
-      machine_tags_column: machineTagsColumnFormatter}
-      }, options || {});
+    var options = $.extend({ recordName: 'Records', tableId: 'machine_tag_table', caption: 'Machine Tag Search Results'}, options || {});
     if (options.wildcard_machine_tag) options.caption = options.recordName+" for wildcard machine tag '"+
       options.wildcard_machine_tag +"'";
+    options.formatter = $.extend(  { record_column: recordColumnFormatter, record_tags_column: recordTagsColumnFormatter,
+      machine_tags_column: machineTagsColumnFormatter}, options.formatter || {});
+
     var table = "<table id='"+options.tableId+"'><caption>"+options.caption+"</caption>\
     <thead>\
       <tr>\
