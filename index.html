@@ -56,7 +56,7 @@ title: Home
   $.githubUser('cldwalker', function(data) {
     $('#github-projects').html('');
     
-    var repos = data.user.repositories;
+    var repos = $.grep(data.user.repositories, function(e) { return !e.private});
     repos.sort(function(a,b) {
       return b.watchers - a.watchers;
     });
