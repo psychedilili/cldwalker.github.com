@@ -20,7 +20,7 @@ Copy the bookmarklet:
 
 When you're on a github user page ("exemplar awesome dude":http://github.com/defunkt), paste the above bookmarklet in your address bar and hit @enter@. While you're waiting for it to fetch the user's data, you'll see a bookmarklet status box. Once it's loaded you should notice three major changes: a sort box above the first repository, additional user stats and the number of watchers and forks in the upper right hand corner of each repository. For defunkt's page, it'll look like this:
 
-<img alt="bookmarklet example" src="/images/post-ghub_bookmarklet_example.gif"></img>
+<img alt="bookmarklet example" src="/images/post-ghub_bookmarklet_example.gif" />
 
 With the sort box, you can now sort a user's repositories by name, fork count, watchers count, or last updated date in ascending or descending order!
 
