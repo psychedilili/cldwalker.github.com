@@ -1,0 +1,77 @@
+---
+layout: post
+title: I Am Machine Tag And So Can You
+description: This post explains how <b>you</b> can use machine tags with your next web app or even your blog. With <a href="http://github.com/cldwalker/machinetag.js">Machinetag</a>, a jQuery plugin, you'll be able to search and display machine tagged content as trees faster than Colbert can crack a quip. Well ... maybe not that fast. Warning to fans of <a href="http://en.wikipedia.org/wiki/I_Am_America_(And_So_Can_You!)">Colbert's book</a>, I may not be as funny.
+tags:
+  - post:tags=tag
+  - post:lang=javascript
+  - post:type=tutorial
+  - post:tags=jquery
+---
+{{page.description}}
+
+If you're unsure of what machine tags are, "read my introduction to them":/2009/03/26/what-are-machine-tags.html.
+
+h2. Basic Usage
+
+The basic use case for "Machinetag":http://github.com/cldwalker/machinetag.js is simple. You have some items, records, urls (doesn't matter really) that have been machine tagged. Now you want to search and display them. Enter Machinetag. Given an array of machine-tagged records or a json url pointing to some you can search away:
+<notextile><pre class="console">
+  // To follow along in your javascript shell (i.e. firebug): 
+  // $.getScript("http://tagaholic.me/jquery.machineTag.js")
+  var urls = [ 
+    { url: 'http://www.mozilla.com/firefox/', tags: ['browser:feature=extensions', 'browser:company=mozilla']},
+    { url: 'http://www.microsoft.com/windows/Internet-explorer/', tags: ['browser:feature=none']},
+    { url: 'http://www.google.com/chrome', tags: ['browser:feature=big_brother', 'browser:company=google']}
+  ];
+  // Search urls that have a browser namespace.
+  $.machineTagSearch('browser:*=', {records: urls});
+  // => returns all urls
+  
+  // Search urls that have a browser namespace and company predicate.
+  $.machineTagSearch('browser:company=', {records: urls});
+  // => returns firefox and chrome urls
+  
+  // Search urls for browser with feature of big_brother.
+  $.machineTagSearch('browser:feature=big_brother', {records: urls});
+  // => returns chrome url
+  
+  // If the above urls were in a json feed http://example.com/urls.json:
+  $.machineTagSearch('browser:feature=big_brother', {jsonUrl: 'http://example.com/urls.json'});
+  // => returns chrome url eventually (though json callback is recommended here)  
+</pre></notextile>
+
+As seen above, Machinetag expects a record's machine tags to be an array in the tags attribute. Aside from that requirement, the records can consist of any attributes. Also note the search term passed to @$.machineTagSearch()@. It's a wildcard machine tag much like "Flickr's wildcard machine tags":http://code.flickr.com/blog/2008/07/18/wildcard-machine-tag-urls/. The main thing to know about this search format is that the asterisk serves as a wildcard character. This wildcard machine tag is also used with @$.machineTagSearchRecordTags()@ which returns records' machine tags that match a given wildcard machine tag:
+<notextile><pre class="console">
+  // Using the above urls object.
+  $.machineTagSearchRecordTags('browser:company=', urls);
+  // => ['browser:company=google', 'browser:company=mozilla']
+</pre></notextile>
+To read more about the search and parse related methods, "see Machinetag's README":http://github.com/cldwalker/machinetag.js.
+<p/>
+
+h2. Machine Tag Trees
+
+Now that you know how to search machine tagged content, let's look at displaying them. Machinetag ships with an additional plugin to display your machine tagged content as a machine tag tree, "jquery.machineTagTree.js":http://github.com/cldwalker/machinetag.js/blob/6dc6ed11c031bf5f35a2c49ff76ff1ad61a949b7/jquery.machineTagTree.js. Here's an example from my ["blog's machine tag search results":/blog.html#post:*]:
+
+<a href="/blog.html#post:*="><img alt="machine tag tree example" src="/images/post-machine_tag_tree_example.gif" /></a>
+
+This machine tag tree is displaying all machine tags and their posts that match the wildcard machine tag @post:*@. Although only the @post:lang=javascript@ branch is displaying it's associated posts, you can open up any of the tree's branches. Note that each tree branch represents a different machine tag that matches the wildcard machine tag. The machine tag tree is organized by namespace, predicate and then post i.e. @post > lang > javascript@.
+
+Since this is probably your first time with a machine tag tree, you may be wondering why? Using a tree view, I can give someone, including myself, an __endless number of quick views__ into my content. Here are some examples for my blog posts:
+* Posts by programming language: ["post:lang=*":/blog.html#post:lang=*]
+* Posts by post type: ["post:type=*":/blog.html#post:type=*]
+* Posts about specific ruby gems: ["gem:name=*":/blog.html#gem:name=*]
+* Posts about ruby gems with specific topics: ["gem:topic=*":/blog.html#gem:topic=*]
+* Posts about specific core/standard ruby libraries ["lib:name=*":/blog.html#lib:name=*]
+
+As you can see, the views of your content are as numerous as the keyword combinations you can think of! If you haven't already, I recommend playing with ["my blog's machine tag tree":/blog.html#post:*] by clicking around. For further documentation on the slew of options for machine tag trees, "read its source":http://github.com/cldwalker/machinetag.js/blob/6dc6ed11c031bf5f35a2c49ff76ff1ad61a949b7/jquery.machineTagTree.js#L29.
+
+
+h2. Final Words From Your Sponsor
+
+You can install Machinetag by "downloading it":http://github.com/cldwalker/machinetag.js/downloads or using git:
+<notextile><pre class="github">
+  git clone git://github.com/cldwalker/machinetag.js.git
+</pre></notextile>
+
+Machinetag comes with a machine tag tree demo that you can play with yourself. The demo is suprisingly similar to my blog post search. "The readme":http://github.com/cldwalker/machinetag.js contains the setup instructions (it's nothing more than copying some files). Also, a big thanks goes out to the author of "treeTable jquery plugin":http://blog.cubicphuse.nl/2008/11/12/jquery-treetable-2-0 on which machine tag trees depends.
