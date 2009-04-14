@@ -1,6 +1,7 @@
 ---
 layout: post
 title: I Am Machine Tag And So Can You
+keywords: machine tags, machine tag trees, machine tag jquery plugin, machinetag.js, tag trees, triple tags
 description: This post explains how <b>you</b> can use machine tags with your next web app or even your blog. With <a href="http://github.com/cldwalker/machinetag.js">Machinetag</a>, a jQuery plugin, you'll be able to search and display machine tagged content as trees faster than Colbert can crack a quip. Well ... maybe not that fast. Warning to fans of <a href="http://en.wikipedia.org/wiki/I_Am_America_(And_So_Can_You!)">Colbert's book</a>, I may not be as funny.
 tags:
   - post:tags=tag
