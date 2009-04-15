@@ -16,7 +16,7 @@ If you're unsure of what machine tags are, "read my introduction to them":/2009/
 h2. Basic Usage
 
 The basic use case for "Machinetag":http://github.com/cldwalker/machinetag.js is simple. You have some items, records, urls (doesn't matter really) that have been machine tagged. Now you want to search and display them. Enter Machinetag. Given an array of machine-tagged records or a json url pointing to some you can search away:
-<notextile><pre class="console">
+<notextile>{% highlight js %}
   // To follow along in your javascript shell (i.e. firebug): 
   // $.getScript("http://tagaholic.me/jquery.machineTag.js")
   var urls = [ 
@@ -39,14 +39,14 @@ The basic use case for "Machinetag":http://github.com/cldwalker/machinetag.js is
   // If the above urls were in a json feed http://example.com/urls.json:
   $.machineTagSearch('browser:feature=big_brother', {jsonUrl: 'http://example.com/urls.json'});
   // => returns chrome url eventually (though json callback is recommended here)  
-</pre></notextile>
+{% endhighlight %}</notextile>
 
 As seen above, Machinetag expects a record's machine tags to be an array in the tags attribute. Aside from that requirement, the records can consist of any attributes. Also note the search term passed to @$.machineTagSearch()@. It's a wildcard machine tag much like "Flickr's wildcard machine tags":http://code.flickr.com/blog/2008/07/18/wildcard-machine-tag-urls/. The main thing to know about this search format is that the asterisk serves as a wildcard character. This wildcard machine tag is also used with @$.machineTagSearchRecordTags()@ which returns records' machine tags that match a given wildcard machine tag:
-<notextile><pre class="console">
+<notextile>{% highlight js %}
   // Using the above urls object.
   $.machineTagSearchRecordTags('browser:company=', urls);
   // => ['browser:company=google', 'browser:company=mozilla']
-</pre></notextile>
+{% endhighlight %}</notextile>
 To read more about the search and parse related methods, "see Machinetag's README":http://github.com/cldwalker/machinetag.js.
 <p/>
 
