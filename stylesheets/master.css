@@ -351,10 +351,6 @@ a.machine_tag_toggle.expanded {
   vertical-align: middle; 
 }
 
-.record_tags_column {
-  max-width: 200px;
-}
-
 .table_post_description {
   display: none;
   padding-top: 15px;
