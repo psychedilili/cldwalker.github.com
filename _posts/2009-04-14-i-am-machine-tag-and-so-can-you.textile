@@ -50,7 +50,7 @@ As seen above, Machinetag expects a record's machine tags to be an array in the 
 To read more about the search and parse related methods, "see Machinetag's README":http://github.com/cldwalker/machinetag.js.
 <p/>
 
-h2. Machine Tag Trees
+h2(#machine_tag_tree). Machine Tag Trees
 
 Now that you know how to search machine tagged content, let's look at displaying them. Machinetag ships with an additional plugin to display your machine tagged content as a machine tag tree, "jquery.machineTagTree.js":http://github.com/cldwalker/machinetag.js/blob/6dc6ed11c031bf5f35a2c49ff76ff1ad61a949b7/jquery.machineTagTree.js. Here's an example from my ["blog's machine tag search results":/blog.html#post:*]:
 
