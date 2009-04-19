@@ -2,15 +2,15 @@
 layout: post
 title: Irb History Itches Eliminated
 keywords: irb, history, readline, readline history, irbrc, config
+description: Irb, ruby’s interactive shell, is awesome for interactive programming. You can write a few lines and test out that language feature you weren’t aware of. However as your testing becomes more elaborate it can become annoying to rewrite your code. So how do you retrieve old code? Your history, of course.
 tags:
   - lib:name=irb
   - post:type=snippet
   - post:lang=ruby
 ---
+{{page.description}}
 
 When I read programming articles, I like to find the final source code so I don’t copy and paste several times. I’m laaaayzy like that. So for this little irb bit, you can find the relevant irb code "here":http://github.com/cldwalker/irbfiles/blob/master/.irb/history_methods.rb.
-
-Irb, ruby’s interactive shell, is awesome for interactive programming. You can write a few lines and test out that language feature you weren’t aware of. However as your testing becomes more elaborate it can become annoying to rewrite your code. So how do you retrieve old code? Your history, of course.
 
 From the ruby garden I found out where my history was stored, @Readline::HISTORY@. Wanting to make command history access as intuitive as possible, I wanted to pull up commands by the command numbers seen in irb’s prompt. Noticing that @Readline::HISTORY@ starts out with previous history, I saved its original size for later use. To pull up commands inclusively between two numbers I did the following:
 

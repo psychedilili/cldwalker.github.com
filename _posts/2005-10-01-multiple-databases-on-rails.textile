@@ -2,15 +2,16 @@
 layout: post
 title: Multiple Databases on Rails
 keywords: rails, database, multiple databases, activerecord, connection
+description: "Being a tagging freak, I wanted to coalesce my database of tagged tables with typo’s nascent support of tags. Only problem: both use ‘tags’ as the tag table name."
 tags:
   - gem:name=activerecord
   - gem:tags=rails
   - post:lang=ruby
   - post:type=snippet
 ---
+{{page.description}}
 
-Being a tagging freak, I wanted to coalesce my database of tagged tables with typo’s nascent support of tags. Only problem: both use ‘tags’ as the tag table name. My choices were to either:
-
+My choices were to either:
 * change the name of my tags table and all its joining tables as well as a hefty amount of code I’ve written for those tables
 * simply extend typo to connect to two databases.
 

@@ -3,12 +3,12 @@ layout: post
 title: Goodbye Blogger, Hello Github Pages
 time: 5:05pm
 keywords: github, blogger, cname, jekyll, liquid, blogging, github pages
+description: Less than a month ago, Github <a href="http://github.com/blog/315-cname-support-for-github-pages">announced cname support for github pages</a>. I thought it was pretty cool but when I read it was for only paying accounts I thought <i>I'll stick to my free Blogger domain redirection thank you very much.</i> And how wrong I was.
 tags:
   - post:tags=github
   - post:type=thoughts
 ---
-
-Less than a month ago, Github "announced cname support for github pages":http://github.com/blog/315-cname-support-for-github-pages. I thought it was pretty cool but when I read it was for only paying accounts I thought __I'll stick to my free Blogger domain redirection thank you very much.__ And how wrong I was.
+{{page.description}}
 
 Over the past couple months, I've been blogging with Blogger. Being a programmer who wanted a simple, cheap blogging tool, Blogger fit the bill. It came with a decent commenting system, a semi-decent widget interface, free domain redirection and plenty of unused features. But as I've been trying to blog I've noticed how cumbersome, inefficient and disconnected I felt using Blogger's editor.Their wyswig isn't horrible, just that it can't compare with a vim/emacs editor. So as I was growing tired of writing posts locally, then copying and pasting into Blogger's editor, I came across "another programmer":http://mbleigh.com/2009/02/11/outsource-your-blog.html who'd just made the jump to github pages for blogging. Digging his theme, I decided I could sacrifice the price of a movie ticket to use Github for my blogging needs. And I'm simply loving it!. Although I'm missing out of box support for rss feeds by tag, it shouldn't be too bad to build it in.
 

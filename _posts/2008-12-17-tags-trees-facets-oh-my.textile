@@ -2,12 +2,12 @@
 layout: post
 title: Tags, Trees and Facets, Oh My!
 keywords: tags, trees, facets, outlines, semantic tags, tag hierarchy, tag tree
+description: I've recently <a href="http://github.com/cldwalker/tag-tree/tree/master">rekindled my affair with organizing tags</a>. As in the <a href="http://search.cpan.org/%7Ebozo/Fry-Lib-CDBI-Basic-0.15/lib/Fry/Lib/CDBI/Outline.pm">past</a>, I started by outlining my tags. But this time some of it seems to be making sense.
 tags:
   - post:tags=tag
   - post:type=thoughts
 ---
-
-I've recently "rekindled my affair with organizing tags":http://github.com/cldwalker/tag-tree/tree/master. As in the "past":http://search.cpan.org/%7Ebozo/Fry-Lib-CDBI-Basic-0.15/lib/Fry/Lib/CDBI/Outline.pm, I started by outlining my tags. But this time some of it seems to be making sense.
+{{page.description}}
 
 Inspired by "wordnet":http://wordnetweb.princeton.edu/, I initially tried to organize my tags into lexical trees/outlines. This means I tried to organize the tags/words not by what they mean to me but what they mean to everybody. I gave up on this as my tags began to differ to much from what the word actually meant. (Yes, I'll have to revisit this someday when I want to effectively share my tag relationships with others.)
 

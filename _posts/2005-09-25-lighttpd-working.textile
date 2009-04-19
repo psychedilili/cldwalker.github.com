@@ -2,13 +2,13 @@
 layout: post
 title: Lighttpd Working!
 keywords: lighttpd, rails, typo, fcgi
+description: Yay! I got typo working with lighttpd and fcgi. Here’s what I did in my server environment.
 tags:
   - post:tags=rails
   - post:tags=lighttpd
   - post:type=tutorial
 ---
-
-Yay! I got typo working with lighttpd and fcgi. Here’s what I did in my server environment :
+{{page.description}}
 
 # Installed typo
 ## installed the latest tarball from "http://rubyforge.org/projects/rubygems/":http://rubyforge.org/projects/rubygems

@@ -2,6 +2,7 @@
 layout: post
 title: Rails Overview With Rdoc Parser
 keywords: rails, rdoc, parser, tree, overview
+description: Ever want a quick overview of a rails project you're working on? I did and here's what I did.
 tags:
   - post:type=snippet
   - post:lang=ruby
@@ -9,8 +10,9 @@ tags:
   - lib:topic=parse
   - post:tags=rails
 ---
+{{page.description}}
 
-It’s been awhile since I wrote here, having been busy with my usual tagging ideas. Since last time I wrote, I’ve released two public pieces of rails-related code! : a "patch":http://dev.rubyonrails.com/ticket/2787 for nested sets as well as "my first gem":http://rubyforge.org/projects/shellable. All shameless plugs aside, I came here to share some old code I revived and a practical use I found for it. The code is "here":http://github.com/cldwalker/bin/blob/95e86c4a09469f5208163ffd1d9189fc0069b177/rails-overview.rb
+It’s been awhile since I wrote here, having been busy with my usual tagging ideas. Since last time I wrote, I’ve released two public pieces of rails-related code! : a "patch":http://dev.rubyonrails.com/ticket/2787 for nested sets as well as "my first gem":http://rubyforge.org/projects/shellable. All shameless plugs aside, I came here to share some old code I revived and a practical use I found for it. The code is "here":http://github.com/cldwalker/bin/blob/95e86c4a09469f5208163ffd1d9189fc0069b177/rails-overview.rb.
 
 My goal awhile back was to be able to quickly understand any ruby code given to me. To put myself on that path I did two things: learn to debug Ruby thoroughly with @Kernel::set_trace_func@ and parse ruby files. I wanted to parse ruby files so I could get a quick overview of a file’s classes and their methods. I looked at ParseTree and then rdoc’s parser. Of the two, rdoc seemed to be a little higher level and so the core method looks like:
 
