@@ -45,6 +45,7 @@ function toggleMachineTags() {
 <a href="http://digg.com/submit" onclick="window.open('http://digg.com/submit?url='+encodeURIComponent(location.href)+'&amp;title='+encodeURIComponent(document.title)+'&amp;media=news&amp;topic=programming', 'digg', 'toolbar=no,width=550,height=550');return false;"><img src="http://digg.com/favicon.ico" alt="digg"/>Digg</a>
 </div>
 
+{% comment %}
 <div class="related">
   <h3>Related Posts</h3>
   <table class="post-list">
@@ -57,7 +58,7 @@ function toggleMachineTags() {
     {% endfor %}
   </table>
 </div>
-
+{% endcomment %}
 <div id="disqus_thread"></div>
 <script type="text/javascript" src="http://disqus.com/forums/tagaholic/embed.js"></script>
 <noscript><a href="http://tagaholic.disqus.com/?url=ref">View the discussion thread.</a></noscript>
