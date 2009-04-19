@@ -34,31 +34,6 @@ function toggleMachineTags() {
 };
 </script>
 
-{% comment %}
-{% if page.tags %}
-{% assign post_limit = 4 %}
-{% assign post_count = 1 %}
-<div class="related">
-  <h3>Similarly Tagged Posts</h3>
-  <table class="post-list">
-    {% for post in site.posts %}
-      {% assign already_tagged = false %}
-    {% for tag in page.tags %}
-    {% if post.tags contains tag and post_count < post_limit and already_tagged == false %}
-      {% assign already_tagged = true %}
-      {% assign post_count = post_count + 1 %}
-      <tr>
-        <th><a href='{{ post.url }}'>{{ post.title }}</a></th>
-        <td>{{ post.date | date_to_string }}</td>
-        <td><a href='{{post.url}}#disqus_thread'>Comments</a></td>
-      </tr>
-    {% endif %}
-    {% endfor %}
-    {% endfor %}
-  </table>
-</div>
-{% endif %}
-{% endcomment %}
 <script type="text/javascript" charset="utf-8" src="http://bit.ly/javascript-api.js?version=latest&login=tweettrackjs&apiKey=R_7e9987b2fd13d7e4e881f9cbb168f523"></script>
  <script type="text/javascript" charset="utf-8" src="http://s.bit.ly/TweetAndTrack.js?v=1.01"></script>
 <div id="share_actions">
@@ -69,6 +44,20 @@ function toggleMachineTags() {
 <a href="http://www.reddit.com/submit" onclick="window.location = 'http://www.reddit.com/submit?url=' + encodeURIComponent(window.location); return false"> <img src="http://www.reddit.com/static/spreddit1.gif" alt="reddit" border="0" />Reddit</a> |
 <a href="http://digg.com/submit" onclick="window.open('http://digg.com/submit?url='+encodeURIComponent(location.href)+'&amp;title='+encodeURIComponent(document.title)+'&amp;media=news&amp;topic=programming', 'digg', 'toolbar=no,width=550,height=550');return false;"><img src="http://digg.com/favicon.ico" alt="digg"/>Digg</a>
 </div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <table class="post-list">
+    {% for post in site.related_posts limit:3 %}
+      <tr>
+        <th><a href='{{ post.url }}'>{{ post.title }}</a></th>
+        <td>{{ post.date | date_to_string }}</td>
+        <td><a href='{{post.url}}#disqus_thread'>Comments</a></td>
+      </tr>
+    {% endfor %}
+  </table>
+</div>
+
 <div id="disqus_thread"></div>
 <script type="text/javascript" src="http://disqus.com/forums/tagaholic/embed.js"></script>
 <noscript><a href="http://tagaholic.disqus.com/?url=ref">View the discussion thread.</a></noscript>
