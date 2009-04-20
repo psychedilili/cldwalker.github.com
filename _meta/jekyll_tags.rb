@@ -20,6 +20,12 @@ module JekyllTags
       [e, yaml['tags']]
     end
   end
+  
+  def common_tags
+    posts = post_tags
+    current_tags = posts[0][1]
+    posts.map {|e| [e[0], e[1] & current_tags] }
+  end
 
   #array of tags with their counts
   def tag_count
@@ -35,6 +41,7 @@ module JekyllTags
 
   # Use this method to print the output of any methods returning data structures
   def debug(method)
-    p send(method)
+    require 'pp'
+    pp send(method)
   end
 end

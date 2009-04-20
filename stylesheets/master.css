@@ -356,3 +356,8 @@ a.machine_tag_toggle.expanded {
   padding-top: 15px;
   max-width: 340px;
 }
+
+.table_tag_description {
+  font-size: 90%;
+  font-style: italic;
+}
