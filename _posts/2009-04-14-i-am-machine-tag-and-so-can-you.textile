@@ -8,6 +8,7 @@ tags:
   - post:lang=javascript
   - post:type=tutorial
   - post:tags=jquery
+related_tag: post:*=(tag|jquery)
 ---
 {{page.description}}
 

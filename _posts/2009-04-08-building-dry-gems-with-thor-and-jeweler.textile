@@ -2,12 +2,13 @@
 layout: post
 title: Building DRY Gems With Thor And Jeweler
 keywords: DRY gems, gem configuration, ruby gem management, thor bundle, thor jeweler tasks
+description: Being <a href="http://en.wikipedia.org/wiki/Don%27t_repeat_yourself">DRY</a> is a concept I try to embrace as a programmer. Lately when creating new gems, I've noticed that I copy, paste and tweak the same boilerplate gemspecs/Rakefiles. Fed up with this non-DRY gem configuration, I came up with a gemspec config file solution. With this <a href="http://github.com/cldwalker/dotfiles/blob/master/.gems.yml">yaml config file</a> and some thor tasks, I'm able to generate gem specifications for any of my gems.
 tags:
   - post:lang=ruby
   - post:type=tutorial
   - gem:name=thor
   - gem:name=jeweler
-description: Being <a href="http://en.wikipedia.org/wiki/Don%27t_repeat_yourself">DRY</a> is a concept I try to embrace as a programmer. Lately when creating new gems, I've noticed that I copy, paste and tweak the same boilerplate gemspecs/Rakefiles. Fed up with this non-DRY gem configuration, I came up with a gemspec config file solution. With this <a href="http://github.com/cldwalker/dotfiles/blob/master/.gems.yml">yaml config file</a> and some thor tasks, I'm able to generate gem specifications for any of my gems.
+related_tag: gem:*=(thor|jeweler)
 ---
 {{ page.description}}
 

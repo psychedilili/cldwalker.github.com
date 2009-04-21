@@ -10,6 +10,7 @@ tags:
   - gem:topic=template
   - post:lang=ruby
   - post:type=tutorial
+related_tag: *:*=(github|jekyll)
 ---
 {{page.description}}
 

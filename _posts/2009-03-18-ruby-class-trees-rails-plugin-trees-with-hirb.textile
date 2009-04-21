@@ -12,6 +12,7 @@ tags:
   - gem:topic=tree
   - post:lang=ruby
   - post:type=tutorial
+related_tag: gem:*=(hirb|irb|activerecord)
 ---
 {{page.description}}
 

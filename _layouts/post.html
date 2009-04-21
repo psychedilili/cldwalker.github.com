@@ -45,7 +45,7 @@ function toggleMachineTags() {
 <a href="http://digg.com/submit" onclick="window.open('http://digg.com/submit?url='+encodeURIComponent(location.href)+'&amp;title='+encodeURIComponent(document.title)+'&amp;media=news&amp;topic=programming', 'digg', 'toolbar=no,width=550,height=550');return false;"><img src="http://digg.com/favicon.ico" alt="digg"/>Digg</a>
 </div>
 
-<div id="related_tag" style="display:none">{{page.related_tag}}</div>
+<div id="related_tag" style="display:none">{% if page.related_tag %}{{page.related_tag}}{% else %}{{page.tags[0]}}{% endif %}</div>
 <div id="related_posts" class="related">
 </div>
 
@@ -56,7 +56,7 @@ function toggleMachineTags() {
 
 <script type="text/javascript" charset="utf-8">
   function displayRelatedPosts(wildcard, related_posts) {
-    var related_posts = $.grep(related_posts, function(e) { return !location.href.match(e.url) }).slice(0,3);
+    var related_posts = $.grep(related_posts, function(e) { return !location.href.match(e.url) }).reverse().slice(0,3);
     var table = "<h3>Related Posts</h3>" + "<table class='post-list'>" +
     related_posts.map( function(e) {
       return "<tr>" + "<th><a href='"+e.url+"'>"+e.title+"</a></th>"+ 

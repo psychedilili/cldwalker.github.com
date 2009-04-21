@@ -10,6 +10,7 @@ tags:
   - gem:topic=parse
   - gem:topic=options
   - post:lang=ruby
+related_tag: *:*=(irb|thor)
 ---
 {{page.description}}
 
