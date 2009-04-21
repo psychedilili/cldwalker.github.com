@@ -17,7 +17,7 @@ description: This app fetches the last 20 photos of a given user and displays th
 
 <form action="javascript:void(flickrMachineTagSearch())">
   <label>Flickr User Id: </label><input type="text" id="flickr_user_id" size="15"/>
-  <label>Wildcard Machine Tag: </label><input type="text" name="machine_tag" id="machine_tag_query"/>
+  <label>Wildcard Machine Tag (optional): </label><input type="text" name="machine_tag" id="machine_tag_query"/>
   <input value="Machine Tag Search" type="submit"/>
   <span id="machine_tag_search_status" style="display:none"> Searching ...</span>
 </form>
@@ -63,7 +63,8 @@ function recordFormatter(record) {
 }
 
 $(function() {
-  $.machineTagTree.defaultOptions = {recordName: 'Photos', formatter: {record_column: recordFormatter}, caption: 'All Photos'};
+  $.machineTagTree.defaultOptions = {recordName: 'Photos', formatter: {record_column: recordFormatter}, caption: 'All Photos',
+    appendWildcardHash: false};
   $.machineTagSearch.defaultOptions = {
     beforeSearch: toggleSearchStatus, afterSearch: toggleSearchStatus, displayCallback: $.machineTagTree,
     beforeJsonSearch: convertFlickrRecords, appendHash: false

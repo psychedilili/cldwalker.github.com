@@ -37,12 +37,13 @@
   //   * tagTreeId: css id for the div containing the generated table, defaults to tag_tree
   //   * tableId: css id for the generated table, defaults to machine_tag_table
   //   * caption : caption/title for the table
+  //   * appendWildcardHash: append wildcard search as a hash to url, default is true
   //   * formatter : hash of columns to functions used to format the respective column,
   //     ** hash keys are machine_tags_column, record_column, record_tags_column
   //     ** record and record_tags columns expect a record object while machine tags column expects the row object
   $.machineTagTree = function(wildcard_machine_tag, records, options) {
     var options = $.extend({recordName: 'Records', tagTreeId: 'tag_tree', tableId: 'machine_tag_table', 
-      wildcard_machine_tag: wildcard_machine_tag},$.machineTagTree.defaultOptions, options || {});
+      wildcard_machine_tag: wildcard_machine_tag, appendWildcardHash: true},$.machineTagTree.defaultOptions, options || {});
     $('#'+options.tagTreeId).html('');
     var rows = $.createMachineTagTree(wildcard_machine_tag, records);
     displayMachineTagTree(rows, options);
@@ -60,7 +61,14 @@
       var table_html = createTable(rows, options);
       $("#"+options.tagTreeId).append(table_html);
       $("a.toggle_machine_tags").hideMachineTags();
-      $("a.machine_tag_href_search").click(function() { $.machineTagSearch(this.href.match(/#(.*?)$/).pop());});
+      if (options.appendWildcardHash) {
+        $("a.machine_tag_href_search").click(function() { $.machineTagSearch(this.href.match(/#(.*?)$/).pop());});
+      }
+      else {
+        $("a.machine_tag_href_search").click(
+          function() { $.machineTagSearch(this.href.match(/#(.*?)$/).pop()); return false;}
+        );
+      }
       $("a#toggle_all_levels").click(toggleBranchByLevel);
       $('#toggle_level').keypress( function(e) {
         var code = (e.keyCode ? e.keyCode : e.which);
