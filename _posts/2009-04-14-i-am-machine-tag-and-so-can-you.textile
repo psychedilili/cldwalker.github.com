@@ -79,3 +79,4 @@ You can install Machinetag by "downloading it":http://github.com/cldwalker/machi
 Machinetag comes with a machine tag tree demo that you can play with yourself. The demo is suprisingly similar to my blog post search. "The readme":http://github.com/cldwalker/machinetag.js contains the setup instructions (it's nothing more than copying some files). Also, a big thanks goes out to the author of "treeTable jquery plugin":http://blog.cubicphuse.nl/2008/11/12/jquery-treetable-2-0 on which machine tag trees depends.
 
 *Update:* I've made "a flickr app":http://tagaholic.me/apps/flickr.html that uses this plugin in conjunction with Flickr json feeds. This app is available as a second demo with this plugin.
+*Update 2*: I've also made "a delicious app":http://tagaholic.me/apps/delicious.html for use with Delicious json feeds.

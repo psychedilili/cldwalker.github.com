@@ -1,0 +1,59 @@
+---
+layout: master
+title: Delicious Machine Tag Tree
+keywords: delicious machine tag tree, tag tree, delicious tag tree, delicious machine tags, delicious triple tags
+description: This app fetches the last 100 bookmarks of a given tag and displays them in a tree organized by machine tags.
+---
+<h2>Delicious Machine Tag Tree - A <a href='http://github.com/cldwalker/machinetag.js'>Machinetag</a> App</h2>
+<p><b>Description:</b> {{page.description}}</p>
+<p>
+<b>Instructions:</b>
+<span style="font-style: italic" id="instructions">
+  To use this <a href="http://tagaholic.me/2009/04/14/i-am-machine-tag-and-so-can-you.html#machine_tag_tree">machine tag tree</a> you need a tag that contains actively machine tagged bookmarks. Most tags that fit this bill will be namespace machine tags i.e. system:has:namespace. Some namespace tags to choose from: <a href="javascript:void($('#delicious_tag').val('system:has:dc'))">dc</a>, <a href="javascript:void($('#delicious_tag').val('system:has:musicbrainz'))">musicbrainz</a>, <a href="javascript:void($('#delicious_tag').val('system:has:upcoming'))">upcoming</a> and <a href="javascript:void($('#delicious_tag').val('system:has:geo'))">geo</a>. As for a delicious user, you can try my account: <a href="javascript:void($('#delicious_user').val('cldwalker'))">cldwalker</a>. Some namespaces I use: <a href="javascript:void($('#delicious_tag').val('system:has:article'))">article</a>, <a href="javascript:void($('#delicious_tag').val('system:has:app'))">app</a> and <a href="javascript:void($('#delicious_tag').val('system:has:gem'))">gem</a>.
+</span>
+</p>
+
+<form action="javascript:void(deliciousMachineTagSearch())">
+  <label>Delicious Tag: </label><input type="text" id="delicious_tag"/><br/>
+  <label>Delicious User (optional): </label><input type="text" id="delicious_user"/><br/>
+  <label>Wildcard Machine Tag: </label><input type="text" name="machine_tag" id="machine_tag_query"/>
+  <input value="Machine Tag Search" type="submit"/>
+  <span id="machine_tag_search_status" style="display:none"> Searching ...</span>
+</form>
+<p/>
+<script type="text/javascript" src="/javascripts/jquery.machineTag.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.machineTagTree.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.treeTable.js"></script>
+<link href="/stylesheets/jquery.treeTable.css" rel="stylesheet" type="text/css" />
+<link href="/stylesheets/jquery.machineTagTree.css" rel="stylesheet" type="text/css" />
+<style type='text/css'>
+  td a { line-height: 110%}
+  .records_column { min-width: 150px }
+  input {margin-bottom: 10px;}
+</style>
+
+<div id="tag_tree"></div>
+
+<script type="text/javascript" charset="utf-8">
+function deliciousMachineTagSearch(delicious_tag) {
+  var user_value = $.trim($("#delicious_user").val());
+  var user_or_tag = (user_value != '') ? user_value : 'tag';
+  var delicious_feed = "http://feeds.delicious.com/v2/json/"+user_or_tag+"/"+$('#delicious_tag').val()+"?count=100";
+  $.machineTagSearch( $('#machine_tag_query').val(), {jsonUrl: delicious_feed + '&callback=?', cacheJson: false})
+}
+
+function toggleSearchStatus() { return $("#machine_tag_search_status").toggle();}
+
+function convertDeliciousRecords(json) {
+  return json.map( function(e){ return {title: e.d, url: e.u,
+    tags: $.grep(e.t, function(tag) {return tag.match(/:.*=/)}) }} )
+}
+
+$(function() {
+  $.machineTagTree.defaultOptions = {recordName: 'Bookmarks', caption: 'All Bookmarks'};
+  $.machineTagSearch.defaultOptions = {
+    beforeSearch: toggleSearchStatus, afterSearch: toggleSearchStatus, displayCallback: $.machineTagTree,
+    beforeJsonSearch: convertDeliciousRecords, appendHash: false
+  };
+});
+</script>
