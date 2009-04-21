@@ -64,7 +64,7 @@ $(function() {
   $.machineTagTree.defaultOptions = {recordName: 'Photos', formatter: {record_column: recordFormatter}, caption: 'All Photos'};
   $.machineTagSearch.defaultOptions = {
     beforeSearch: toggleSearchStatus, afterSearch: toggleSearchStatus, displayCallback: $.machineTagTree,
-    beforeJsonSearch: convertFlickrRecords
+    beforeJsonSearch: convertFlickrRecords, appendHash: false
   };
   if (user_match = location.search.match(/user_id=([^&]+)/)) {
     if (user_id = user_match[1]) flickrMachineTagSearch(user_id); $('#flickr_user_id').val(user_id);

@@ -61,16 +61,22 @@
       $("#"+options.tagTreeId).append(table_html);
       $("a.toggle_machine_tags").hideMachineTags();
       $("a.machine_tag_href_search").click(function() { $.machineTagSearch(this.href.match(/#(.*?)$/).pop());});
-      $("a#toggle_all_levels").click( function() {
-        // var toggle_level = 1 * $('#toggle_level').val();
-        var tr_selector = 'tr[level='+$('#toggle_level').val()+']';
-        // if (toggle_level <= 1) tr_selector += ',tr[level=2],tr[level=3]';
-        // if (toggle_level == 0) tr_selector += ',tr[level=1]';
-        $(tr_selector).each( function(){$(this).toggleBranch()} );
-        return false;
-      });
+      $("a#toggle_all_levels").click(toggleBranchByLevel);
+      $('#toggle_level').keypress( function(e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if(code == 13) toggleBranchByLevel();
+       });
       $("#"+options.tableId).treeTable({initialState: "expanded", indent:15});
     }
+  }
+
+  function toggleBranchByLevel() {
+    // var toggle_level = 1 * $('#toggle_level').val();
+    var tr_selector = 'tr[level='+$('#toggle_level').val()+']';
+    // if (toggle_level <= 1) tr_selector += ',tr[level=2],tr[level=3]';
+    // if (toggle_level == 0) tr_selector += ',tr[level=1]';
+    $(tr_selector).each( function(){$(this).toggleBranch()} );
+    return false;
   }
 
   function createTable(rows, options) {
