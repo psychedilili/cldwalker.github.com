@@ -1,0 +1,300 @@
+---
+layout: post
+title: How To Write A RubyGem Command Plugin
+description: The latest rubygems has a hot new feature, the ability to plugin in your own commands. In this post, I'll walk you through how I wrote my own gem command plugin, <a href="http://github.com/cldwalker/gem_grep">gem_grep</a>. Then I'll show some <a href="#examples">examples of gem_grep's sweetness</a>.
+keywords: gem command plugin how to, rubygem command plugin, gem grep, gem command plugin, gem plugins, gem commands, searching gems
+tags:
+  - post:type=tutorial
+  - post:lang=ruby
+  - post:tags=gems
+  - gem:name=gem_grep
+related_tag: *:*=ruby
+---
+<notextile><style type="text/css">
+#examples { padding-top: 50px;}
+</style></notextile>
+
+{{page.description}}
+
+Here's the basic overview of creating a gem command plugin:
+
+# "Create rubygems_plugin.rb":#step1
+# "Register Your Command":#step2
+# "Create Your Command File":#step3
+# "Customize Your Command":#step4
+
+h2(#step1). Step 1: Create rubygems_plugin.rb
+
+In a new or existing gem directory create the file lib/rubygems_plugin.rb. For my grep command, I dabbled enough into rubygem internals that I didn't want to package it with my existing gem. But in other cases, like "zenspider's graph command":http://blog.zenspider.com/2009/04/rubygems-now-has-plugins.html, distributing it with your gem makes sense.
+
+h2(#step2). Step 2: Register Your Command
+
+In rubygems_plugin.rb you need to register your gem command. You also need to require @Gem::CommandManager@.
+
+Here's what my rubygems_plugin.rb looks like:
+<notextile> {% highlight ruby %}
+  require 'rubygems/command_manager'
+  # dependencies specific to my command
+  require 'rubygems/commands/query_command'
+  require 'rubygems/super_search'
+  require 'hirb'
+  
+  Gem::CommandManager.instance.register_command :grep
+{% endhighlight %} </notextile>
+
+h2(#step3). Step 3: Create Your Command File
+
+In order for rubygems to automatically require your command, place your command file in lib/rubygems/commands/ and have your camel case class map to an underscored file. For my command class @Gem::Commands::GrepCommand@, I created the file lib/rubygems/commands/grep_command.rb. One side note, if for whatever reason you can't or don't want to create a separate file you can just drop your command code in rubygems_plugin.rb.
+
+h2(#step4). Step 4: Customize Your Command
+
+This is the meat and potatoes of a command. In my examples, I'll be referring to "my grep command":http://github.com/cldwalker/gem_grep/blob/master/lib/rubygems/commands/grep_command.rb. Let's look at the different methods you can define to customize your command: "new":#new, "execute":#execute, "arguments, defaults_str, description and usage":#misc.
+
+h3(#new). new()
+
+In this method you should define your command's name, summary and options. Here's my command's new() along with its class definition:
+
+<notextile> {% highlight ruby %}
+  class Gem::Commands::GrepCommand < Gem::Commands::QueryCommand
+    def initialize
+      super 'grep', "Enhances search command by providing extra search options and displaying results as a table"
+      defaults.merge!(:columns=>[:name,:summary,:author])
+
+      add_option('-c', '--columns STRING', 'Gemspec columns/attributes to display per gem') do |value, options|
+        options[:columns] = value.split(/\s*,\s*/).map {|e|
+          self.class.valid_gemspec_columns.detect {|c| c =~ /^#{e}/ }
+        }.compact.map {|e| e.to_sym}
+      end
+
+      add_option('-f', '--fields STRING', 'Gemspec fields/attributes to search (only for local gems)') do |value, options|
+        options[:fields] = value.split(/\s*,\s*/).map {|e|
+          self.class.valid_gemspec_columns.detect {|c| c =~ /^#{e}/ }
+        }.compact
+      end
+      remove_option '--name-matches'
+      remove_option '-d'
+      remove_option '--versions'
+    end
+  
+{% endhighlight %} </notextile>
+
+Some things to point out:
+* Normally when creating a command from scratch, you subclass from @Gem::Command@. I subclassed from @Gem::Commands::QueryCommand@ since I'm extending the query command's functionality. 
+* The @super()@ call is needed in order to define your command's name, summary and default options. In my case, my command's superclass didn't take an argument for default options. I was able to modify default options by modifying the @defaults@ accessor directly.
+* @add_option@ and @remove_option@ do what their names indicate. They use "OptionParser":http://www.ruby-doc.org/stdlib/libdoc/optparse/rdoc/classes/OptionParser.html to define options.
+
+h3(#execute). execute()
+
+Whatever business your command has should be done here. Here, as in all of your command's methods, you have access to your options through @options@. My command's @execute()@ isn't much since it delegates it's business elsewhere.
+
+<notextile> {% highlight ruby %}
+  def execute
+    string = get_one_optional_argument
+    options[:name] = /#{string}/i
+    Gem.source_index.extend Gem::SuperSearch
+    super
+  end
+{% endhighlight %}</notextile>
+
+h3(#misc). arguments(), defaults_str(), description() and usage()
+
+These are all optional methods that describe different sections of your commands help page. Here's a brief description of each:
+* @arguments()@: Describes your command's arguments one per line, left justified.
+* @defaults_str()@: Describe your command's default options.
+* @description@: Gives a detailed description of your command with any necessary instructions.
+* @usage()@: Describes commands and their order in one line.
+
+My two cents:
+
+<notextile> {% highlight ruby%}
+  def arguments # :nodoc:
+    "REGEXP          regular expression string to search specified gemspec attributes"
+  end
+
+  def usage # :nodoc:
+    "#{program_name} [REGEXP]"
+  end
+
+  def defaults_str # :nodoc:
+    "--local --columns name,summary,author --fields name --no-installed"
+  end
+  
+  def description # :nodoc:
+    'Enhances search command by providing options to search (--fields) and display (--columns) ' +
+   'gemspec attributes. Results are displayed in an ascii table. Gemspec attributes can be specified '+
+   'by the first unique string that it starts with i.e. "su" for "summary". To specify multiple gemspec attributes, delimit ' +
+   "them with commas. Gemspec attributes available to options are: #{self.class.valid_gemspec_columns.join(', ')}."
+  end
+{% endhighlight %} </notextile>
+
+h2(#examples). Gem Grep Examples
+
+Time to see what "gem grep":http://github.com/cldwalker/gem_grep does! First, it formats your search results in a table using "hirb":http://tagaholic.me/hirb/.
+
+<notextile><pre class="console">
+  bash> gem grep irb
+
+  *** LOCAL GEMS ***
+
+  +----------------+-------------------------------------------------------------------------------------------+----------------+
+  | name           | summary                                                                                   | author         |
+  +----------------+-------------------------------------------------------------------------------------------+----------------+
+  | cldwalker-hirb | A mini view framework for irb that's easy to use, even while under its influence.         | Gabriel Horner |
+  | irb_callbacks  | Adds three callbacks to the prompt, eval, and output phases of irb                        | Mike Judge     |
+  | irb_rocket     | irb plugin that makes irb #=> rocket                                                      | Genki Takiuchi |
+  | sirb           | Descriptive statistics + IRB + any other useful numerical library you may have around     | David Richards |
+  | wirble         | Handful of common Irb features, made easy.                                                | Paul Duncan    |
+  +----------------+-------------------------------------------------------------------------------------------+----------------+
+  5 rows in set
+
+</pre></notextile>
+
+If you want to choose what gemspec attributes (columns) you see in your results, no problem. Pass a comma delimited list to @-c@ in the order you want to see them. For any gemspec attribute, you can pass its alias which is the first unique string that it starts with.
+
+<notextile><pre class="console">
+  # n,ho,da are shortcuts for name,homepage,date
+  bash> gem grep -c n,ho,da irb
+
+  *** LOCAL GEMS ***
+
+  +----------------+-------------------------------------------------+--------------------------------+
+  | name           | homepage                                        | date                           |
+  +----------------+-------------------------------------------------+--------------------------------+
+  | cldwalker-hirb | http://github.com/cldwalker/hirb                | Thu Mar 12 00:00:00 -0400 2009 |
+  | irb_callbacks  | http://rubysideshow.rubyforge.org/irb_callbacks | Tue May 13 00:00:00 -0400 2008 |
+  | irb_rocket     | http://blog.s21g.com/genki                      | Sat Feb 07 00:00:00 -0500 2009 |
+  | sirb           | http://github.com/davidrichards/sirb            | Sun Mar 22 00:00:00 -0400 2009 |
+  | wirble         | http://pablotron.org/software/wirble/           | Fri Sep 08 00:00:00 -0400 2006 |
+  +----------------+-------------------------------------------------+--------------------------------+
+  5 rows in set
+</pre></notextile>
+
+Choosing your columns works for remote gems as well.
+
+<notextile><pre class="console">
+  bash> gem grep console -r -c n,ho,des
+
+  *** REMOTE GEMS ***
+
+  +---------------------------+---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------+
+  | name                      | homepage                                    | description                                                                                                              |
+  +---------------------------+---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------+
+  | CapConsole                | http://handle.rubyforge.org                 | This adds a new capistrano task called console:shell which, when run, opens a script/console shell on your remote pro... |
+  | cldwalker-console_update  | http://github.com/cldwalker/console_update  | A rails plugin which allows you to edit your database records via the console and your favorite editor.                  |
+  | Console                   | http://www.nebulargauntlet.org              |                                                                                                                          |
+  | jtrupiano-timecop-console | http://github.com/jtrupiano/timecop-console |                                                                                                                          |
+  | live_console              | http://debu.gs/live-console                 |                                                                                                                          |
+  | mongrel_console           |                                             | Provides a combined Mongrel and Rails IRB console.                                                                       |
+  | simpleconsole             | http://simpleconsole.rubyforge.org          |                                                                                                                          |
+  | takai-twitty-console      | http://github.com/takai/twitty-console/     | TwittyConsole is a console based client for Twitter.                                                                     |
+  | timecop-console           | http://github.com/jtrupiano/timecop-console |                                                                                                                          |
+  | win32console              | http://rubyforge.org/projects/winconsole    | This gem packages Gonzalo Garramuno's Win32::Console project, and includes a compiled binary for speed. The Win32::Co... |
+  +---------------------------+---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------+
+  10 rows in set
+</pre></notextile>
+
+For __local gems only__, you get increased searching ability with @-f@. Pass it a comma delimited list of gemspec attributes you want to search on, aliased as shown above. Let's see my gems that were created/authored by jamis:
+
+<notextile><pre class='console'>
+  bash> gem grep jamis -f a
+
+  *** LOCAL GEMS ***
+
+  +-----------------+------------------------------------------------------------------------------------------------------------------------------------------+------------+
+  | name            | summary                                                                                                                                  | authors    |
+  +-----------------+------------------------------------------------------------------------------------------------------------------------------------------+------------+
+  | capistrano      | Capistrano is a utility and framework for executing commands in parallel on multiple remote machines, via SSH.                           | Jamis Buck |
+  | needle          | Needle is a Dependency Injection/Inversion of Control container for Ruby. It supports both type-2 (setter) and type-3 (constructor) i... | Jamis Buck |
+  | net-scp         | A pure Ruby implementation of the SCP client protocol                                                                                    | Jamis Buck |
+  | net-sftp        | Net::SFTP is a pure-Ruby implementation of the SFTP client protocol.                                                                     | Jamis Buck |
+  | net-ssh         | Net::SSH is a pure-Ruby implementation of the SSH2 client protocol.                                                                      | Jamis Buck |
+  | net-ssh-gateway | A simple library to assist in establishing tunneled Net::SSH connections                                                                 | Jamis Buck |
+  | sqlite3-ruby    | SQLite3/Ruby is a module to allow Ruby scripts to interface with a SQLite3 database.                                                     | Jamis Buck |
+  | syntax          | Syntax is Ruby library for performing simple syntax highlighting.                                                                        | Jamis Buck |
+  +-----------------+------------------------------------------------------------------------------------------------------------------------------------------+------------+
+  8 rows in set
+</pre></notextile>
+
+As already mentioned, you can search multiple attributes. Let's search for irb inside gemspec attributes name, description and summary:
+
+<notextile><pre class='console'>
+  bash> gem grep irb -f n,su,des
+
+  *** LOCAL GEMS ***
+
+  +-----------------------+----------------------------------------------------------------------------------------------------------+------------------------------+
+  | name                  | summary                                                                                                  | authors                      |
+  +-----------------------+----------------------------------------------------------------------------------------------------------+------------------------------+
+  | cldwalker-hirb        | A mini view framework for irb that's easy to use, even while under its influence.                        | Gabriel Horner               |
+  | irb_callbacks         | Adds three callbacks to the prompt, eval, and output phases of irb                                       | Mike Judge                   |
+  | irb_rocket            | irb plugin that makes irb #=> rocket                                                                     | Genki Takiuchi               |
+  | matthew-method_lister | Pretty method listers and finders, for use in IRB.                                                       | Matthew O'Connor             |
+  | rtags                 | rtags is a Ruby replacement for ctags - allowing for name navigation in source code using vim, emacs ... | Pjotr Prins, Keiju Ishitsuka |
+  | sirb                  | Descriptive statistics + IRB + any other useful numerical library you may have around                    | David Richards               |
+  | utility_belt          | A grab-bag of IRB power user madness.                                                                    | Giles Bowkett                |
+  | wirble                | Handful of common Irb features, made easy.                                                               | Paul Duncan                  |
+  +-----------------------+----------------------------------------------------------------------------------------------------------+------------------------------+
+</pre></notextile>
+
+Like the default search and query commands, grep converts your search term to a regular expression. Let's use this to find out my gems that were created from 2000-2005. Hopefully not too many.
+
+<notextile><pre class="console">
+  bash> gem grep 200[0-5] -f da -c n,da,su
+
+  *** LOCAL GEMS ***
+
+  +-------------+--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------+
+  | name        | date                           | summary                                                                                                                           |
+  +-------------+--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------+
+  | dnssd       | Thu Oct 07 00:00:00 -0400 2004 | DNS Service Discovery (aka Rendezvous) API for Ruby                                                                               |
+  | extensions  | Thu Dec 09 00:00:00 -0500 2004 | 'extensions' is a set of extensions to Ruby's built-in classes.  It gathers common idioms, useful additions, and aliases, comp... |
+  | mysql       | Sun Oct 09 00:00:00 -0400 2005 | MySQL/Ruby provides the same functions for Ruby programs that the MySQL C API provides for C programs.                            |
+  | needle      | Fri Dec 23 00:00:00 -0500 2005 | Needle is a Dependency Injection/Inversion of Control container for Ruby. It supports both type-2 (setter) and type-3 (constru... |
+  | Platform    | Thu Dec 01 00:00:00 -0500 2005 | Hopefully robust platform sensing                                                                                                 |
+  | RedCloth    | Thu Sep 15 00:00:00 -0400 2005 | RedCloth is a module for using Textile and Markdown in Ruby. Textile and Markdown are text formats.  A very simple text format... |
+  | stemmer     | Wed Apr 20 00:00:00 -0400 2005 | Word stemming algorithm(s)                                                                                                        |
+  | syntax      | Sat Jun 18 00:00:00 -0400 2005 | Syntax is Ruby library for performing simple syntax highlighting.                                                                 |
+  | termios     | Fri Sep 24 00:00:00 -0400 2004 | Termios module are simple wrapper for termios(3). It can be included into IO-family classes and can extend IO-family objects. ... |
+  | text-format | Fri Jun 24 00:00:00 -0400 2005 | Text::Format formats fixed-width text nicely.                                                                                     |
+  | text-hyphen | Mon Dec 20 00:00:00 -0500 2004 | Multilingual word hyphenation according to modified TeX hyphenation pattern files.                                                |
+  | tree        | Thu Dec 29 00:00:00 -0500 2005 | Ruby implementation of the Tree data structure.                                                                                   |
+  +-------------+--------------------------------+-----------------------------------------------------------------------------------------------------------------------------------+
+  12 rows in set
+</pre></notextile>
+
+gem grep can also search inside gemspec attributes that are arrays i.e. @dependencies@. Let's see my gems that depend on rake:
+
+<notextile><pre class="console">
+  bash> gem grep rake -f dep -c n,dep
+
+  *** LOCAL GEMS ***
+
+  +---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+  | name          | dependencies                                                                                                                                 |
+  +---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+  | bones         | rake (>= 0.8.3, runtime)                                                                                                                     |
+  | echoe         | rake (>= 0, runtime),rubyforge (>= 1.0.0, runtime),highline (>= 0, runtime)                                                                  |
+  | ferret        | rake (> 0.0.0, runtime)                                                                                                                      |
+  | hoe           | rubyforge (>= 1.0.1, runtime),rake (>= 0.8.3, runtime)                                                                                       |
+  | launchy       | rake (>= 0.8.1, runtime),configuration (>= 0.0.5, runtime)                                                                                   |
+  | mislav-hanna  | rdoc (~> 2.2.0, runtime),haml (~> 2.0.4, runtime),rake (~> 0.8.2, runtime),echoe (>= 0, runtime)                                             |
+  | mocha         | rake (>= 0, runtime)                                                                                                                         |
+  | rails         | rake (>= 0.7.2, runtime),activesupport (= 1.4.4, runtime),activerecord (= 1.15.6, runtime),actionpack (= 1.13.6, runtime),actionmailer (=... |
+  | red           | ParseTree (~> 2.2.0, runtime),rake (~> 0.8.3, runtime),newgem (>= 1.0.6, development),hoe (>= 1.8.0, development)                            |
+  | www-delicious | rake (>= 0.8, development),echoe (>= 3.1, development),mocha (>= 0.9, development)                                                           |
+  +---------------+----------------------------------------------------------------------------------------------------------------------------------------------+
+  10 rows in set
+</pre></notextile>
+
+If you think "gem grep":http://github.com/cldwalker/gem_grep may be handy for you, install it with:
+<pre class='github'>
+  gem source -a http://gems.github.com && sudo gem install cldwalker-gem_grep
+</pre>
+
+
+h2. Further Reading
+
+* Rubygems documentation for command plugins is "here":http://rubygems.rubyforge.org/rdoc/Gem/Command.html.
+* If you aren't familiar with gemspec attributes, "read up on their docs":http://rubygems.rubyforge.org/rdoc/Gem/Specification.html.
+* zenspider has a "graph command":http://blog.zenspider.com/2009/04/rubygems-now-has-plugins.html which creates a dependency graph of your rubygems.
+* Eric Hodel has a "rubypan command":http://blog.segment7.net/articles/2009/04/16/rubypan-1-0-released which does a fulltext search of gems.
