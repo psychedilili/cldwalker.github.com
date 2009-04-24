@@ -57,7 +57,6 @@ Another testament to this structure is "an astrophotography group":http://www.nm
 So aside from Flickr, who uses machine tags?:
 * "My Rails plugin":http://github.com/cldwalker/has_machine_tags/tree/master enables Rails applications to machine tag.
 * "My jQuery plugin":http://github.com/cldwalker/machinetag.js enables machine tagging for javascript + jquery apps. %{color:red;font-weight:bold}New!%
-* "A Delicious user":http://delicious.com/adulau "explains his machine tag namespaces":http://www.foo.be/cgi-bin/wiki.pl/MachineTag.
 * Here is a "RDF format for machine tags":http://weborganics.co.uk/RDF-3T/.
 * "Astrometry robot":http://www.nmm.ac.uk/visit/exhibitions/astronomy-photographer-of-the-year/astro-robot/ crawls Flickr photos and annotates them with machine tags.
 * "A univerity-based group":http://journal.code4lib.org/articles/74 organizes their ceramic images with machine tags.
