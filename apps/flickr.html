@@ -46,8 +46,8 @@ function flickrMachineTagSearch(flickr_user_id) {
 function toggleSearchStatus() { return $("#machine_tag_search_status").toggle();}
 
 function convertFlickrRecords(json) {
-  return json.items.map( function(e){ return {title: e.title, url: e.link, media: e.media,
-    tags: $.grep(e.tags.split(" "), function(tag) {return tag.match(/:.*=/)}) }} )
+  return $.map(json.items, function(e){ return { title: e.title, url: e.link, media: e.media, tags: e.tags.split(" ") }
+    });
 }
 
 function recordFormatter(record) {

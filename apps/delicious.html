@@ -44,9 +44,8 @@ function deliciousMachineTagSearch(delicious_tag) {
 
 function toggleSearchStatus() { return $("#machine_tag_search_status").toggle();}
 
-function convertDeliciousRecords(json) {
-  return json.map( function(e){ return {title: e.d, url: e.u,
-    tags: $.grep(e.t, function(tag) {return tag.match(/:.*=/)}) }} )
+function convertDeliciousRecords(records) {
+  return $.map(records, function(e){ return {title: e.d, url: e.u, tags: e.t} } )
 }
 
 $(function() {
