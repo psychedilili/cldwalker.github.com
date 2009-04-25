@@ -48,8 +48,8 @@ $(function() {
   {% for post in site.posts %}
   <tr>
     <td>
-      <a class='float-right' href='javascript:void($("#description_{{forloop.index}}").toggle())'>Description</a>
-      <a href='{{ post.url }}'>{{ post.title }}</a>
+      <a style="line-height:125%" href='{{ post.url }}'>{{ post.title }}</a>
+      <a href='javascript:void($("#description_{{forloop.index}}").toggle())'>*description*</a>
       <div id="description_{{forloop.index}}" class='table_post_description'>
         {% if post.description %}{{post.description}}{% else %}No description.{% endif %}
       </div>

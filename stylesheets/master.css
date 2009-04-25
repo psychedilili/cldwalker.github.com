@@ -358,7 +358,8 @@ a.machine_tag_toggle.expanded {
 
 .table_post_description {
   display: none;
-  padding-top: 15px;
+  padding: 15px 0px;
+  border-bottom: 1px dotted black;
   max-width: 340px;
 }
 
