@@ -40,10 +40,6 @@ In rubygems_plugin.rb you need to register your gem command. You also need to re
 Here's what my rubygems_plugin.rb looks like:
 <notextile> {% highlight ruby %}
   require 'rubygems/command_manager'
-  # dependencies specific to my command
-  require 'rubygems/commands/query_command'
-  require 'rubygems/super_search'
-  require 'hirb'
   
   Gem::CommandManager.instance.register_command :grep
 {% endhighlight %} </notextile>
@@ -58,9 +54,13 @@ This is the meat and potatoes of a command. In my examples, I'll be referring to
 
 h3(#new). new()
 
-In this method you should define your command's name, summary and options. Here's my command's new() along with its class definition:
+In this method you should define your command's name, summary and options. Here's my command's new() along with its class definition and dependencies:
 
 <notextile> {% highlight ruby %}
+  require 'rubygems/commands/query_command'
+  require 'rubygems/super_search'
+  require 'hirb'
+
   class Gem::Commands::GrepCommand < Gem::Commands::QueryCommand
     def initialize
       super 'grep', "Enhances search command by providing extra search options and displaying results as a table"
