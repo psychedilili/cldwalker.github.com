@@ -1,8 +1,8 @@
 ---
 layout: post
 title: How To Write A RubyGem Command Plugin
-description: The latest rubygems has a hot new feature, the ability to plugin in your own commands. In this post, I'll walk you through how I wrote my own gem command plugin, <a href="http://github.com/cldwalker/gem_grep">gem_grep</a>. Then I'll show some <a href="#examples">examples of gem_grep's sweetness</a>.
-keywords: gem command plugin how to, rubygem command plugin, gem grep, gem command plugin, gem plugins, gem commands, searching gems
+description: The latest rubygems has a hot new feature, the ability to plugin in your own commands. In this post, I'll walk you through how to write a gem command plugin, using <a href="http://github.com/cldwalker/gem_grep">my own gem grep command</a> as an example. Then I'll <a href="#gem_grep">introduce gem grep</a> and <a href="#examples">show some examples</a> of how it enhances the standard gem search.
+keywords: gem command plugin how to, rubygem command plugin, gem grep, gem command plugin, gem plugins, gem commands, searching gems, gem search
 tags:
   - post:type=tutorial
   - post:lang=ruby
@@ -11,10 +11,16 @@ tags:
 related_tag: *:*=ruby
 ---
 <notextile><style type="text/css">
-#examples { padding-top: 50px;}
+#gem_grep { padding-top: 50px;}
 </style></notextile>
 
 {{page.description}}
+
+If you haven't already, update to at least rubygems version 1.3.2.
+
+<notextile><pre class="console">
+  bash> gem update --system
+</pre></notextile>
 
 Here's the basic overview of creating a gem command plugin:
 
@@ -126,6 +132,15 @@ My two cents:
    "them with commas. Gemspec attributes available to options are: #{self.class.valid_gemspec_columns.join(', ')}."
   end
 {% endhighlight %} </notextile>
+
+h2(#gem_grep). Introducing Gem Grep
+
+Now that you've seen how a gem command plugin is built, let's look at the my @gem grep@ command. It enhances the gem search command in three ways:
+
+# It displays results in a well formatted ascii table. This format allows for detail while still maintaining one gem per line.
+# It allows you to specify an aliased list of any gemspec attributes you'd like to see for the results using the columns option.
+# For local gems, it can search any number of gemspec attributes passed as an aliased list to the fields option. Note that any attributes includes attributes that are arrays so you can even search your gems by files and/or dependencies.
+
 
 h2(#examples). Gem Grep Examples
 
