@@ -8,7 +8,7 @@ tags:
   - post:tags=jquery
   - post:tags=tag
   - post:type=tutorial
-  - post:tags=delicious
+  - post:site=delicious
 related_tag: post:*=tag
 ---
 {{page.description}}
@@ -32,7 +32,7 @@ Some things to point out about the tree and its tags:
 * A tree branch represents one machine tag and contains all the bookmarks tagged with that machine tag. For example, @app > plang > bash@ corresponds to the machine tag @app:plang=bash@.
 * My namespaces, i.e. article, app (application) and gem, correspond to the main concepts/objects I associate with a bookmark. The predicates under them are the properties/attributes of those objects and the values are our traditional tags.
 
-Now that you've seen how I use machine tags, I want to explain why I use them over traditional tags. It basically comes down to this point. __Tags without a context like a namespace are more likely than tags with a context to become meaningless and useless the more they get used.__ Take for example the machine tag @app:plang=ruby@ which refers to any bookmark that is an application based on the programming language ruby. Let's say instead of tagging a bookmark with @app:plang=ruby@, I tag it with the separate tags @app, plang and ruby@. It won't be too hard to find that bookmark at first. But what happens when I have "100+ bookmarks tagged with app":http://delicious.com/cldwalker/system:has:app? What if I want to use @app@ to mean related to an application or maybe just generally about applications? At some point with any tag, its __context matters__. With machine tags, I'm always giving my tags a context. If @app@ is in my tag's namespace, I'm not wondering how it's related to the word application. I know it __is__ an application. "Some":http://zigtag.com "semantic":http://faviki.com "taggers":http://www.entitydescriber.org/ understand the value of context, though they use it for different reasons. With machine tags, we're essentially hand-rolling our semantic tags.
+Now that you've seen how I use machine tags, I want to explain why I use them over traditional tags. It basically comes down to this point. __Tags without a context (like a namespace and predicate) are more likely to become meaningless and useless the more they get used.__ Take for example the machine tag @app:plang=ruby@ which refers to any bookmark that is an application based on the programming language ruby. Let's say instead of tagging a bookmark with @app:plang=ruby@, I tag it with the separate tags @app, plang and ruby@. It won't be too hard to find that bookmark at first. But what happens when I have "100+ bookmarks tagged with app":http://delicious.com/cldwalker/system:has:app? What if I want to use @app@ to mean related to an application or maybe just generally about applications? At some point with any tag, its __context matters__. With machine tags, I'm always giving my tags a context. If @app@ is in my tag's namespace, I'm not wondering how it's related to the word application. I know it __is__ an application. "Some":http://zigtag.com "semantic":http://faviki.com "taggers":http://www.entitydescriber.org/ understand the value of context, though they use it for different reasons. With machine tags, we're essentially hand-rolling our semantic tags.
 
 h2(#delicious_machine_tagging). Machine Tagging and Delicious
 
@@ -152,4 +152,4 @@ In less than 30 lines we've written the "delicious machine tag tree":/apps/delic
 
 h2(#conclusion). Conclusion
 
-The focus of this post was to show how and why you'd use machine tags with delicious. There is one obvious problem with using them on delicious, sharing them. It will be difficult to do unless delicious opens up some kind of tag search api or a wildcard machine tag search like flickr's. I've hinted that I think machine tag trees are better than delicious bundles for managing tags but I'll have to save a real comparison for another post. For flickr users and for those interested in further machine tag experimentation, I've also built "a flickr machine tag tree":/apps/flickr.html.
+The focus of this post was to show how and why you'd use machine tags with delicious. There is however, one obvious problem with using them on delicious: sharing them. It will be difficult to do unless delicious opens up some kind of tag search api or a wildcard machine tag search like flickr's. I've hinted that I think machine tag trees are better than delicious bundles for managing tags but I'll have to save a real comparison for another post. For flickr users and for those interested in further machine tag experimentation, I've also built "a flickr machine tag tree":/apps/flickr.html.

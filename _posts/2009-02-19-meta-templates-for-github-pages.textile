@@ -4,7 +4,7 @@ title: Meta Templates For Github Pages
 keywords: github, jekyll, erb, thor, templates, github pages
 description: Whether you know it or not, your <a href="http://github.com/blog/272">Github pages</a>, blog or project pages, get piped through <a href="http://github.com/mojombo/jekyll">Jekyll</a>. Jekyll's great at generating a site from templates. But what happens when you need to generate those templates from templates?
 tags:
-  - post:tags=github
+  - post:site=github
   - gem:name=jekyll
   - gem:name=thor
   - gem:topic=template
