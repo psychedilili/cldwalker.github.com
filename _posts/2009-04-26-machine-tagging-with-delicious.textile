@@ -1,0 +1,155 @@
+---
+layout: post
+title: Machine Tagging With Delicious
+description: Recently <a href="/2009/04/14/i-am-machine-tag-and-so-can-you.html">I introduced Machinetag</a> and <a href="/2009/04/14/i-am-machine-tag-and-so-can-you.html#machine_tag_tree">its machine tag trees</a>. Now let's apply them to <a href="http://delicious.com">Delicious</a> bookmarks to organize them some. Is this the holy grail of tag organization? No, but hopefully it's one step away from the unholy mess tagging has been.
+keywords: machine tagging with delicious, delicious machine tagging, delicious machine tags, delicious machine tag trees, delicious triple tags
+tags:
+  - post:lang=javascript
+  - post:tags=jquery
+  - post:tags=tag
+  - post:type=tutorial
+  - post:tags=delicious
+related_tag: post:*=tag
+---
+{{page.description}}
+
+First, if you don't know what machine tag namespaces, predicates and values are, you should read the beginning of "this machine tags primer":/2009/03/26/what-are-machine-tags.html. Second, this post is divided into four sections: "Intro":#intro, "Delicious Machine Tagging":#delicious_machine_tagging, "Building a Delicious Machine Tag Tree":#delicious_tree and "Conclusion":#conclusion. Feel free to skip around.
+
+h2(#intro). Intro
+
+Since I consider machine tag trees an essential part of machine tags, let's first get acquainted with them. <a href="/apps/delicious.html?user=cldwalker" target="_blank">Click here</a> for a delicious machine tag tree. If you toggle the machine tags column on level 1 and open up the first branch, you should see something like this:
+
+<img src="/images/post-delicious_tree.gif" alt="my delicious tree" width="85%" />
+
+You're seeing my latest 100 delicious bookmarks organized by their machine tags. Some usage notes:
+* The toggle level number in the first column toggle the visibility of tree nodes at a given level. Level 0 toggles the top level nodes. 
+* To filter the tree by a group of machine tags, use the wildcard machine tag field. An asterisk in any machine tag field(namespace, predicate or value) matches all values in that field. For example, to only see machine tags that have an app namespace and any predicate and value you would enter: @app:*=*@.
+* Click on any tag link in the first or third columns to automatically filter the tree with the related wildcard machine tag.
+* Click on the Machine Tags link in the third column to toggle the visiblity of machine tags.
+
+Some things to point out about the tree and its tags:
+* The tree has three levels of hierarchy for tags: @namespace > predicate > value@. This is one more than delicious tag organization: @tag bundle > tag@.
+* A tree branch represents one machine tag and contains all the bookmarks tagged with that machine tag. For example, @app > plang > bash@ corresponds to the machine tag @app:plang=bash@.
+* My namespaces, i.e. article, app (application) and gem, correspond to the main concepts/objects I associate with a bookmark. The predicates under them are the properties/attributes of those objects and the values are our traditional tags.
+
+Now that you've seen how I use machine tags, I want to explain why I use them over traditional tags. It basically comes down to this point. __Tags without a context like a namespace are more likely than tags with a context to become meaningless and useless the more they get used.__ Take for example the machine tag @app:plang=ruby@ which refers to any bookmark that is an application based on the programming language ruby. Let's say instead of tagging a bookmark with @app:plang=ruby@, I tag it with the separate tags @app, plang and ruby@. It won't be too hard to find that bookmark at first. But what happens when I have "100+ bookmarks tagged with app":http://delicious.com/cldwalker/system:has:app? What if I want to use @app@ to mean related to an application or maybe just generally about applications? At some point with any tag, its __context matters__. With machine tags, I'm always giving my tags a context. If @app@ is in my tag's namespace, I'm not wondering how it's related to the word application. I know it __is__ an application. "Some":http://zigtag.com "semantic":http://faviki.com "taggers":http://www.entitydescriber.org/ understand the value of context, though they use it for different reasons. With machine tags, we're essentially hand-rolling our semantic tags.
+
+h2(#delicious_machine_tagging). Machine Tagging and Delicious
+
+If you search through the delicious "mailing list":http://tech.groups.yahoo.com/group/ydn-delicious/ and "forums":http://support.delicious.com/forum/, there is only "one lonely mention of machine tags":http://tech.groups.yahoo.com/group/ydn-delicious/message/1067. Although delicious doesn't officially support machine tags the way Flickr does, one can still machine tag with delicious. Machine tags are just tags with a defined format after all. "My delicious account":http://delicious.com/cldwalker going on 1000+ machine tagged bookmarks is one such example. Delicious accidently supports one wildcard machine tag search with its internal system tag. If you don't already know, whenever delicious sees a tag in the format: @namespace:value@ it also creates an internal @system:has:namespace@ tag. If you haven't noticed, that format starts in the same way as the machine tag format: @namespace:predicate=value@. So essentially, a delicious system tag is equivalent to the flickr wildcard machine tag @namespace:*=@. Knowing all this, we could machine tag a bookmark with @dc:creator=SchachterJoshua@ and retrieve it with @system:has:dc@. And sure enough, "some people are machine tagging in the dc namespace":http://delicious.com/tag/system:has:dc. If you start machine tagging on delicious, system tags are the only automated way others can peer into your machine tagged bookmarks by machine tag.
+
+h2(#delicious_tree). Building a Delicious Machine Tag Tree
+
+In order to get wildcard machine tag searches and sweet tag management (which is better than delicious bundles imho), let's build "the delicious app we used earlier":/apps/delicious.html. Since we're using my jQuery plugin "Machinetag":http://github.com/cldwalker/machinetag.js to do this, I'll assume you know some javascript and jquery. If you want to play with the code, "Machinetag":http://github.com/cldwalker/machinetag.js has the delicious app bundled as a demo.
+
+To create a machine tag tree we'll need the following:
+
+# "A json feed":#delicious_1 containing our desired machine tagged content and its tags.
+# "A javascript function":#delicious_2 that converts that json feed to a format that Machinetag understands.
+# "A form":#delicious_3 that let's us specify the feeds we want.
+# "Javascript to glue it all together":#delicious_4.
+
+h3(#delicious_1). 1. Delicious Json Feed
+
+"The delicious feed page":http://delicious.com/help/feeds explains that a user's json feed is in the format @http://feeds.delicious.com/v2/json/{user}@. As an example, "the user cldwalker":http://delicious.com/cldwalker has the feed "http://feeds.delicious.com/v2/json/cldwalker":http://feeds.delicious.com/v2/json/cldwalker. If you look at the feed, you can confirm that we get a bookmark's basic attributes including its tags. Mission accomplished.
+
+h3(#delicious_2). 2. Convert the Delicious Feed
+
+Machinetag's only expectation of a machine tagged object is that its machine tags in an attribute named tags as an array. Also, if I'd like to use Machinetag's default display, the object should also have a url attribute with an optional title attribute. A delicious bookmark object has these three attributes but with different attribute names:
+<notextile><pre class="console">
+  {
+     "u": "http://joshua.schachter.org/2009/04/on-url-shorteners.html",
+     "d": "joshua's blog: on url shorteners",
+     "t": [
+       "URI",
+       "tinyURL",
+       "URIShorteners",
+       "dctagged",
+       "dc:creator=SchachterJoshua"
+     ],
+     "dt": "2009-04-07T13:15:53Z",
+     "n": "",
+     "a": "petej"
+  }
+</pre></notextile>
+
+This is easy to convert thanks to jquery's @$.map()@:
+
+<notextile> {% highlight javascript %}
+  function convertDeliciousRecords(records) {
+    return $.map(records, function(e){ return {title: e.d, url: e.u, tags: e.t} } )
+  }
+{% endhighlight %} </notextile>
+
+That's it!
+
+h3(#delicious_3). 3. Create a Form
+
+For my delicious tag tree I wanted to let the user choose a feed by a user and/or a tag. So I whipped this up:
+
+<notextile>{% highlight html %}
+  <form action="javascript:void(deliciousMachineTagSearch())">
+    <label>Delicious User: </label><input type="text" id="delicious_user"/> And/Or
+    <label>Delicious Tag: </label><input type="text" id="delicious_tag"/><br/>
+    <label>Wildcard Machine Tag (optional): </label><input type="text" name="machine_tag" id="machine_tag_query"/>
+    <input value="Machine Tag Search" type="submit"/>
+    <span id="machine_tag_search_status" style="display:none"> Searching ...</span>
+  </form>
+{% endhighlight %}</notextile>
+
+Notice there is also an optional wildcard machine tag input. A wildcard machine tag specifies a subset of machine tags.
+
+h3(#delicious_4). 4. JS Glue Code
+
+This is where we put it all together:
+
+<notextile> {% highlight javascript linenos %}
+  function deliciousMachineTagSearch() {
+    var user_or_tag = ($("#delicious_user").val() != '') ? $("#delicious_user").val() : 'tag';
+    var delicious_feed = "http://feeds.delicious.com/v2/json/"+user_or_tag+"/";
+    if ($('#delicious_tag').val() != '') delicious_feed += $('#delicious_tag').val();
+    delicious_feed += "?count=100";
+    $.machineTagSearch( $('#machine_tag_query').val(), {jsonUrl: delicious_feed + '&callback=?', cacheJson: false})
+  }
+
+  function toggleSearchStatus() { return $("#machine_tag_search_status").toggle();}
+
+  function convertDeliciousRecords(records) {
+    return $.map(records, function(e){ return {title: e.d, url: e.u, tags: e.t} } );
+  }
+
+  $.machineTagTree.defaultOptions = {recordName: 'Bookmarks', caption: 'All Bookmarks', appendWildcardHash: false};
+  $.machineTagSearch.defaultOptions = {
+    beforeSearch: toggleSearchStatus, afterSearch: toggleSearchStatus, displayCallback: $.machineTagTree,
+    beforeJsonSearch: convertDeliciousRecords, appendHash: false
+  };
+
+  $(function() {
+    if (match = location.search.match(/\?(.*)/) ) {
+      var params = {};
+      $.each(match[1].split("&"), function(i,e) { params[e.split("=")[0]] = e.split("=")[1] });
+      if (params.user) $('#delicious_user').val(params.user);
+      if (params.tag) $('#delicious_tag').val(params.tag);
+      if (params.tag || params.user) deliciousMachineTagSearch();
+    }
+  });
+{% endhighlight%} </notextile>
+
+First, let's go over @deliciousMachineTagSearch()@, the function we execute when we submit the form.
+
+* Line 2: Decides if we're creating a user or tag feed based on whether we're given a delicious user.
+* Line 3-4: Adds a tag to the feed if a delicious tag is given.
+* Line 5: Specifies that the feed should pull in 100 bookmarks.
+* Line 6: Passes the wildcard machinetag to @$.machineTagSearch()@ as well as the json feed. __Notice that the json feed has a callback parameter.__ A callback parameter is *necessary* when fetching json from another server. The callback parameter's name varies per api and is usually found in the docs i.e. "delicious api docs":http://delicious.com/help/feeds.
+
+Now for the remaining code:
+* @toggleSearchStatus()@ is just a visual indicator that Machinetag is searching.
+* @convertDeliciousRecords@ is what we created in step 2.
+* @$.machineTagTree.defaultOptions@ and @$.machineTagSearch.defaultOptions@ have mostly minor default options except for @displayCallback@ and @beforeJsonSearch@. These are both *necessary*, the former to display machine tag trees and the latter to convert our delicious json feed.
+* The anonymous function starting on line 21 enables our application to take a tag or user parameter. If given a parameter, it executes a machine tag search.
+
+In less than 30 lines we've written the "delicious machine tag tree":/apps/delicious.html!
+
+h2(#conclusion). Conclusion
+
+The focus of this post was to show how and why you'd use machine tags with delicious. There is one obvious problem with using them on delicious, sharing them. It will be difficult to do unless delicious opens up some kind of tag search api or a wildcard machine tag search like flickr's. I've hinted that I think machine tag trees are better than delicious bundles for managing tags but I'll have to save a real comparison for another post. For flickr users and for those interested in further machine tag experimentation, I've also built "a flickr machine tag tree":/apps/flickr.html.

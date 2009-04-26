@@ -4,6 +4,9 @@ title: Delicious Machine Tag Tree
 keywords: delicious machine tag tree, tag tree, delicious tag tree, delicious machine tags, delicious triple tags
 description: This app fetches the last 100 bookmarks of a given tag and displays them in a tree organized by machine tags.
 ---
+<style type="text/css">
+label { font-weight: bold;}
+</style>
 <h2>Delicious Machine Tag Tree - A <a href='http://github.com/cldwalker/machinetag.js'>Machinetag</a> App</h2>
 <p><b>Description:</b> {{page.description}}</p>
 <p>
@@ -14,8 +17,8 @@ description: This app fetches the last 100 bookmarks of a given tag and displays
 </p>
 
 <form action="javascript:void(deliciousMachineTagSearch())">
+  <label>Delicious User: </label><input type="text" id="delicious_user"/> And/Or
   <label>Delicious Tag: </label><input type="text" id="delicious_tag"/><br/>
-  <label>Delicious User (optional): </label><input type="text" id="delicious_user"/><br/>
   <label>Wildcard Machine Tag (optional): </label><input type="text" name="machine_tag" id="machine_tag_query"/>
   <input value="Machine Tag Search" type="submit"/>
   <span id="machine_tag_search_status" style="display:none"> Searching ...</span>
@@ -56,8 +59,12 @@ $.machineTagSearch.defaultOptions = {
 };
 
 $(function() {
-  if (tag_match = location.search.match(/tag=([^&]+)/)) {
-    if (tag = tag_match[1]) $('#delicious_tag').val(tag); deliciousMachineTagSearch();
+  if (match = location.search.match(/\?(.*)/) ) {
+    var params = {};
+    $.each(match[1].split("&"), function(i,e) { params[e.split("=")[0]] = e.split("=")[1] });
+    if (params.user) $('#delicious_user').val(params.user);
+    if (params.tag) $('#delicious_tag').val(params.tag);
+    if (params.tag || params.user) deliciousMachineTagSearch();
   }
 });
 </script>
