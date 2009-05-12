@@ -411,4 +411,4 @@ These commands are commands that have been cloned from other classes (i.e. Modul
 
 h2. The End
 
-Hope you enjoyed this venture into irb. If you have additional insights into these commands, feel free to share.
+Hope you enjoyed this venture into irb. Feel free to share additional insights into these commands.
