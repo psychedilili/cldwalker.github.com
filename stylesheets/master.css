@@ -250,7 +250,7 @@ div.related {
   color: white;
 }
 
-.home_box h2 a {
+.home_box.home_right h2 a {
   color: white;
   margin: 0 0.2em;
 }
