@@ -10,7 +10,7 @@ tags:
 ---
 {{page.description}}
 
-When I read programming articles, I like to find the final source code so I don’t copy and paste several times. I’m laaaayzy like that. So for this little irb bit, you can find the relevant irb code "here":http://github.com/cldwalker/irbfiles/blob/master/.irb/history_methods.rb.
+When I read programming articles, I like to find the final source code so I don’t copy and paste several times. I’m laaaayzy like that. So for this little irb bit, you can find the relevant irb code "here":http://github.com/cldwalker/irbfiles/blob/master/.irb/libraries/history_commands.rb.
 
 From the ruby garden I found out where my history was stored, @Readline::HISTORY@. Wanting to make command history access as intuitive as possible, I wanted to pull up commands by the command numbers seen in irb’s prompt. Noticing that @Readline::HISTORY@ starts out with previous history, I saved its original size for later use. To pull up commands inclusively between two numbers I did the following:
 
