@@ -1,12 +1,13 @@
 ---
 layout: post
 title: Demystifying Irb's Commands
-keywords: irb commands, irb methods, irb workspaces, irb ruby, irb context, irb sessions, irb subsessions
+keywords: irb commands, irb methods, irb workspaces, irb ruby, irb context, irb sessions, irb subsessions, ruby irb, irb tutorial, irb documentation
 description: Irb is one of the most commonly used standard ruby libraries, yet most don't seem to know much about it. I've lost count of the number of blog posts that explain some irb "tricks" or "secret" config options. This is the first in a series that aims to make irb less magical and more accessible.
 tags:
   - lib:name=irb
   - post:type=tutorial
   - post:lang=ruby
+related_tag: *:*=irb
 ---
 {{page.description}}
 
