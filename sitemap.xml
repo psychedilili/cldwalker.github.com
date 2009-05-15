@@ -9,6 +9,7 @@ site_pages:
   - /has_machine_tags/
   - /console_update/
   - /local_gem/
+  - /machinetag.js/
   - /apps/flickr.html
   - /apps/delicious.html
 ---
