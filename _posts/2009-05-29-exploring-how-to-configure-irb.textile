@@ -1,0 +1,508 @@
+---
+layout: post
+title: Exploring How To Configure Irb
+keywords: irb ruby, ruby irb, irb configuration, irb conf, irb tutorial, irb documentation, how to configure irb, irb config options
+description: In <a href="/2009/05/11/demystifying-irb-commands.html">my last post</a> we discussed irb's commands. This post goes further into irb's waters, exploring <b>all</b> of it's configuration options.
+tags:
+  - lib:name=irb
+  - post:type=tutorial
+  - post:lang=ruby
+related_tag: *:*=irb
+---
+{{page.description}}
+
+
+h2. Gettin Ready
+
+For starters, I refer you to the pickaxe which has "an excellent section on configuring irb":http://www.rubycentral.com/book/irb.html. Also, this post assumes ruby 1.8.6 and irb 0.9.5, though it should apply to 1.9ers. Yes, I know I should get on the 1.9 train.
+
+This post will cover _every_ irb configuration option. If I miss one, please let me know. Not all of irb's features are enabled/used through configuration i.e. completion and xmp. I'll save those for another blog post.
+
+Let's first cover some irb configuration basics:
+* By default, irb loads the first configuration file it finds among these files: @~/.irbrc, .irbrc, irb.rc, _irbrc, $irbrc and /etc/irbrc@. For the curious, "read the source":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/init.rb#L234. That file is also where most of irb's configuration is setup.
+* To override the default configuration file, set the IRBRC environment variable: 
+<pre class="console">bash> IRBRC='/i/like/my/irbrc/elsewhere' irb</pre>
+* Irb saves it's configuration in a hash accessible through @IRB.conf@. By convention, the config keys are symbols in all caps. Simply set an option by setting a key's value: @IRB.conf[:SAVE_HISTORY] = 1000@
+* Unlike "irb commands in the last post":/2009/05/11/demystifying-irb-commands.html, there isn't much to getting most of the global configuration options:
+<notextile><pre class="console">
+  bash> irb -f --prompt simple
+  >> IRB.conf.keys
+  >> [:CONTEXT_MODE, :PROMPT_MODE, :PROMPT, :INSPECT_MODE, :VERBOSE, :RC, :SINGLE_IRB, :USE_TRACER, :EVAL_HISTORY, :LOAD_MODULES,
+   :LC_MESSAGES, :USE_LOADER, :SAVE_HISTORY, :MATH_MODE, :IGNORE_SIGINT, :IRB_RC, :AP_NAME, :MAIN_CONTEXT, :AUTO_INDENT, :BACK_TRACE_LIMIT,
+    :DEBUG_LEVEL, :IGNORE_EOF, :IRB_NAME, :ECHO, :IRB_LIB_PATH]
+</pre></notextile>
+
+* To get the full list of global irb configuration options, just grep it:
+<notextile><pre class="console">
+  # Cd to your ruby source's directory
+  bash> cd /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8
+  
+  # You probably don't want to see this output
+  bash> grep -r 'conf\[\|@CONF' irb.rb  irb/
+</pre></notextile>
+
+* Each irb subsession "copies the global config options":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/context.rb#L32-99 into its @IRB::Context@ object. Since you have easy access to this object through @irb_context() or conf()@, here's how you can figure out what configuration options you can change within irb:
+<notextile><pre class="console">
+  bash> irb
+  >> (irb_context.methods - Object.methods).grep(/=$/).sort
+  => ["ap_name=", "auto_indent_mode=", "back_trace_limit=", "debug_level=", "echo=", "eval_history=",
+   "history_file=", "ignore_eof=", "ignore_sigint=", "inspect_mode=", "io=", "irb=", "irb_name=", "irb_path=",
+  "load_modules=", "math_mode=", "prompt_c=", "prompt_i=", "prompt_mode=", "prompt_n=", "prompt_s=", "rc=",
+  "return_format=", "save_history=", "use_loader=", "use_readline=", "use_tracer=", "verbose=", "workspace="]
+  
+  # To change the ap_name
+  >> conf.ap_name = "Doh!"
+  => "Doh!"
+</pre></notextile>
+Note that all these modify configuration options except for @io=@ and @workspace=@ which set a context's @IRB::InputMethod@ and @IRB::Workspace@ objects.
+
+h2(#the_overview). "The Overview":#the_overview
+
+Since we're going to cover *all* the configuration options, let's group them into understandable chunks:
+
+* "History Options":#history_options: These keep track of input and output history: :SAVE_HISTORY, ":HISTORY_FILE":#history_file, ":EVAL_HISTORY":#eval_history
+* "Basic Options":#basic_options: These modify irb's in basic ways with booleans: ":SINGLE_IRB":#single_irb, :MATH_MODE, :RC, :USE_LOADER, :IGNORE_EOF, :IGNORE_SIGINT, :USE_READLINE
+* "Advanced Options":#advanced_options: These modify irb in more advanced ways i.e. with non-booleans: ":IRB_RC":#irb_rc, ":SCRIPT":#script, :LOAD_MODULES, ":CONTEXT_MODE":#context_mode, ":RC_NAME_GENERATOR":#rc_name_generator
+* "Visual Options":#visual_options: These modify visual irb behavior: :AUTO_INDENT, :INSPECT_MODE, ":ECHO":#echo, ":PROMPT":#prompt, :PROMPT_MODE
+* "Debug Options":#debug_options: These change the behavior of debugging code in irb or in irb's internals: ":BACK_TRACE_LIMIT":#back_trace_limit, ":USE_TRACER":#use_tracer, :VERBOSE, :DEBUG_LEVEL
+* "Questionable Options":#questionable_options: These are questionable options, questionable that you'll ever want to configure them: :AP_NAME, :IRB_LIB_PATH, :VERSION, :IRB_NAME, :LC_MESSAGES, :MAIN_CONTEXT
+
+h2(#history_options). "History Options":#history_options
+
+* :SAVE_HISTORY(number): Sets number of statements to keep in a history file.
+* ":HISTORY_FILE":#history_file (filename): Specify a history file.
+* ":EVAL_HISTORY":#eval_history (number): Stores the outputs of the last number of statements in @__@ .
+
+A sample config:
+
+<notextile><pre class="console">
+  IRB.conf[:SAVE_HISTORY] = 1000
+  IRB.conf[:HISTORY_FILE] = "/i/like/my/history/here"
+  IRB.conf[:EVAL_HISTORY] = 200
+</pre></notextile>
+
+Enabling an irb history with @:SAVE_HISTORY@ allows you to reevaluate statements in two ways. First, if your irb has a working readline library, you can look up and execute previous statements in reverse search mode. To enter this mode, type Control-R. Any keys you type will pull up the first statement that contains those letters. Familiarize yourself with what Control-A, Control-E, Control-R and Enter keys do in this mode. The second way is by using irb commands to manipulate and reevaluate several statements. Although irb doesn't come with any such commands, "utility_belt":http://github.com/gilesbowkett/utility-belt/tree/master has some "decent history commands":http://github.com/gilesbowkett/utility-belt/blob/0a542e50a3c27f883688358f70c89719be651e4b/lib/utility_belt/command_history.rb. I also have "my own version":http://github.com/cldwalker/irbfiles/blob/4693c4fd65add05150a5697c1d1c9e044717aa08/.irb/libraries/irb_history.rb that I "blogged about":/2005/10/08/irb-history-itches-eliminated.html a long time ago.
+
+h3(#history_file). ":HISTORY_FILE":#history_file
+
+If @:HISTORY_FILE@ isn't set, irb uses the same directory and file format of the detected irbrc for the irb history file. For example, ~/.irbrc leads to a ~/.irb_history whereas a ./irbrc leads to ./irb_history. For further discussion on this read ":RC_NAME_GENERATOR":#rc_name_generator.
+
+h3(#eval_history). ":EVAL_HISTORY":#eval_history
+
+The @:EVAL_HISTORY@ option saves output/eval history __per irb subsession__ in an @IRB::History@ object stored in @__@. The number it's given represents the number of the latest outputs to save. An example of using this option:
+
+<notextile><pre class="console">
+  bash> irb
+  >> Math.cos 0
+  => 1.0
+  >> Math.cos Math::PI/2
+  => 6.12323399573677e-17
+  >> Math.cos Math::PI
+  => -1.0
+  >> Math.cos Math::PI * 3/2
+  => -1.83697019872103e-16
+
+  # Print out the eval history
+  >> __
+  => 1 1.0
+  2 6.12323399573677e-17
+  3 -1.0
+  4 -1.83697019872103e-16
+
+  >> __.class
+  => IRB::History
+
+  # Creating and switching to another irb subsession
+  >> irb Class
+  >> :yo
+  => :yo
+
+  # New eval history
+  >> __
+  => 1 :yo
+</pre></notextile>
+
+If you're curious how/where irb sets the @__@, "see here":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/ext/history.rb#L41. In the same way, @_@, which saves the last output of any statement, is "defined here":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/context.rb#L164.
+
+h2(#basic_options). "Basic Options":#basic_options
+
+These options either take true or false except for @:USE_READLINE@.
+
+* ":SINGLE_IRB":#single_irb: Enables all irb subsessions to be evaluated under the same binding. Default is false.
+* :MATH_MODE: Enables math mode. Default is false. Enabling @:MATH_MODE@ or @irb -m@, alters the default "inspect mode":#inspect_mode and provides math commands by extending the @Math@ module.
+* :RC: Enables loading an irbrc file. Default is true. Disabling @:RC@ or @irb -f@, turns off any irbrc loading.
+* :USE_LOADER: Enabling @:USE_LOADER@ overrides the default @load()@ and @require()@ with irb's own commands, @irb_load()@ and @irb_require()@. Default is false. Irb's commands evaluate and display each line as if they had been input into irb. "Read this":/2009/05/11/demystifying-irb-commands.html#load_commands to learn more about these irb commands. If you're unsure what I mean by override, "read the implementation":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/ext/use-loader.rb#L48-51.
+* :IGNORE_EOF: Ignores end of line input (Control-D in *nix) or exits current subsession. Default is false.
+* :IGNORE_SIGINT: If true, aborts current operation or returns to top level. If false, exits irb. Default is true.
+* :USE_READLINE: Enables using readline for input. This is a tri-state option: true, false or nil. Default is false or nil depending on readline's existence. nil acts just like true except when irb is in inf-ruby-mode.
+
+h3(#single_irb). ":SINGLE_IRB":#single_irb
+
+If you enable @:SINGLE_IRB@, all irb subsessions get evaluated under the same global binding, @TOPLEVEL_BINDING@. This means that any local variables or methods you define are accessible across subsessions:
+
+<notextile><pre class="console">
+  # This flag isn't mentioned in irb -h. Whoops.
+  bash> irb --single-irb
+  >> it = 5
+  => 5
+  >> def say(num); puts "You can't escape this" + " binding ..." * num; end
+  => nil
+  >> say it
+  You can't escape this binding ... binding ... binding ... binding ... binding ...
+  => nil
+
+  # Start a new subsession
+  >> irb Date
+
+  # Method and local variable still exist 
+  >> say it
+  You can't escape this binding ... binding ... binding ... binding ... binding ...
+  => nil
+</pre></notextile>
+
+In my previous post's explanation of "workspace commands":/2009/05/11/demystifying-irb-commands.html#workspace_commands, I mentioned that the one main difference they had from "subsession commands":/2009/05/11/demystifying-irb-commands.html#subsession_commands was preservation of variables aka same binding. Well, since enabling this option removes that difference, it's fair to ask: __What do workspaces offer that subsessions can't?__ The only answer I can come up with is that workspaces use the same context configuration.
+
+
+h2(#advanced_options). "Advanced Options":#advanced_options
+
+* ":IRB_RC":#irb_rc (proc): This proc is called every time a "subsession is created":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/ext/multi-irb.rb#L161. 
+* ":SCRIPT":#script (string): This is used implicitly when irb is passed arguments on the commandline. Sets irb in a file input mode in which it evaluates the file's contents as input and prints out the interaction to stdout.
+* :LOAD_MODULES(paths): At startup, loads the given paths using @require()@. Since @require()@ uses @$LOAD_PATH@ to find files, gems as well as paths relative to the current directory are valid paths.
+* ":CONTEXT_MODE":#context_mode (number): Sets the type of binding that irb uses when evaluating statements. Can be either 0, 1, 2 or 3 (3 is the default).
+* ":RC_NAME_GENERATOR":#rc_name_generator (proc): Generates an irb config file. Used by irb_history and irbrc. When not set defaults "to this":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/init.rb#L234-246.
+
+h3(#irb_rc). ":IRB_RC":#irb_rc
+
+Let's see if the @:IRB_RC@ proc is called every time an irb subsession is created:
+
+<pre class="console">
+  bash> irb
+  # :IRB_RC is called at startup but it's not called this time since we haven't defined it yet.
+
+  # The argument passed to lambda is the current context.
+  >> IRB.conf[:IRB_RC] = lambda {|context| puts "Entered #{context.main}" }
+  => #<Proc:0x00057648@(irb):1>
+
+  # Create subsessions
+  >> irb 'testin'
+  Entered testin
+  >> irb Array
+  Entered Array
+</pre>
+
+It sure does. What if we only want to have the proc run once i.e. prevent future subsessions from calling it?:
+
+<pre class="console">
+  >> IRB.conf[:IRB_RC] = lambda {|e| puts "Entered #{e.main}"; IRB.conf.delete(:IRB_RC) }
+  => #<Proc:0x00091ac8@(irb#2):1>
+
+  >> irb 'byebye'
+  Entered byebye
+
+  >> IRB.conf[:IRB_RC]
+  => nil
+
+  # Proc isn't called anymore since it doesn't exist
+  >> irb 'testin'
+  >>
+</pre>
+
+"Utility belt":http://github.com/gilesbowkett/utility-belt/tree/master extends the functionality of this option by setting it to a hash of procs like this:
+
+<notextile><pre class="console">
+  Object.const_set("IRB_PROCS",{}) unless Object.const_defined?(:IRB_PROCS)
+  IRB.conf[:IRB_RC] = lambda do
+    IRB_PROCS.each {|key, proc| proc.call }
+  end
+  
+</pre></notextile>
+
+With this version of @:IRB_RC@, multiple libraries/files can have their procs run if they define their entries in @IRB_PROCS@:
+
+<notextile><pre class="console">
+  # in a rails-specific file
+  IRB_PROCS[:rails] = lambda { "set my final rails irb tweaks here"}
+
+  # ... in some other file
+  IRB_PROCS[:other] = lambda { "other tweaks"}
+</pre></notextile>
+
+Personally, I like to have my procs run once and to pass the current @IRB::Context@ object:
+
+<notextile><pre class="console">
+  Object.const_set("IRB_PROCS",{}) unless Object.const_defined?(:IRB_PROCS)
+  IRB.conf[:IRB_RC] = lambda do |context|
+    IRB_PROCS.each {|key, proc| proc.call(context); IRB_PROCS.delete(key)}
+  end
+</pre></notextile>
+
+h3(#script). ":SCRIPT":#script
+
+This option is "used quietly":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb.rb#L56-57 whenever you "pass irb an argument":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/init.rb#L190. The argument, usually a file, "is processed":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/input-method.rb#L68 by @Kernel#open@ and its result is fed to irb as input. For example:
+
+<notextile><pre class="console">
+  # Create a file message.rb:
+  message = "irb from "
+  message + __FILE__
+  
+  # Run from the commandline
+  bash> irb -f --prompt simple message.rb
+  >> message = "irb from "
+  => "irb from "
+  >> message + __FILE__
+  => "irb from blah.rb"
+  >> bash>
+</pre></notextile>
+
+Since @Kernel#open@ can open a subprocess and read its output:
+
+<notextile><pre class="console">
+  # Generates a mandelbrot set, from http://www.xcombinator.com/2008/02/22/ruby-inject-and-the-mandelbrot-set
+  bash> irb -f "|curl -s http://gist.github.com/raw/120183/22aa68d0451ab2ac69a252f5d6a2acff2a04ea3b/gistfile1.rb"
+  # Prints out irb processing the code and then generates:
+                                                            **                   
+                                                          ******                 
+                                                        ********                 
+                                                          ******                 
+                                                       ******** **   *           
+                                               ***   *****************           
+                                               ************************  ***     
+                                               ****************************      
+                                            ******************************       
+                                             ******************************      
+                                          ************************************   
+                                 *         **********************************    
+                            ** ***** *     **********************************    
+                            ***********   ************************************   
+                          ************** ************************************    
+                          ***************************************************    
+                      *****************************************************      
+  ***********************************************************************        
+                      *****************************************************      
+                          ***************************************************    
+                          ************** ************************************    
+                            ***********   ************************************   
+                            ** ***** *     **********************************    
+                                 *         **********************************    
+                                          ************************************   
+                                             ******************************      
+                                            ******************************       
+                                               ****************************      
+                                               ************************  ***     
+                                               ***   *****************           
+                                                       ******** **   *           
+                                                          ******                 
+                                                        ********   
+                                                         ******                 
+                                                            **
+</pre></notextile>
+
+Instead of opening a subprocess, you could just pipe a command into irb: 
+
+<notextile><pre class="console">
+  bash> curl -s http://gist.github.com/raw/120183/22aa68d0451ab2ac69a252f5d6a2acff2a04ea3b/gistfile1.rb | irb -f
+  # same output as above ...
+</pre></notextile>
+
+h3(#context_mode). ":CONTEXT_MODE":#context_mode
+
+This option is perhaps the only option whose use case I don't understand. Depending on the option's value, irb statements are evaluated with "a different type of binding":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/workspace.rb#L22-56:
+
+* 0: Creates binding with eval("proc{binding}.call", TOPLEVEL_BINDING ...).
+* 1: Creates binding in a temporary file.
+* 2: Create binding in a temporary file using threads.
+* 3: Creates binding with eval("def irb_binding; binding; end; irb_binding", TOPLEVEL_BINDING ...)
+
+My guesses for using values 1 and 2 are for security. As for values 0 and 3, the difference is that the former has access to @TOPLEVEL_BINDING@ while the latter doesn't:
+
+<notextile><pre class="console">
+  >> eval("a = 2", TOPLEVEL_BINDING)
+  => 2
+  >> eval "a", eval("proc{binding}.call", TOPLEVEL_BINDING)
+  => 2
+  >> eval "a", eval("def irb_binding; binding; end; irb_binding", TOPLEVEL_BINDING)
+  NameError: undefined local variable or method `a' for main:Object
+          from (irb):4:in `eval'
+          from (eval):1
+          from (eval):1
+</pre></notextile>
+
+h3(#rc_name_generator). ":RC_NAME_GENERATOR":#rc_name_generator
+
+This option is "used to generate":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/init.rb#L230 irb config files i.e. irbrc and "irb_history":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/ext/save-history.rb#L59 files in a standard way. Since irbrc is already loaded when your config is read, most irb users would only have this effect their irb_history. An example use case:
+
+<notextile><pre class="console">
+  # In your irbrc:
+  # This looks for the first config file that exists in /etc/irb/ and then ~/.irb/
+  IRB.conf[:RC_NAME_GENERATOR] = lambda {|name|
+    ["/etc/irb/#{name}.rb", "#{ENV['HOME']}/.irb/#{name}.rb"].detect {|f|
+      File.exists?(f)
+    }
+  }
+
+  # In an irb lib for rails:
+   load(config) if (config = IRB.rc_file("rails"))
+  # Loads /etc/irb/rails.rb or ~/.irb/rails.rb
+</pre></notextile>
+
+h2(#visual_options). "Visual Options":#visual_options
+
+* :AUTO_INDENT(boolean): Auto indents code when defining blocks, methods, classes, etc. Default is false.
+* <span id="inspect_mode">:INSPECT_MODE (booleanish)</span>: When true or nil, formats output by calling @inspect()@ on the statement result. When false just prints output. Default is nil. Note that setting this option from the commandline i.e. "@context.inspect_mode=":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/context.rb#L192-200 is buggy: it needs to be called twice to set it to false when initially nil.
+* ":ECHO":#echo (booleanish): When true or nil, a statement's output is printed. When false, no output is shown. Default is nil.
+* ":PROMPT":#prompt (hash): Hash of available prompts, mapping symbols to prompt hashes.
+* :PROMPT_MODE(symbol): Current prompt, pointing to a key in @:PROMPT@.
+
+h3(#echo). ":ECHO":#echo
+
+A common irb complaint is that it's output is too verbose. Disabling this option makes irb print __no output__. Here's a handy snippet that uses this option to toggle irb output:
+
+<notextile><pre class="console">
+  def irb_verbosity_toggle
+    irb_context.echo ? irb_context.echo = false : irb_context.echo = true
+  end
+</pre></notextile>
+
+Note: "Utility belt":http://github.com/gilesbowkett/utility-belt/tree/master has "another way":http://github.com/gilesbowkett/utility-belt/blob/0a542e50a3c27f883688358f70c89719be651e4b/lib/utility_belt/irb_verbosity_control.rb to toggle irb's verbosity, although not as terse.
+
+h3(#prompt). ":PROMPT":#prompt
+
+To create your own prompts, add an entry in @:PROMPT@. Your prompt should be a hash with the following keys:
+* :PROMPT_I: Normal prompt
+* :PROMPT_S: Prompt when continuing a string
+* :PROMPT_C: Prompt when continuing a statement
+* :PROMPT_N: Prompt when indenting code
+* :RETURN: String that prefixes output of a statement. Since this is passed to @Kernel#printf()@, the output could be displayed with any of its string flags, though most choose %s.
+
+The different prompt types that start with :PROMPT* can take special string flags starting with %. For more details on this I refer to the section "Configuring the Prompt in the pickaxe":http://www.rubycentral.com/book/irb.html.
+
+Here's an example of creating a custom prompt:
+
+<notextile><pre class="console">
+  bash> irb --prompt simple
+
+  # Create a basic prompt :DEMO
+  >> IRB.conf[:PROMPT][:DEMO] = {:PROMPT_I => "normal> ", :PROMPT_S => "string_continue> ", 
+  >> :PROMPT_C => "statement_continue> ", :PROMPT_N => "indent> ", :RETURN => "<< %s >>\n" }
+  => {:PROMPT_I=>"normal> ", :PROMPT_S=>"string_continue> ", :PROMPT_C=>"statement_continue> ", 
+  :PROMPT_N=>"indent> ", :RETURN=>"<< %s >>\n" }
+
+  # Enable the created prompt
+  >> conf.prompt_mode = :DEMO
+  << :DEMO >>
+
+  # PROMPT_I and PROMPT_C
+  normal> 5 *
+  statement_continue> 5
+  << 25 >>
+
+  # PROMPT_S
+  normal> 'yoda
+  string_continue> '
+  << "yoda\n" >>
+
+  # PROMPT_N
+  normal> class Yoda
+  indent>   end
+  << nil >>
+</pre></notextile>
+
+h2(#debug_options). "Debug Options":#debug_options
+
+* ":BACK_TRACE_LIMIT":#back_trace_limit (number): Number of messages to display from beginning and end of a caught error's backtrace. Default is 16.
+* ":USE_TRACER":#use_tracer (boolean): Enables using the standard library @Tracer@ to trace execution in irb.
+* :VERBOSE (boolean): Sets the verbosity of a few context-related events. Seeing that "verbose?()":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/context.rb#L143 is used by context objects, which doesn't respect "this option":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/context.rb#L94, my guess is this option is broken.
+* :DEBUG_LEVEL(number): Enables debugging for irb developers i.e. debugging "the ruby lexical analyzer":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/ruby-lex.rb.
+
+h3(#back_trace_limit). ":BACK_TRACE_LIMIT":#back_trace_limit
+
+To better understand @:BACK_TRACE_LIMIT@, let's play ping pong:
+
+<notextile><pre class="console">
+  # Define the players
+  >> def ping(num,max); raise "Ping wins" if num > max; pong(num+1,max); end
+  => nil
+  >> def pong(num,max); raise "Pong wins" if num > max; ping(num+1,max); end
+  => nil
+
+  >> conf.back_trace_limit
+  => 16
+
+  # The stacktrace is much less than the limit so we should see the full stacktrace.
+  >> ping 1,10
+  RuntimeError: Ping wins
+          from (irb):1:in `ping'
+          from (irb):2:in `pong'
+          from (irb):1:in `ping'
+          from (irb):2:in `pong'
+          from (irb):1:in `ping'
+          from (irb):2:in `pong'
+          from (irb):1:in `ping'
+          from (irb):2:in `pong'
+          from (irb):1:in `ping'
+          from (irb):2:in `pong'
+          from (irb):1:in `ping'
+          from (irb):4
+
+  >> conf.back_trace_limit = 3
+  => 3
+
+  # Now that the limit is 3, we only see the first and last 3 messages of the trace.
+  >> ping 1,10
+  RuntimeError: Ping wins
+          from (irb):1:in `ping'
+          from (irb):2:in `pong'
+          from (irb):1:in `ping'
+  ... 6 levels...
+          from (irb):2:in `pong'
+          from (irb):1:in `ping'
+          from (irb):6>>
+</pre></notextile>
+
+h3(#use_tracer). ":USE_TRACER":#use_tracer
+
+@(#use_tracer):USE_TRACER@ uses the @Tracer@ standard library to trace statements. Since @Tracer@ isn't that "well documented":http://www.ruby-doc.org/stdlib/libdoc/tracer/rdoc/index.html, I should at least explain that it's basically a wrapper around @Kernel#set_trace_func@. Here's what it looks like:
+
+<notextile><pre class="console">
+  bash> irb -f --tracer --prompt simple
+  /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/tracer.rb:150: warning: tried to create Proc object without a block
+  /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/tracer.rb:146: warning: tried to create Proc object without a block
+  >> :dude.to_s
+  #0:(irb):1:Object:-: -
+  #0:(irb):1:Symbol:>: -
+  #0:(irb):1:Symbol:<: -
+  => "dude"
+
+  # To turn it off
+  >> conf.use_tracer = false
+  #0:(irb):5:Object:-: -
+  => false
+</pre></notextile>
+
+Probably the most confusing aspect of Tracer is not knowing what the different fields delimited by ':' represent. Looking into the source reveals the fields in order are: thread number, file, line, klass, event type (defined by @Tracer::EVENT_SYMBOL@) and the actual line of code ( - if line not found).
+
+h2(#questionable_options). "Questionable Options":#questionable_options
+
+The main reason to describe these options isn't to use them but to know there is little need to use them.
+
+* :AP_NAME: Give your irb app a name.
+* :IRB_LIB_PATH: The directory of the currently used irb.rb. Used when tracing with ":USE_TRACER":#use_tracer
+* :VERSION: Version of irb specified by "the version file":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/version.rb.
+* :IRB_NAME: A name for the current irb subsession, which is available as %N in an irb prompt string. Used internally to set a context's @irb_path()@.
+* :__*: There are at least two options that start with underscores that don't have an apparent reason for being in @IRB.conf@. Just ignore 'em.
+* :LC_MESSAGES: Stores the current @IRB::Locale@ object. If you want to change languages, you can modify this object directly or you can "set environment variables":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/locale.rb#L23 such as @ENV['IRB_LANG']@.
+* :MAIN_CONTEXT: This stores the @IRB::Context@ object belonging to the first subsession. Used internally as a global setting in a couple of useful places. "Remembering that irb_context()":/2009/05/11/demystifying-irb-commands.html#miscellaneous_commands saves the current @IRB::Context@ object, let's relate it to this option:
+
+ <notextile><pre class="console">
+   bash> irb
+   >> irb_context == IRB.conf[:MAIN_CONTEXT]
+   => true
+
+   >> irb 'another subsession'
+   >> irb_context == IRB.conf[:MAIN_CONTEXT]
+   => false
+ </pre></notextile>
+
+h2. Wrap Up
+
+If you survived this in one sitting, wow! For further irb exploration, "here's my irbrc":http://github.com/cldwalker/irbfiles. Some future irb topics I'm thinking of writing up include customizing irb completion, a guide to hacking irb, strategies for creating/managing many irb commands and using irb's xmp. If you have suggestions on irb topics you'd like to learn about, please comment them.
