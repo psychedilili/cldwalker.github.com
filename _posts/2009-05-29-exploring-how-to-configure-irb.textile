@@ -209,13 +209,13 @@ It sure does. What if we only want to have the proc run once i.e. prevent future
 
 "Utility belt":http://github.com/gilesbowkett/utility-belt/tree/master extends the functionality of this option by setting it to a hash of procs like this:
 
-<notextile><pre class="console">
+<notextile> {% highlight ruby %}
   Object.const_set("IRB_PROCS",{}) unless Object.const_defined?(:IRB_PROCS)
   IRB.conf[:IRB_RC] = lambda do
     IRB_PROCS.each {|key, proc| proc.call }
   end
   
-</pre></notextile>
+{% endhighlight %}</notextile>
 
 With this version of @:IRB_RC@, multiple libraries/files can have their procs run if they define their entries in @IRB_PROCS@:
 
@@ -229,12 +229,12 @@ With this version of @:IRB_RC@, multiple libraries/files can have their procs ru
 
 Personally, I like to have my procs run once and to pass the current @IRB::Context@ object:
 
-<notextile><pre class="console">
+<notextile>{% highlight ruby%}
   Object.const_set("IRB_PROCS",{}) unless Object.const_defined?(:IRB_PROCS)
   IRB.conf[:IRB_RC] = lambda do |context|
     IRB_PROCS.each {|key, proc| proc.call(context); IRB_PROCS.delete(key)}
   end
-</pre></notextile>
+{% endhighlight %}</notextile>
 
 h3(#script). ":SCRIPT":#script
 
@@ -331,7 +331,7 @@ h3(#rc_name_generator). ":RC_NAME_GENERATOR":#rc_name_generator
 
 This option is "used to generate":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/init.rb#L230 irb config files i.e. irbrc and "irb_history":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/ext/save-history.rb#L59 files in a standard way. Since irbrc is already loaded when your config is read, most irb users would only have this effect their irb_history. An example use case:
 
-<notextile><pre class="console">
+<notextile>{% highlight ruby %}
   # In your irbrc:
   # This looks for the first config file that exists in /etc/irb/ and then ~/.irb/
   IRB.conf[:RC_NAME_GENERATOR] = lambda {|name|
@@ -343,7 +343,7 @@ This option is "used to generate":http://github.com/rubyspec/matzruby/blob/06a20
   # In an irb lib for rails:
    load(config) if (config = IRB.rc_file("rails"))
   # Loads /etc/irb/rails.rb or ~/.irb/rails.rb
-</pre></notextile>
+{% endhighlight%}</notextile>
 
 h2(#visual_options). "Visual Options":#visual_options
 
@@ -357,11 +357,11 @@ h3(#echo). ":ECHO":#echo
 
 A common irb complaint is that it's output is too verbose. Disabling this option makes irb print __no output__. Here's a handy snippet that uses this option to toggle irb output:
 
-<notextile><pre class="console">
+<notextile>{% highlight ruby%}
   def irb_verbosity_toggle
     irb_context.echo ? irb_context.echo = false : irb_context.echo = true
   end
-</pre></notextile>
+{% endhighlight%}</notextile>
 
 Note: "Utility belt":http://github.com/gilesbowkett/utility-belt/tree/master has "another way":http://github.com/gilesbowkett/utility-belt/blob/0a542e50a3c27f883688358f70c89719be651e4b/lib/utility_belt/irb_verbosity_control.rb to toggle irb's verbosity, although not as terse.
 
