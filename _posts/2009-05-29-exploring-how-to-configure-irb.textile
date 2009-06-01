@@ -1,8 +1,8 @@
 ---
 layout: post
 title: Exploring How To Configure Irb
-keywords: irb ruby, ruby irb, irb configuration, irb conf, irb tutorial, irb documentation, how to configure irb, irb config options
-description: In <a href="/2009/05/11/demystifying-irb-commands.html">my last post</a> we discussed irb's commands. This post goes further into irb's waters, exploring <b>all</b> of it's configuration options.
+keywords: irb ruby, ruby irb, irb configuration, irb conf, irb tutorial, irb documentation, how to configure irb, irb config options, customize irb, irb tips, irb guide
+description: In <a href="/2009/05/11/demystifying-irb-commands.html">my last post</a> we discussed irb's commands. This post goes further into irb's innards, exploring <b>all</b> of it's configuration options.
 tags:
   - lib:name=irb
   - post:type=tutorial
@@ -85,7 +85,7 @@ Enabling an irb history with @:SAVE_HISTORY@ allows you to reevaluate statements
 
 h3(#history_file). ":HISTORY_FILE":#history_file
 
-If @:HISTORY_FILE@ isn't set, irb uses the same directory and file format of the detected irbrc for the irb history file. For example, ~/.irbrc leads to a ~/.irb_history whereas a ./irbrc leads to ./irb_history. For further discussion on this read ":RC_NAME_GENERATOR":#rc_name_generator.
+If @:HISTORY_FILE@ isn't set, irb uses the same directory and file format of the detected irbrc for the irb history file. For example, ~/.irbrc leads to a ~/.irb_history whereas a ./irbrc leads to ./irb_history. For related discussion on this read ":RC_NAME_GENERATOR":#rc_name_generator.
 
 h3(#eval_history). ":EVAL_HISTORY":#eval_history
 
@@ -374,7 +374,16 @@ To create your own prompts, add an entry in @:PROMPT@. Your prompt should be a h
 * :PROMPT_N: Prompt when indenting code
 * :RETURN: String that prefixes output of a statement. Since this is passed to @Kernel#printf()@, the output could be displayed with any of its string flags, though most choose %s.
 
-The different prompt types that start with :PROMPT* can take special string flags starting with %. For more details on this I refer to the section "Configuring the Prompt in the pickaxe":http://www.rubycentral.com/book/irb.html.
+*Updated*: The different prompt types that start with :PROMPT* substitute string flags for certain values:
+* %N - Value from @Irb.conf[:IRB_NAME]@
+* %m - @self.to_s@
+* %M - @self.inspect@
+* %l - Character needed to finish continuing a string. Should be used with @:PROMPT_S@.
+* %zi - Indent level with optional number z for printf width.
+* %zn - Line number with optional number z for printf width.
+* %% - Literal percentage sign.
+
+For more details on prompts I suggest "the Configuring the Prompt section in the pickaxe":http://www.rubycentral.com/book/irb.html or just "check out the irb implementation code":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb.rb#L269-298.
 
 Here's an example of creating a custom prompt:
 
@@ -488,7 +497,7 @@ The main reason to describe these options isn't to use them but to know there is
 * :AP_NAME: Give your irb app a name.
 * :IRB_LIB_PATH: The directory of the currently used irb.rb. Used when tracing with ":USE_TRACER":#use_tracer
 * :VERSION: Version of irb specified by "the version file":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/version.rb.
-* :IRB_NAME: A name for the current irb subsession, which is available as %N in an irb prompt string. Used internally to set a context's @irb_path()@.
+* :IRB_NAME: A name for the current irb subsession, which is available as %N in an "irb prompt string":#prompt. Used internally to set a context's @irb_path()@.
 * :__*: There are at least two options that start with underscores that don't have an apparent reason for being in @IRB.conf@. Just ignore 'em.
 * :LC_MESSAGES: Stores the current @IRB::Locale@ object. If you want to change languages, you can modify this object directly or you can "set environment variables":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/locale.rb#L23 such as @ENV['IRB_LANG']@.
 * :MAIN_CONTEXT: This stores the @IRB::Context@ object belonging to the first subsession. Used internally as a global setting in a couple of useful places. "Remembering that irb_context()":/2009/05/11/demystifying-irb-commands.html#miscellaneous_commands saves the current @IRB::Context@ object, let's relate it to this option:
