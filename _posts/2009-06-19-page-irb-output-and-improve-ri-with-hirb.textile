@@ -1,0 +1,258 @@
+---
+layout: post
+title: Page Irb Output And Improve Ri With Hirb
+keywords: better ri, smarter ri, page irb, irb pager, ruby ri, ri hirb, ruby pager
+description: Hirb just got two sweet features with the 0.2 release - a pager and a selection menu. With the pager, you'll never have to scroll because irb dumped an ungodly <code>inspect()</code> on you. <a href="#ri">With the selection menu</a>, you'll have <a href="http://rdoc.rubyforge.org/RI_txt.html">RI</a> taking useful method dumps in no time.
+tags:
+  - gem:name=hirb
+  - lib:name=irb
+  - lib:name=ri
+  - post:lang=ruby
+  - post:type=tutorial
+related_tag: gem:*=(hirb|irb)
+---
+<style text="type/css">
+  #ri { padding-top: 50px }
+</style>
+{{ page.description }}
+
+To play with what follows, you'll need the latest Hirb:
+<notextile><pre class="github">
+  gem install cldwalker-hirb --source http://gems.github.com
+</pre></notextile>
+
+h2. Paging With Irb
+
+If you're unsure that irb's output can be quite horrendous at times:
+<notextile><pre class="console">
+  bash> irb -rubygems
+  >> Gem.source_index
+  # Human sacrifice, dogs and cats living together ... mass hysteria!
+</pre></notextile>
+
+Sure, we can turn it off:
+<notextile><pre class="console">
+  >> conf.echo = false
+  >> Gem.source_index
+  >>
+  # Sorry to disappoint you Dr. Venkman
+</pre></notextile>
+
+But sometimes we want to *see* some of the output, we want to *explore* an API, we want to sift through an object's guts and *find* something useful. But mostly, we just don't want to be *crapped on* for executing our half-baked crap ... I mean code. Enter the pager:
+
+<notextile><pre class="console">
+  bash> irb -rubygems -rhirb
+  >> Hirb.enable
+  => nil
+  >> Gem.source_index
+  => # Just a screenful of output here. Cheers and hip hoorays ensue.
+</pre></notextile>
+
+Is that it? That's it. @Hirb@ by default has paging turned on. You can specify your own pager command or have it detect your system's pager i.e. @ENV['PAGER']@, less or more. If no system pager is detected it defaults to a __very basic__ ruby pager: you page or you quit.
+
+So you may be wondering, is every irb output paged? Hell no. Hirb is aware of your console's width and height and uses that to only page output that exceeds a screenful. If you're a *nixer, Hirb should be able to detect your width and height:
+
+<notextile><pre class="console">
+  bash> irb -rubygems -rhirb
+  >> Hirb.enable
+  => nil
+  >> Hirb::View.width
+  => 208
+  >> Hirb::View.height
+  => 51
+
+  # Sweet, hirb detected my console size.
+  # I can take advantage of this auto-detection i.e. after changing my console window's size.
+  >> Hirb::View.resize
+  => [172, 45]
+</pre></notextile>
+
+If autodetection doesn't work, it's still pretty easy:
+
+<notextile><pre class="console">
+  bash> irb -rubygems -rhirb
+  # Let's determine our width.
+  # Use the line that starts wrapping to give you an approximate width.
+  >> 80.step(200, 10) {|e| puts e.to_s + "*" * (e - e.to_s.size) ; sleep 0.2 }
+  80******************************************************************************
+  90****************************************************************************************
+  
+  # Let's do something similar for height.
+  # Stop it when two numbers aren't on the same screen anymore
+  # 25.step(80, 5) {|e| puts "*\n" * (e - 1) + e.to_s ; sleep 1.5 }
+  
+  
+  >> Hirb.enable :width=>your_width, :height=>your_height
+  => nil
+
+  # If you change your console window, just explicitly pass your width and height:
+  >> Hirb::View.resize(120, 30)
+</pre></notextile>
+
+h2(#ri). Improving RI With Menus
+
+<a href="http://rdoc.rubyforge.org/RI_txt.html">RI</a> is pretty handy as far as keystrokes to documentation goes. But it can be improved.
+
+Before improving it, let's look at the selection menu that comes with Hirb:
+
+<notextile><pre class="console">
+  bash> irb -rubygems -rhirb
+  >> extend Hirb::Console
+  => main
+  >> menu ('a'..'h').to_a
+  +--------+-------+
+  | number | value |
+  +--------+-------+
+  | 1      | a     |
+  | 2      | b     |
+  | 3      | c     |
+  | 4      | d     |
+  | 5      | e     |
+  | 6      | f     |
+  | 7      | g     |
+  | 8      | h     |
+  +--------+-------+
+  8 rows in set
+  Choose : # Here's where you type
+  # Typing: 1-3,6-7  => ["a", "b", "c", "f", "g"]
+  # Typing: 1..3,6..7  => ["a", "b", "c", "f", "g"]
+  # Typing: * => ["a", "b", "c", "d", "e", "f", "g", "h"]
+  # Typing: enter/return => []
+</pre></notextile>
+
+As you can see, @menu()@ uses "Hirb's tables":/2009/03/13/hirb-irb-on-the-good-stuff.html to display the array. You can select a subset by specifying ranges with @-@ and separating multiple ranges with @,@. If you're feeling rubyish you can use @..@ for ranges i.e. @1..3, 6..7@. So what's the big deal? Ruby's @Array.slice()@ can do most of this already. Well, let's go back to rdoc's @ri@.
+
+You may or may not be familiar with ri's interactive mode, @ri -i@. Basically it allows you to autocomplete methods as you would in irb. This ri feature seems to have "been started":http://rubyforge.org/tracker/index.php?func=detail&aid=20663&group_id=627&atid=2474 by "Daniel Choi":http://danielchoi.com/software/ri-enhanced.html. As part of his patch he had "a basic selection menu":http://danielchoi.com/software/ri-enhanced.html for resolving multiple matches on a query. Let's see if we can continue where Daniel left off using Hirb's @menu()@.
+
+First we need to figure out how to query ri and get back a list of matches. If you look at the "ri command":http://github.com/rubyspec/matzruby/blob/9b20bdc753b3ef97e9bedfffa78da759652f2b59/bin/ri, you see that ri is run by the class "RDoc::RI::Driver":http://github.com/rubyspec/matzruby/blob/9b20bdc753b3ef97e9bedfffa78da759652f2b59/lib/rdoc/ri/driver.rb. So if we create an @RDoc::RI::Driver@ object, how can we select a list of matches? If you look around, you'll figure out "select_methods()":http://github.com/rubyspec/matzruby/blob/9b20bdc753b3ef97e9bedfffa78da759652f2b59/lib/rdoc/ri/driver.rb#L644 is what we want:
+
+<notextile><pre class="console">
+  bash> irb -rubygems
+  >> require 'rdoc/ri/driver'
+  => true
+  => conf.echo = false
+  >> driver = RDoc::RI::Driver.new(RDoc::RI::Driver.process_args(['set_trace']))
+  >> matches = driver.select_methods(/set_trace/)
+  >> conf.echo = true
+  >> matches.class
+  => Array
+  >> matches[0]
+  => {"visibility"=>"public", "name"=>"set_trace", "is_singleton"=>true, "params"=>"( arg )", "block_params"=>nil, "aliases"=>[],
+   "full_name"=>"DEBUGGER__::set_trace", "comment"=>nil, "source_path"=>"Ruby 1.8"}
+
+   # Let's pass a specific match back to ri to get it's documentation
+   >> RDoc::RI::Driver.run [ matches[0]['full_name'] ]
+   -------------------------------------------------- DEBUGGER__::set_trace
+        DEBUGGER__::set_trace( arg )
+
+        From Ruby 1.8
+   ------------------------------------------------------------------------
+        [no description]
+   => ["DEBUGGER__::set_trace"]
+</pre></notextile>
+
+Knowing how to extract an ri query result and feed it back to ri, let's use a Hirb menu with its block syntax which passes the chosen items to the block:
+
+<notextile><pre class="console">
+  >> require 'hirb'; extend Hirb::Console
+  => main
+  >> menu(matches, :fields=>['full_name']) {|e| RDoc::RI::Driver.run(e.map {|e| e['full_name']}) }
+  +--------+-----------------------------------+
+  | number | full_name                         |
+  +--------+-----------------------------------+
+  | 1      | DEBUGGER__::set_trace             |
+  | 2      | DEBUGGER__::Context#set_trace     |
+  | 3      | DEBUGGER__::Context#set_trace_all |
+  | 4      | Kernel#set_trace_func             |
+  +--------+-----------------------------------+
+  4 rows in set
+  Choose : 1-3 # You type 1-3
+  # Prints the ri documentation for the first 3 methods
+</pre></notextile>
+
+All of a sudden we have the choice to see the documentation of *any* method(s)! Simply type a number or a range of numbers. What if we could apply this to a Ruby class i.e. list a class' methods and choose from them?:
+
+<notextile> {% highlight ruby %}
+  def ri(original_query, regex=nil)
+    query = original_query.to_s
+    ri_driver = RDoc::RI::Driver.new(RDoc::RI::Driver.process_args([query]))
+
+    # if query is a class ri recognizes
+    if (class_cache = ri_driver.class_cache[query])
+      methods = []
+      class_methods = class_cache["class_methods"].map {|e| e["name"]}
+      instance_methods = class_cache["instance_methods"].map {|e| e["name"]}
+      if regex
+        class_methods = class_methods.grep(/#{regex}/)
+        instance_methods = instance_methods.grep(/#{regex}/)
+      end  
+      all_methods = class_methods.each {|e| methods << {:name=>"#{query}.#{e}", :type=>:class}} +
+        instance_methods.each {|e| methods << {:name=>"#{query}.#{e}", :type=>:instance}}
+      menu(methods, :fields=>[:name, :type]) do |chosen|
+        system_ri(*chosen.map {|e| e[:name]})
+      end
+    else
+      results = ri_driver.select_methods(/#{query}/)
+      menu(results, :fields=>['full_name'], :ask=>false) do |chosen|
+        system_ri(*chosen.map {|e| e['full_name']})
+      end    
+    end
+  end
+  
+  def system_ri(*queries)
+    ::Hirb::View.capture_and_render { RDoc::RI::Driver.run(queries) }
+  end
+{% endhighlight%} </notextile>
+
+I'll let you figure out how the above works. Let's just use it:
+
+<notextile><pre class="console">
+  # Wouldn't it be nice to page as above
+  >> Hirb.enable
+  => nil
+  >> ri Array
+  +--------+--------------------------+----------+
+  | number | name                     | type     |
+  +--------+--------------------------+----------+
+  | 1      | Array.[]                 | class    |
+  | 2      | Array.new                | class    |
+  | 3      | Array.&                  | instance |
+  | 4      | Array.*                  | instance |
+  | 5      | Array.+                  | instance |
+  | 6      | Array.-                  | instance |
+  | 7      | Array.<<                 | instance |
+  | 8      | Array.<=>                | instance |
+  | 9      | Array.==                 | instance |
+  | 10     | Array.[]                 | instance |
+  # omitting the other 71 rows for brevity
+  Choose: 1-10
+  # Out comes the documentation for the 2 class methods and the first 8 instance methods.
+
+  # If we want to filter a subset of a class, just pass a second argument to be interpreted as a regex.
+  # Any methods containing 'to'
+  >> ri Array, :to
+  +--------+---------------+----------+
+  | number | name          | type     |
+  +--------+---------------+----------+
+  | 1      | Array.to_a    | instance |
+  | 2      | Array.to_ary  | instance |
+  | 3      | Array.to_s    | instance |
+  | 4      | Array.to_yaml | instance |
+  +--------+---------------+----------+
+  Choose:
+</pre></notextile>
+
+In the first example above, paging works not only for the menu but also for all the ri output. If you take a look at the above @ri()@ method, you'll see that it wrap ri's output with a @Hirb::View.capture_and_render@ block. As you may have guessed, that method capture's ri's STDOUT and run's it through Hirb's pager.
+
+If you're curious, the actual ri library I use in irb is "here":http://github.com/cldwalker/irbfiles/blob/9f89694eddd05e534c795a508f072c23e64b91d2/.irb/libraries/ri.rb. It covers some more ri edge cases I didn't go into here. That library could easily be made into a command if you want. To use it in irb, drop this in your irbrc:
+<notextile><pre class="console">
+  require 'hirb'
+  Hirb.enable
+  extend Hirb::Console
+  load "/path/to/ri_library"
+  class << self; include Ri; end
+</pre></notextile>
+
+h2. Wrapping Up With A Wrap Challenge
+
+In wrapping this up, I'd like to mention the hirb config "file format has changed":http://tagaholic.me/hirb/doc/classes/Hirb.html. Basically you don't need to nest everything under the @:view@ key. Also, I'd like to mention that this release has an improved algorithm for automatically rendering "console tables":/2009/03/13/hirb-irb-on-the-good-stuff.html that don't wrap. So if you set your width and height correctly, as explained above, I challenge you to pass Hirb's @table()@ arrays that cause it to wrap. Well, arrays you actually want to use.

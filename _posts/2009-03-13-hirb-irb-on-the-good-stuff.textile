@@ -28,7 +28,7 @@ related_tag: gem:*=(hirb|irb|activerecord)
   => nil
   
   # This is the default config which maps output classes to their views.
-  irb>> Hirb::View.output_config
+  irb>> Hirb::View.formatter_config
   => {"ActiveRecord::Base"=>{:class=>"Hirb::Views::ActiveRecord_Base", :ancestor=>true}}
   
   # Tag is an ActiveRecord::Base descendant which inherits ActiveRecord::Base's view.
@@ -47,7 +47,7 @@ related_tag: gem:*=(hirb|irb|activerecord)
   =>:the_same
 </pre>
 </notextile>
-Note no configuration was needed for @Tag@ since Hirb is preconfigured to associate @ActiveRecord::Base@ descendants with a table view. Also notice that the above string and symbol resorted to irb's default echo mode. This happens whenever an output class has no configuration in @Hirb::View.output_config@.
+Note no configuration was needed for @Tag@ since Hirb is preconfigured to associate @ActiveRecord::Base@ descendants with a table view. Also notice that the above string and symbol resorted to irb's default echo mode. This happens whenever an output class has no configuration in @Hirb::View.formatter_config@.
   
 Hirb not only detects objects with configured output classes but also arrays of these objects:
 <notextile>
@@ -144,14 +144,13 @@ Hirb also supports a yaml configuration file (config/hirb.yml or ~/.hirb.yml). T
 <notextile>
 <pre class="github">
   ---
-    :view:
-      :output:
-        Tag:
-          :options:
-            :fields:
-              - id
-              - name
-              - tag_list
+    :output:
+      Tag:
+        :options:
+          :fields:
+            - id
+            - name
+            - tag_list
 </pre>
 </notextile>
 For another yaml example, "see this one":http://github.com/cldwalker/tag-tree/blob/master/config/hirb.yml I use in my Rails app.

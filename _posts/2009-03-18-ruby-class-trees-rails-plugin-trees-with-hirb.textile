@@ -30,7 +30,7 @@ First, let's view a basic tree with Hirb.
   => [[0,0], [1,1], [2,2], [2,3], [1,4]]
   
   # Render a basic tree.
-  irb>> view tree, :tree
+  irb>> view tree, :class=>:tree
   0
       1
           2
@@ -39,7 +39,7 @@ First, let's view a basic tree with Hirb.
   => true
   
   # Render a directory tree.
-  irb>> view tree, :tree, :type=>:directory
+  irb>> view tree, :class=>:tree, :type=>:directory
   0
   |-- 1
   |   |-- 2
@@ -48,7 +48,7 @@ First, let's view a basic tree with Hirb.
   => true
   
   # Render a tree with each level numbered.
-  irb>> view tree, :tree, :type=>:number
+  irb>> view tree, :class=>:tree, :type=>:number
   0. 0
       1. 1
           1. 2
@@ -91,7 +91,7 @@ That wasn't too hard. @class_children()@ is the method we seek. It iterates over
   => [Float, Integer, Date::Infinity, Rational]
   
   # Must explicitly pass :class_children since ParentChildTree assumes a :children method by default.
-  irb>> view Numeric, :parent_child_tree, :children_method=>:class_children, :type=>:directory
+  irb>> view Numeric, :class=>:parent_child_tree, :children_method=>:class_children, :type=>:directory
   Numeric
   |-- Float
   |-- Integer
@@ -101,11 +101,11 @@ That wasn't too hard. @class_children()@ is the method we seek. It iterates over
   `-- Rational
   => true
   
-  irb>> view StandardError, :parent_child_tree, :children_method=>:class_children, :type=>:directory
+  irb>> view StandardError, :class=>:parent_child_tree, :children_method=>:class_children, :type=>:directory
   # Just kidding. Don't want to double the length of this post.
   
   # We can however do a subset of that tree:
-  irb>> view RuntimeError, :parent_child_tree, :children_method=>:class_children, :type=>:directory
+  irb>> view RuntimeError, :class=>:parent_child_tree, :children_method=>:class_children, :type=>:directory
   RuntimeError
   `-- Gem::Exception
       |-- Gem::VerificationError
@@ -154,7 +154,7 @@ With @nested_children()@, we're ready to rock. Let's view nested classes under H
   irb>> Hirb.nested_children
   => [Hirb::Util, Hirb::View, Hirb::Console, Hirb::Helpers, Hirb::Views, Hirb::HashStruct]
 
-  irb>> view Hirb, :parent_child_tree, :children_method=>:nested_children, :type=>:directory
+  irb>> view Hirb, :class=>:parent_child_tree, :children_method=>:nested_children, :type=>:directory
   Hirb
   |-- Hirb::Util
   |-- Hirb::View
@@ -185,7 +185,7 @@ With @nested_children()@, we're ready to rock. Let's view nested classes under H
 Sweet! A nice visualization of Hirb's classes. But wouldn't it be nice if a nested class only showed its nested name? That's what we defined @nested_name()@ for:
 
 <notextile><pre class="console">
->> view Hirb, :parent_child_tree, :children_method=>:nested_children, :type=>:directory,
+>> view Hirb, :class=>:parent_child_tree, :children_method=>:nested_children, :type=>:directory,
   :value_method=>:nested_name
 Hirb
 |-- Util
@@ -281,7 +281,7 @@ With our app and records setup, it's time to see the trees:
   => main
 
   # View tree from root node.
-  irb>> view Category.root, :parent_child_tree, :type=>:directory
+  irb>> view Category.root, :class=>:parent_child_tree, :type=>:directory
   root
   |-- gems
   |   |-- hirb
@@ -291,7 +291,7 @@ With our app and records setup, it's time to see the trees:
   => true
 
   # We can view a tree from any node:
-  irb>> view Category.find_by_name('gems'), :parent_child_tree, :type=>:directory
+  irb>> view Category.find_by_name('gems'), :class=>:parent_child_tree, :type=>:directory
   gems
   |-- hirb
   `-- utility_belt
