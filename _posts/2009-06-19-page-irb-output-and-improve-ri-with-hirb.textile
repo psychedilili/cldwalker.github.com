@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Page Irb Output And Improve Ri With Hirb
-keywords: better ri, smarter ri, page irb, irb pager, ruby ri, ri hirb, ruby pager
+keywords: better ri, smarter ri, improve ri, page irb, irb pager, ruby ri, hirb, ruby pager, rdoc ri, ruby menu, console menu, terminal menu, irb menu
 description: Hirb just got two sweet features with the 0.2 release - a pager and a selection menu. With the pager, you'll never have to scroll because irb dumped an ungodly <code>inspect()</code> on you. <a href="#ri">With the selection menu</a>, you'll have <a href="http://rdoc.rubyforge.org/RI_txt.html">RI</a> taking useful method dumps in no time.
 tags:
   - gem:name=hirb
@@ -255,4 +255,4 @@ If you're curious, the actual ri library I use in irb is "here":http://github.co
 
 h2. Wrapping Up With A Wrap Challenge
 
-In wrapping this up, I'd like to mention the hirb config "file format has changed":http://tagaholic.me/hirb/doc/classes/Hirb.html. Basically you don't need to nest everything under the @:view@ key. Also, I'd like to mention that this release has an improved algorithm for automatically rendering "console tables":/2009/03/13/hirb-irb-on-the-good-stuff.html that don't wrap. So if you set your width and height correctly, as explained above, I challenge you to pass Hirb's @table()@ arrays that cause it to wrap. Well, arrays you actually want to use.
+In wrapping this up, I'd like to mention the hirb config "file format has changed":http://tagaholic.me/hirb/doc/classes/Hirb.html. Basically you don't need to nest everything under the @:view@ key. Also, I'd like to mention that this release has an improved algorithm for automatically rendering "console tables":/2009/03/13/hirb-irb-on-the-good-stuff.html that don't wrap. So if you set your width and height correctly, as explained above, I challenge you to pass Hirb's @table()@ arrays that cause it to wrap.
