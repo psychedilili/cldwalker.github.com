@@ -50,7 +50,7 @@ But sometimes we want to *see* some of the output, we want to *explore* an API, 
 
 Is that it? That's it. @Hirb@ by default has paging turned on. You can specify your own pager command or have it detect your system's pager i.e. @ENV['PAGER']@, less or more. If no system pager is detected it defaults to a __very basic__ ruby pager: you page or you quit.
 
-So you may be wondering, is every irb output paged? Hell no. Hirb is aware of your console's width and height and uses that to only page output that exceeds a screenful. If you're a *nixer, Hirb should be able to detect your width and height:
+So you may be wondering, is every irb output paged? Hell no. Hirb is aware of your console's width and height and uses that to only page output that exceeds a screenful. If you're a <notextile>*nixer</notextile>, Hirb should be able to detect your width and height:
 
 <notextile><pre class="console">
   bash> irb -rubygems -rhirb
