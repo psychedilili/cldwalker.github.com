@@ -132,11 +132,12 @@ That wasn't too hard. @class_children()@ is the method we seek. It iterates over
 h3(#nested_class_trees). Nested Class Trees
 
 Seeing how easily Hirb creates trees for us, let's build another one. When I start using a new gem, it helps to get an overview of the classes and modules it defines. All we need is a method that can retrieve a class' immediate nested class (ie Gem::Error is a nested class of Gem):
+
 <notextile> {% highlight ruby %}
   module NestedTree
     # Since nested classes are just constants:
     def nested_children
-      constants.map {|e| const_get(e) }.select {|e| e.is_a?(Module) }
+      constants.map {|e| const_get(e) }.select {|e| e.is_a?(Module) } - [self]
     end
     
     def nested_name
@@ -146,6 +147,9 @@ Seeing how easily Hirb creates trees for us, let's build another one. When I sta
   
   Module.send :include, NestedTree
 {% endhighlight %} </notextile>
+
+*Update*: @nested_children()@ has been tweaked to avoid recursion in some cases as pointed out in the comments.
+
 With @nested_children()@, we're ready to rock. Let's view nested classes under Hirb:
 
 <notextile>
@@ -182,6 +186,7 @@ With @nested_children()@, we're ready to rock. Let's view nested classes under H
   `-- Hirb::HashStruct
   => true
 </pre></notextile>
+
 Sweet! A nice visualization of Hirb's classes. But wouldn't it be nice if a nested class only showed its nested name? That's what we defined @nested_name()@ for:
 
 <notextile><pre class="console">
