@@ -1,0 +1,242 @@
+---
+layout: post
+title: Alias - Quickness in the Ruby Console
+keywords: alias, ruby alias, alias_method, alias methods, alias classes, ruby delegate, ruby forward, irb alias, console alias
+description: This post introduces <a href="http://github.com/cldwalker/alias/tree/master">Alias</a>, a gem for configuring and managing aliases. Whether you need to alias a method, class, constant or a string of Ruby code, your fingers will thank you.
+tags:
+- gem:name=alias
+- gem:tags=rails
+- lib:name=irb
+- post:lang=ruby
+- post:type=tutorial
+related_tag: *:*=irb
+---
+{{ page.description }}
+
+h2. Motivation
+
+If you're like me, when you type something enough times, you tend to alias it. Sure, completion exists in your ruby shell but it doesn't consistently give you fewer keystrokes than an alias. Take for example some aliases I have in my .irbrc for Rails:
+
+<notextile>{% highlight ruby %}
+  AB = ActiveRecord::Base
+  class ActiveRecord::Base; class << self; alias_method :[], :find; end; end
+  class ActiveRecord::Base; alias_method :ua, :update_attribute; end
+{% endhighlight %}</notextile>
+
+With these aliases, finding and updating on models are down to 2-3 keystrokes for the method. Naturally, for each of these aliases I made sure that I wasn't overriding existing constants and methods. Note that each of the above aliases are different alias types i.e. a constant alias, class method alias and instance method alias.
+
+So if you end up aliasing more than a couple of times, the above code and checking for conflicts tends to get old and repetitive. Wouldn't it just be easier to have a config file from which to read and create aliases? This is what Alias does! Simply create aliases in irb, save them and configure your irb to load your created aliases next time around.
+
+h2. Install
+
+To install "Alias":http://tagaholic.me/alias/, try the usual suspects:
+
+<notextile><pre class="github">
+  # From the hub
+  gem install cldwalker-alias --source http://gems.github.com
+
+  # OR the forge
+  gem install alias
+</pre></notextile>
+
+h2. Using Alias 
+
+h3. The Basics
+
+To see Alias in action, let's start by creating the above Rails aliases:
+
+<notextile><pre class="console">
+  bash> script/console
+  >> require 'alias'
+  => true
+
+  # Import alias methods
+  >> extend Alias::Console
+  => main
+
+  # First let's see what ruby code Alias generates to create an alias.
+  >> create_aliases :class_method, {"ActiveRecord::Base"=>{'find'=>'[]'}}, :pretend=>true
+
+  class ::ActiveRecord::Base; class << self; alias_method :[], :find; end; end
+  => true
+
+  # Create the above class method alias
+  >> create_aliases :class_method, "ActiveRecord::Base"=>{'find'=>'[]'}
+  => true
+
+  # Create the above constant alias
+  >> create_aliases :constant, "ActiveRecord::Base"=>"AB"
+  => true
+  # Verify that it worked
+  >> AB
+  => ActiveRecord::Base
+
+  # If we try to create the constant alias again, Alias prevents us and warns us
+  >> create_aliases :constant, "ActiveRecord::Base"=>"AB"
+  Constant 'AB' not created since it already exists
+  => false
+  # We can force Alias to override a method, class or constant that already exists
+  >> create_aliases :constant, {"ActiveRecord::Base"=>"AB"}, :force=>true
+  => true
+
+  # Create the above instance method alias
+  >> create_aliases :instance_method, "ActiveRecord::Base"=>{"update_attribute"=>'ua'}
+  => true
+
+  # By default aliases are saved to config/alias.yml in rails or ~/.alias.yml if not.
+  >> save_aliases
+  Saved created aliases to config/alias.yml.
+  => true
+</pre></notextile>
+
+As you can see, @create_aliases()@ takes an alias type and a hash of aliases. Note that each alias type has its own format for interpreting the hash. Now to see what Alias saved in config/alias.yml :
+
+<notextile><pre class="console">
+  :aliases:
+    :constant:
+      ActiveRecord::Base: AB
+    :instance_method:
+      ActiveRecord::Base:
+        update_attribute: ua
+    :class_method:
+      ActiveRecord::Base:
+        find: "[]"
+</pre></notextile>
+
+Since Alias is all about typing less, why not alias away it's primary commands for future use?:
+
+<notextile><pre class="console">
+  # You can pass the first few unique letters of an alias type and Alias will pick the right type
+  # :in => :instance_method
+  >> create_aliases :in, "Alias::Console"=>{"save_aliases"=>"sa", "create_aliases"=>"ca"}
+  => true
+  
+  # Saving these aliases naturally adds to the ones already saved
+  >> sa
+  Saved created aliases to config/alias.yml.
+  => true
+</pre></notextile>
+
+h3. Delegating with Alias
+
+Alias' code generation ability extends beyond just creating aliases. With the alias type ":any_to_instance_method":http://github.com/cldwalker/alias/blob/f9331db8cd2c22a4edc37977399989e48cc4b834/lib/alias/creators/any_to_instance_method_creator.rb, Alias can delegate an instance method to call any string of ruby code which ends with a method call. Ch-what? Take for example two handy methods for interacting with your Rails' routes: "ActionController::Routing::Routes.generate()":http://noobkit.com/show/ruby/rails/rails-stable/actionpack/actioncontroller/routing/routeset/generate.html and "ActionController::Routing::Routes.recognize_path()":http://noobkit.com/show/ruby/rails/rails-stable/actionpack/actioncontroller/routing/routeset/recognize_path.html. Sure, we _could_ type that all out each time we want to use it in irb. __Or__ we could just configure Alias to create these aliases:
+
+<notextile><pre class="console">
+  # Create a module which will hold our aliases
+  >> module RouteCommands; end
+  => nil
+
+  # :any is a shortcut for :any_to_instance_method
+  # Let's see what Alias generates for these aliases:
+  >> ca :any, {"RouteCommands"=>{"ActionController::Routing::Routes.generate"=>"generate",
+   "ActionController::Routing::Routes.recognize_path"=>"recognize_path"}}, :pretend=>true
+
+   module ::RouteCommands; def recognize_path(*args, &block); ActionController::Routing::Routes.recognize_path(*args, &block); end; end
+   module ::RouteCommands; def generate(*args, &block); ActionController::Routing::Routes.generate(*args, &block); end; end
+   => true
+
+  # Looks good, let's create them
+  >> ca :any, "RouteCommands"=>{"ActionController::Routing::Routes.generate"=>"generate",
+    "ActionController::Routing::Routes.recognize_path"=>"recognize_path"}
+  => true
+
+  # Import the aliases/commands we've created
+  >> extend RouteCommands
+  => main
+
+  # Save these aliases
+  >> sa
+  Saved created aliases to config/alias.yml. 
+  => true
+
+  # Play with your new commands: generate and recognize_path
+  >> generate :controller=>"tags"
+  => "/tags"
+</pre></notextile>
+
+h3. Alias in Your Irbrc
+
+To setup your script/console to load the aliases we've created, drop this at the end of your config/environment.rb (or .irbrc outside of Rails):
+
+<notextile>{% highlight ruby %}
+  # Ensures the code is called only by script/console
+  if $0 == 'irb'
+    # For the route commands. Should exist before we start aliasing to it.
+    module ::RouteCommands; end
+    extend ::RouteCommands
+
+    require 'alias'
+    # create the aliases
+    Alias.create
+  end
+{% endhighlight %}</notextile>
+
+Next time you start up script/console, the above aliases are automatically created!
+
+h3. Searching Aliases
+
+Since created aliases are stored as arrays of hashes, it's quite easy to search them:
+
+<notextile><pre class="console">
+  # Using Hirb's for special effects. Not an Alias dependency.
+  >> require 'hirb'; extend Hirb::Console
+  => main
+
+  # List all the aliases and pipe them through Hirb's table() for formatting.
+  >> table search_aliases, :fields=>[:name,:alias,:class,:type,:any_method]
+  +--------------------+----------------+--------------------+------------------------+--------------------------------------------------+
+  | name               | alias          | class              | type                   | any_method                                       |
+  +--------------------+----------------+--------------------+------------------------+--------------------------------------------------+
+  | find               | []             | ActiveRecord::Base | class_method           |                                                  |
+  | ActiveRecord::Base | AB             |                    | constant               |                                                  |
+  | update_attribute   | ua             | ActiveRecord::Base | instance_method        |                                                  |
+  | create_aliases     | ca             | Alias::Console     | instance_method        |                                                  |
+  | save_aliases       | sa             | Alias::Console     | instance_method        |                                                  |
+  |                    | recognize_path | RouteCommands      | any_to_instance_method | ActionController::Routing::Routes.recognize_path |
+  |                    | generate       | RouteCommands      | any_to_instance_method | ActionController::Routing::Routes.generate       |
+  +--------------------+----------------+--------------------+------------------------+--------------------------------------------------+
+  7 rows in set
+  => true
+
+  # We can search the aliases by a particular alias field with a search hash
+  >> table search_aliases :class=>'Alias::'
+  +-------+----------------+----------------+-----------------+
+  | alias | class          | name           | type            |
+  +-------+----------------+----------------+-----------------+
+  | ca    | Alias::Console | create_aliases | instance_method |
+  | sa    | Alias::Console | save_aliases   | instance_method |
+  +-------+----------------+----------------+-----------------+
+  2 rows in set
+  => true
+</pre></notextile>
+
+h2. Create Your Own Alias Types
+
+So what if you didn't like the above formats for creating aliases or perhaps have your own clever alias type? No prob. It's easy to create your own alias type with an "Alias::Creator":http://github.com/cldwalker/alias/blob/f9331db8cd2c22a4edc37977399989e48cc4b834/lib/alias/creator.rb subclass. For example, here's all 10 lines needed to create constant aliases:
+
+<notextile>{% highlight ruby%}
+  class Alias::Creators::ConstantCreator < Alias::Creator
+    map {|config| config.map {|k,v| {:name=>k, :alias=>v}} }
+
+    valid :alias, :unless=>:constant, :optional=>true
+    valid :name, :if=>:constant
+
+    generate do |aliases|
+      aliases.map {|e| "::#{e[:alias]} = ::#{e[:name]}"}.join("\n")
+    end
+  end
+{% endhighlight %}</notextile>
+
+As you can see @Alias::Creator@ provides three methods for creating an alias type:
+
+* @map()@: Maps the hash from a config file or console input into an array of alias hashes.
+* @valid()@: Defines a validation that each alias hash must pass.
+* @generate()@: Given the array of alias hashes, generates the string of ruby code to be evaled for alias creation.
+
+Of the above example, the only thing I think may be unclear are the @valid()@ calls. Let's recall the hash we used above for creating constants: @{"ActiveRecord::Base"=>"AB"}@. @ActiveRecord::Base@ is the :name key and is valid *:if* it's a constant. @AB@ is the :alias key and should be valid @:unless@ it's already a constant.
+
+Having understood how a creator works, you can make your own now by subclassing @Alias::Creator@ and putting it in the @Alias::Creators@ namespace.
+
+h2. Finito
+
+As you've seen, Alias is a handy tool for creating, managing and searching aliases. Although I've shown it mostly in the context of Rails, it's just as useful in irb or any Ruby console program that wants to provide aliasing. For more about Alias, hit up "the homepage":http://tagaholic.me/alias/ and "the docs":http://tagaholic.me/alias/doc/.
