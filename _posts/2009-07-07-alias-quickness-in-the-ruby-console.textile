@@ -233,7 +233,7 @@ As you can see @Alias::Creator@ provides three methods for creating an alias typ
 * @valid()@: Defines a validation that each alias hash must pass.
 * @generate()@: Given the array of alias hashes, generates the string of ruby code to be evaled for alias creation.
 
-Of the above example, the only thing I think may be unclear are the @valid()@ calls. Let's recall the hash we used above for creating constants: @{"ActiveRecord::Base"=>"AB"}@. @ActiveRecord::Base@ is the :name key and is valid *:if* it's a constant. @AB@ is the :alias key and should be valid @:unless@ it's already a constant.
+Of the above example, the only thing I think may be unclear are the @valid()@ calls. Let's recall the hash we used above for creating constants: @{"ActiveRecord::Base"=>"AB"}@. @ActiveRecord::Base@ is the :name key and is valid @:if@ it's a constant. @AB@ is the :alias key and should be valid @:unless@ it's already a constant.
 
 Having understood how a creator works, you can make your own now by subclassing @Alias::Creator@ and putting it in the @Alias::Creators@ namespace.
 
