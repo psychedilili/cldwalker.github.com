@@ -117,6 +117,8 @@ Since Alias is all about typing less, why not alias away it's primary commands f
   => true
 </pre></notextile>
 
+*Update*: It's important to point out that you don't _have_ to create aliases from the console. You can always open up an Alias config file and just edit it directly. However, those changes won't instantly effect your current console. You'd have to restart or call @Alias.create()@ within the console.
+
 h3. Delegating with Alias
 
 Alias' code generation ability extends beyond just creating aliases. With the alias type ":any_to_instance_method":http://github.com/cldwalker/alias/blob/f9331db8cd2c22a4edc37977399989e48cc4b834/lib/alias/creators/any_to_instance_method_creator.rb, Alias can delegate an instance method to call any string of ruby code which ends with a method call. Ch-what? Take for example two handy methods for interacting with your Rails' routes: "ActionController::Routing::Routes.generate()":http://noobkit.com/show/ruby/rails/rails-stable/actionpack/actioncontroller/routing/routeset/generate.html and "ActionController::Routing::Routes.recognize_path()":http://noobkit.com/show/ruby/rails/rails-stable/actionpack/actioncontroller/routing/routeset/recognize_path.html. Sure, we _could_ type that all out each time we want to use it in irb. __Or__ we could just configure Alias to create these aliases:
@@ -239,4 +241,4 @@ Having understood how a creator works, you can make your own now by subclassing 
 
 h2. Finito
 
-As you've seen, Alias is a handy tool for creating, managing and searching aliases. Although I've shown it mostly in the context of Rails, it's just as useful in irb or any Ruby console program that wants to provide aliasing. For more about Alias, hit up "the homepage":http://tagaholic.me/alias/ and "the docs":http://tagaholic.me/alias/doc/.
+As you've seen, Alias is a handy tool for creating, managing and searching aliases. Although I've shown it mostly in the context of Rails, it's just as useful in irb or any Ruby console program that wants to provide aliasing. For more about Alias, hit up "the homepage":http://tagaholic.me/alias/, "the docs":http://tagaholic.me/alias/doc/ or "my":http://github.com/cldwalker/dotfiles/blob/2712341e5024c8c4a884f5d663d10b5e0fc3866e/.alias/rails.yml "config":http://github.com/cldwalker/tag-tree/blob/89b7182db895ecc55edda90c2f3710b77794c176/config/alias.yml.example "files":http://github.com/cldwalker/dotfiles/blob/abcb6f46c50fc75eb165e59b28d77a26f798ccd8/.alias.yml.
