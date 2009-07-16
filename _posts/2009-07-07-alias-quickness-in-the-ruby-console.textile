@@ -180,7 +180,7 @@ h3. Searching Aliases
 Since created aliases are stored as arrays of hashes, it's quite easy to search them:
 
 <notextile><pre class="console">
-  # Using Hirb's for special effects. Not an Alias dependency.
+  # Using Hirb's tables for special effects. Not an Alias dependency.
   >> require 'hirb'; extend Hirb::Console
   => main
 

@@ -1,0 +1,357 @@
+---
+layout: post
+title: Bond - From Irb With Completion Love
+keywords: irb autocompletion, irb completion, ruby completion, ruby autocompletion, ruby readline, readline completion, method autocompletion, argument autocompletion
+description: Bond is on a mission, as usual. This time it's to make custom autocompletion <b>dead</b> easy in Irb. Simply order Bond to complete arguments, methods or your own twisted regular expressions and they will be <b>executed</b>. No questions asked.
+tags:
+- gem:name=bond
+- lib:name=irb
+- post:topic=completion
+- post:lang=ruby
+- post:type=tutorial
+related_tag: *:*=irb
+---
+{{ page.description }}
+
+h2. Bond's Coordinates
+
+Bond's getting old nowadays, regardless of what Hollywood says. So old that I even got his coordinates:
+
+<notextile><pre class="github">
+  # From the hub
+  gem install cldwalker-bond --source http://gems.github.com
+
+  # OR the forge
+  gem install bond
+</pre></notextile>
+
+h2. Debrief
+
+Let's say you want to autocomplete some quoted arguments for a couple of methods. Here's how you could do that in Irb:
+
+<notextile>{% highlight ruby %}
+  # Get rid of space and quotes as word delimiters in order to read the full line
+  Readline.basic_word_break_characters = "\t\n`><=;|&{("
+  Readline.completion_proc = proc {|input|
+    begin
+      case input
+      when /^\s*(method1)\s*(['"]?)(.*)$/
+        meth, quote = $1, $2
+        %w{some args to autocomplete}.grep(/^#{$3}/).map {|e| "#{meth} #{quote}" + e}
+      when /^\s*(method2)\s*(['"]?)(.*)$/
+        meth, quote = $1, $2
+        %w{more args to autocomplete}.grep(/^#{$3}/).map {|e| "#{meth} #{quote}" + e}
+      else
+        # Default to irb's default autocompletion
+        IRB::InputCompletor::CompletionProc.call(input)
+      end
+    # irb doesn't handle failed completions nicely
+    rescue Exception
+      IRB::InputCompletor::CompletionProc.call(input)
+    end
+  }
+{% endhighlight %}</notextile>
+
+In irb, this would look like:
+
+<notextile><pre class="console">
+  bash> irb -rirb/completion
+  >> # Copy and paste the above code
+
+  # Autocompleting method1
+  >> method1 [TAB]
+  method1 args   method1 autocomplete   method1 some   method1 to
+  >> method1 'a[TAB]
+  method1 'args   method1 'autocomplete
+  >> method1 'au[TAB]
+  >> method1 'autocomplete
+</pre></notextile>
+
+So is the above @completion_proc@ horrible? No, as long as you don't mind the way the autocompletion looks and playing with Readline and Irb configuration. Assuming you do, what happens when you start adding more completion cases? Do you really want to string together a long chain of case statements as "irb does":http://github.com/rubyspec/matzruby/blob/b26b569fd0539a6196cc4d85034486e64bed1fa9/lib/irb/completion.rb#L41?
+
+Let's have Bond take a shot at the above:
+
+<notextile><pre class="console">
+  # We are loading irb/completion to match the above. Bond can work fine without it in irb.
+  bash> irb -rirb/completion -rubygems
+  # This loads Bond but it doesn't take over completion yet.
+  >> require 'bond'
+
+  # For Bond to handle completions, we must explicitly define a completion mission.
+  # Order matters since the order they're declared in is the order they're searched.
+  >> Bond.complete(:method=>'method1') {|input|  %w{some args to autocomplete} }
+  => true
+  >> Bond.complete(:method=>'method2') {|input|  %w{more args to autocomplete} }
+  => true
+
+  # Works as above
+  >> method1 [TAB]
+  args   autocomplete   some   to
+  >> method1 'a[TAB]
+  args   autocomplete
+  >> method1 'au[TAB]
+  >> method1 'autocomplete'
+
+  # Anything not matched by the above completion missions defaults to irb completion
+  >> $std[TAB]
+  $stderr  $stdin   $stdout
+</pre></notextile>
+
+Nice, autocompletion actually looks like it does in normal shells! Note that @Bond.complete@ searches your input for you by default. We'll talk more about this later.
+<span style="font-size:90%">
+*For Completion Geeks*:
+In the first example above, notice that the possible completions are the full lines of input. This happens because we have to change the definition of a word to get the full line. We have to hack the word definition because none of the stable Ruby versions have a method to fetch Readline's full line buffer. Thankfully, "Csaba Hank":http://www.creo.hu/~csaba/ruby wrote up a C extension for this in his "Irb enhancements":http://www.creo.hu/~csaba/ruby/irb-enhancements/doc/files/README.html. Bond comes armed with this C extension. As a side note, future versions of Ruby will come with this Readline enhancement thanks to "Takao Kouji's recent commit":http://svn.ruby-lang.org/cgi-bin/viewvc.cgi/trunk/ext/readline/readline.c?view=diff&r1=24018&r2=24019.
+</span>
+
+h2. Autocompleting Files as Arguments
+
+So we know Bond can handle irb's basic methods. What about class methods?
+
+<notextile><pre class="console">
+  # Autocomplete with files/directories in the current directory
+  >> Bond.complete(:method=>"File.read") {|e| Dir.entries(Dir.pwd) }
+  => true
+  
+  # Let's use it
+  >> File.read '[TAB]
+  .git/   LICENSE.txt   README.rdoc   Rakefile      VERSION.yml   bond.gemspec  ext/    lib/     test/
+  >> File.read 'L[TAB]
+  >> File.read 'LICENSE.txt'
+</pre></notextile>
+
+That's pretty easy. Now what if we want to autocomplete through directories like we do in our shells? We could write one ourself or just use @Readline::FILENAME_COMPLETION_PROC@:
+
+<notextile><pre class="console">
+  # Need to reset when redefining the same completion
+  >> Bond.reset
+  => nil
+  # Pass :search=>false to turn off Bond searching since FILENAME_COMPLETION_PROC does it for us.
+  >> Bond.complete(:method=>"File.read", :search=>false) {|input| 
+      Readline::FILENAME_COMPLETION_PROC.call(input) || [] }
+  => true
+
+  # Test drive it
+  >> File.read '[TAB]
+  .git/   LICENSE.txt   README.rdoc   Rakefile      VERSION.yml   bond.gemspec  ext/    lib/     test/
+  >> File.read 'l[TAB]
+  >> File.read 'lib/
+  >> File.read 'lib/bond.[TAB]
+  >> File.read 'lib/bond.rb'
+
+  # Since File.read doesn't understand ~, let's improve the above completion proc
+  >> file_completion = proc {|input| (Readline::FILENAME_COMPLETION_PROC.call(input) ||
+      []).map {|f| f =~ /^~/ ?  File.expand_path(f) : f } }
+  => #< Proc:0x0100f1d0@(irb):20>
+  >> Bond.reset; Bond.complete :method=>"File.read", :search=>false, &file_completion
+  => true
+
+  # Tilda test driving
+  >> File.read "~/[TAB]
+  >> File.read "/Users/bozo/
+  >> File.read "/Users/bozo/.alias.[TAB]
+  >> File.read "/Users/bozo/.alias.yml"
+
+</pre></notextile>
+
+Nice! Now that we have a decent file autocompletion let's add it to *all* our File methods:
+
+<notextile><pre class="console">
+  >> Bond.reset; Bond.complete :method=>/File\.(#{Regexp.union(*File.methods(false))})/,
+      :search=>false, &file_completion
+  => true
+
+  # Normal irb method autocompletion still works
+  >> File.f[TAB]
+  File.file?     File.fnmatch   File.fnmatch?  File.for_fd    File.foreach   File.freeze    File.frozen?   File.ftype
+
+  # File autocompletion just works
+  >> File.file? '[TAB]
+  .git/   LICENSE.txt   README.rdoc   Rakefile      VERSION.yml   bond.gemspec  ext/    lib/     test/
+  >> File.file? 'V[TAB]
+  >> File.file? 'VERSION.yml'
+</pre></notextile>
+
+h2. Method Autocompletion
+
+Autocompleting an object's methods is Irb's sweet spot. It achieves this by "evaling the object":http://github.com/rubyspec/matzruby/blob/b26b569fd0539a6196cc4d85034486e64bed1fa9/lib/irb/completion.rb#L143-147 you've typed and getting the methods it responds to via @methods()@. Bond gives you access to your currently typed object and let's you autocomplete as you see fit. For this example, let's say we want to explore @Bond::Agent@'s functionality:
+
+<notextile><pre class="console">
+  >> ba = Bond.agent; nil
+  => nil
+  # Irb let's you autocomplete everything that an object responds to for better or worse.
+  >> ba.[TAB]
+  ba.__id__                      ba.eql?                        ba.instance_eval               ba.method                      ba.send                        ba.to_yaml
+  ba.__send__                    ba.equal?                      ba.instance_of?                ba.methods                     ba.setup                       ba.to_yaml_properties
+  ba.call                        ba.extend                      ba.instance_variable_defined?  ba.missions                    ba.singleton_methods           ba.to_yaml_style
+  ba.class                       ba.find_mission                ba.instance_variable_get       ba.nil?                        ba.taguri                      ba.type
+  ba.clone                       ba.freeze                      ba.instance_variable_set       ba.object_id                   ba.taguri=                     ba.untaint
+  ba.complete                    ba.frozen?                     ba.instance_variables          ba.private_methods             ba.taint                       
+  ba.default_mission             ba.hash                        ba.is_a?                       ba.protected_methods           ba.tainted?                    
+  ba.display                     ba.id                          ba.kind_of?                    ba.public_methods              ba.to_a                        
+  ba.dup                         ba.inspect                     ba.line_buffer                 ba.respond_to?                 ba.to_s                        
+
+
+  # Since it's hard to see Bond::Agent's functionality amidst all the Object and Kernel methods, 
+  # let's autocomplete just it's instance methods.
+  >> Bond.complete(:object=>Bond::Agent) {|input| input.object.class.instance_methods(false) }
+  => true
+
+  # A less cluttered display of Bond::Agent's functionality.
+  >> ba.[TAB]
+  ba.call             ba.complete         ba.default_mission  ba.find_mission     ba.missions
+
+  # Let's have all Bond::* objects do this.
+  >> Bond.reset; Bond.complete(:object=>/^Bond::/) {|input| input.object.class.instance_methods(false) }
+  => true
+
+ # Let's revert method autocompletion back to irb's defaults for Bond::* objects.
+ >> Bond.reset; Bond.complete :object=>/^Bond::/
+</pre></notextile>
+
+Note that access in the completion proc to the current object you've typed is made available via @input.object@.
+
+h2. Custom Searching of Completions
+
+As we've seen Bond defaults to traditional autocompletion searching i.e. @possible_completions.grep(/^#{input}/)@. But Bond can often be anything but traditional. Let's revisit the first example:
+
+<notextile><pre class="console">
+  # Let's have autocompletion search anywhere within possible completions, 
+  >> Bond.complete(:method=>'method1', :search=>false) {|input|  %w{some args to autocomplete}.grep(/#{input}/) }
+  => true
+
+  # Crazy anywhere completion (not really)
+  >> method1 'com[TAB]
+  >> method1 'autocomplete'
+  
+  # Let's redefine the anywhere completion. This way we can reuse the anywhere search in other completions.
+  >> anywhere = proc {|input, list| list.grep(/#{input}/) }
+  => #< Proc:0x0053cdd4@(irb):3>
+  >> Bond.reset; Bond.complete(:method=>'method1', :search=>anywhere) {|input| %w{some args to autocomplete} }
+  => true
+</pre></notextile>
+
+Meh. Is there really any search of possible completions that could improve on the traditional way? Perhaps. Bond comes armed with an underscore search aka textmate-like instant aliasing of underscored words:
+
+<notextile><pre class="console">
+  # Firing up a rails console
+  bash> script/console
+  >> require 'bond'
+  => true
+
+  # Set all ActiveRecord::Base descendants to use the predefined underscore search
+  >> Bond.complete :object=>ActiveRecord::Base, :search=>:underscore
+  => true
+
+  # With this search we can still autocomplete the traditional way.
+  # Url is a model object
+  >> Url.first.tag_[TAB]
+  Url.first.tag_add_and_remove   Url.first.tag_and_save         Url.first.tag_ids=             Url.first.tag_list=            
+  Url.first.tag_add_and_save     Url.first.tag_ids              Url.first.tag_list             Url.first.tag_remove_and_save
+  >> Url.tag_ad[TAB]
+  >> Url.tag_add_and_
+  >> Url.tag_add_and_[TAB]
+  Url.first.tag_add_and_remove  Url.first.tag_add_and_save 
+  >> Url.tag_add_and_s[TAB]
+  >> Url.tag_add_and_save
+  
+  # But this search goes the extra mile with textmate-like searching.
+  # Type just the first letter of each underscored word separated by '-'
+  >> Url.first.t-a-a-s[TAB]
+  >> Url.first.tag_add_and_save
+
+  # With this search, most multi-worded methods are just a few keystrokes away.
+  # If multiple methods match the underscore alias, it still autocompletes the beginning of the method:
+  >> Url.first.p[TAB]
+  Url.first.partial_updates                  Url.first.pretty_inspect                   Url.first.pretty_print_instance_variables  Url.first.public_methods
+  Url.first.partial_updates?                 Url.first.pretty_print                     Url.first.primary_key_prefix_type          
+  Url.first.pluralize_table_names            Url.first.pretty_print_cycle               Url.first.private_methods                  
+  Url.first.present?                         Url.first.pretty_print_inspect             Url.first.protected_methods
+  >> Url.first.p-p[TAB]
+  >> Url.first.pretty_print
+  >> Url.first.pretty_print_c[TAB]
+  >> Url.first.pretty_print_cycle
+</pre></notextile>
+
+As you can see, customizing the way we search possible completions brings a new twist to autocompletion.
+
+h2. Custom Autocompletions
+
+So far we've seen how easy Bond makes autocompletion of methods and arguments. It's easy because Bond handles the regular expressions. But if you have your own regex's, Bond is ready:
+
+<notextile><pre class="console">
+  bash> irb -rirb/completion -rubygems -rbond
+  # Let's reuse the file completion from above
+  >> file_completion = proc {|input| (Readline::FILENAME_COMPLETION_PROC.call(input) ||
+      []).map {|f| f =~ /^~/ ?  File.expand_path(f) : f } }
+  => #< Proc:0x0100f1d0@(irb):1>
+  
+  # But this time let's trigger it whenever the last word in the line is quoted
+  # fyi this is default behavior if you use irb without requiring irb/completion
+  >> Bond.complete(:on=>/\S+\s*["']([^'".]*)$/, :search=>false) {|input| file_completion.call(input.matched[1]) }
+  => true
+
+  # Now it doesn't matter what methods come before. If the last word is quoted we get file completion:
+  >> Dir.entries '[TAB]
+  .git/   LICENSE.txt   README.rdoc   Rakefile      VERSION.yml   bond.gemspec  ext/    lib/     test/
+  >> Dir.entries 'l[TAB]
+  >> Dir.entries 'lib/
+  >> `ls 't[TAB]
+  >> `ls 'test/
+  >> `ls 'test/'`
+
+  # String method completion still works
+  >> '007'.[TAB]
+  Display all 137 possibilities? (y or n)
+</pre></notextile>
+
+Note the completion proc gets access to regex matches via @input.matched@. This is the @MatchData@ object that results from matching the given regex with the current line. If you're not familiar with a @MatchData@ object, the relevant thing to know is that you can access matches as you would array elements i.e. @input.matched[1] == $1, input.matched[2] == $2@. If you look at the above regex for @:on@, you'll see that the first match is what we want to autocomplete and hence @input.matched[1]@ is passed in the completion proc.
+
+With custom autocompletions you can do some surprisingly useful things. Here's one to make typing known constants and classes oh so easy:
+
+<notextile>{% highlight ruby %}
+  def alias_constants(input)
+    fetch_constants = proc {|klass, klass_alias| klass.constants.grep(/^#{klass_alias}/i).map {|f| klass.const_get(f)} }
+    fetch_string_constants = proc {|klass, klass_alias|
+      klass.constants.grep(/^#{klass_alias}/i).map {|f|
+        (val = klass.const_get(f)) && val.is_a?(Module) ? val.to_s : "#{klass}::#{f}"
+      }
+    }
+
+    index = 1
+    aliases = input.split(":")
+    aliases.inject([Object]) do |completions,a|
+      completions = completions.select {|e| e.is_a?(Module) }.map {|klass|
+        aliases.size != index ? fetch_constants.call(klass, a) : fetch_string_constants.call(klass, a)
+      }.flatten
+      index += 1; completions
+    end
+  end
+{% endhighlight%} </notextile>
+
+This completion proc allows us to refer to any constants/classes by the first few unique letters of each namespace. The letters can be in lowercase and are separated by a colon. Let's try it:
+
+<notextile><pre class="console">
+  >> # Copy and paste the above method
+
+  >> Bond.complete :on=>/^((([a-z][^:.\(]*)+):)+/, :search=>false, &method(:alias_constants)
+  => true
+
+  # First some easy ones
+  >> b:a[TAB]
+  >> Bond::Agent
+
+  >> b:d:m[TAB]
+  >> Bond::Missions::DefaultMission
+
+  # If we hit multiple matches we just resort to normal completion
+  >> i:i[TAB]
+  >> IRB:I
+  >> IRB:Il[TAB]
+  >> IRB::IllegalParameter
+</pre></notextile>
+
+h2. The Name is Bond
+
+To use Bond or have Bond in your irbrc, you only need to require it and then @Bond.complete@ to your Bond content. Remember that the order you define completions is the order they're searched in. Be careful when using custom completions. Having something like @Bond.complete :on=>/.*/, &mah_search@ will swallow up any completions defined after it.
+
+Although Bond has been shown in the context of Irb and Readline, Bond doesn't need either of these. Heck, Bond doesn't even need irb/completion when in irb. By debriefing Bond, @Bond.debrief()@, it's possible to set your own non-irb defaults and use other "Readline-like":http://github.com/h3rald/rawline/tree/master#readme "libraries":http://github.com/luislavena/rb-readline/tree/master#readme. However those Readline-like libraries will need a Bond plugin. Bond comes with plugins for both "Rawline":http://github.com/h3rald/rawline/tree/master#readme and of course Readline. For more about Bond, check out "its homepage":http://tagaholic.me/bond/ and "docs":http://tagaholic.me/bond/doc/.
