@@ -34,6 +34,7 @@ Let's first cover some irb configuration basics:
 </pre></notextile>
 
 * To get the full list of global irb configuration options, just grep it:
+
 <notextile><pre class="console">
   # Cd to your ruby source's directory
   bash> cd /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8
