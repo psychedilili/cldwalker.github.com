@@ -17,6 +17,7 @@ If you're unsure of what machine tags are, "read my introduction to them":/2009/
 h2. Basic Usage
 
 The basic use case for "Machinetag":http://github.com/cldwalker/machinetag.js is simple. You have some items, records, urls (doesn't matter really) that have been machine tagged. Now you want to search and display them. Enter Machinetag. Given an array of machine-tagged records or a json url pointing to some you can search away:
+
 <notextile>{% highlight js %}
   // To follow along in your javascript shell (i.e. firebug): 
   // $.getScript("http://tagaholic.me/jquery.machineTag.js")
@@ -43,6 +44,7 @@ The basic use case for "Machinetag":http://github.com/cldwalker/machinetag.js is
 {% endhighlight %}</notextile>
 
 As seen above, Machinetag expects a record's machine tags to be an array in the tags attribute. Aside from that requirement, the records can consist of any attributes. Also note the search term passed to @$.machineTagSearch()@. It's a wildcard machine tag much like "Flickr's wildcard machine tags":http://code.flickr.com/blog/2008/07/18/wildcard-machine-tag-urls/. The main thing to know about this search format is that the asterisk serves as a wildcard character. This wildcard machine tag is also used with @$.machineTagSearchRecordTags()@ which returns records' machine tags that match a given wildcard machine tag:
+
 <notextile>{% highlight js %}
   // Using the above urls object.
   $.machineTagSearchRecordTags('browser:company=', urls);
@@ -72,6 +74,7 @@ As you can see, the views of your content are as numerous as the keyword combina
 h2. Final Words From Your Sponsor
 
 You can install Machinetag by "downloading it":http://github.com/cldwalker/machinetag.js/downloads or using git:
+
 <notextile><pre class="github">
   git clone git://github.com/cldwalker/machinetag.js.git
 </pre></notextile>

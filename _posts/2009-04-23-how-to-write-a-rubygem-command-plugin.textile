@@ -38,6 +38,7 @@ h2(#step2). Step 2: Register Your Command
 In rubygems_plugin.rb you need to register your gem command. You also need to require @Gem::CommandManager@.
 
 Here's what my rubygems_plugin.rb looks like:
+
 <notextile> {% highlight ruby %}
   require 'rubygems/command_manager'
   

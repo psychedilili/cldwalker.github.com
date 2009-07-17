@@ -20,6 +20,7 @@ I found myself down this path as I wanted to generate multiple tag pages for my 
 * local flag to generate pages locally ie for testing purposes
 
 The first was a no-brainer, "thor":http://github.com/wycats/thor/tree/master. With it's dead-easy option and command creation, I've used it for "several daily tasks":http://github.com/cldwalker/thor-tasks/tree/master.  So after "coding like a monkey":http://buzztowncenter.org/files/u2/CrazyMonkey.jpg, I came up with "these thor tasks":http://github.com/cldwalker/cldwalker.github.com/blob/master/_meta/Thorfile. "Here":http://github.com/cldwalker/cldwalker.github.com/blob/master/_meta is the directory containing all relevant files to these tasks. So let's try a task:
+
 <notextile>
 <pre class="console">
  # Starting from JEKYLL_ROOT, move to the directory containg thor tasks
@@ -38,6 +39,7 @@ The first was a no-brainer, "thor":http://github.com/wycats/thor/tree/master. Wi
 </notextile>
 
 Since you may not need to generate tag pages, you may be wondering __what can I do with these tasks__. Let's look at a task that all jekyll users can appreciate:
+
 <notextile>
 <pre class="console">
   bash> thor jekyll:new_post --verbose thoughts on world peace
@@ -51,6 +53,7 @@ Since you may not need to generate tag pages, you may be wondering __what can I 
 </pre>
 </notextile>
 As you can see the @new_post@ task generates the filename based on the date and title and also generates a basic skeleton which includes the given title. So let's examine this thor task:
+
 <notextile> {% highlight ruby linenos%}
 desc "new_post TITLE IS MULTIPLE WORDS", "New jekyll blog post"
 method_options :editor=>:boolean

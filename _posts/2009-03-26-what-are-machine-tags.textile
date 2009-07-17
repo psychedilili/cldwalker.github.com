@@ -22,6 +22,7 @@ So how about an example? Here are some machine tags from a "flickr photo":http:/
 
 For these machine tags, @astro@ is the namespace; @name@, @orientation@ and @RA@ are the predicates; and you can guess the values (everything after '='). So aside from seeing that the photo has some astronomy-specific metadata associated with it, what's the big deal? 
 # The metadata is __structured__. So structured that we can represent the example machine tags in a table:
+
 <notextile>
 <pre class="console">
 +-----------+-------------+---------------+
@@ -34,6 +35,7 @@ For these machine tags, @astro@ is the namespace; @name@, @orientation@ and @RA@
 </pre>
 </notextile>
 Or in a tree:
+
 <notextile>
 <pre class="console">
   astro

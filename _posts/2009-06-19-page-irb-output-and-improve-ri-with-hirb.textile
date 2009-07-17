@@ -17,6 +17,7 @@ related_tag: gem:*=(hirb|irb)
 {{ page.description }}
 
 To play with what follows, you'll need the latest Hirb:
+
 <notextile><pre class="github">
   gem install cldwalker-hirb --source http://gems.github.com
 </pre></notextile>
@@ -24,6 +25,7 @@ To play with what follows, you'll need the latest Hirb:
 h2. Paging With Irb
 
 If you're unsure that irb's output can be quite horrendous at times:
+
 <notextile><pre class="console">
   bash> irb -rubygems
   >> Gem.source_index
@@ -31,6 +33,7 @@ If you're unsure that irb's output can be quite horrendous at times:
 </pre></notextile>
 
 Sure, we can turn it off:
+
 <notextile><pre class="console">
   >> conf.echo = false
   >> Gem.source_index

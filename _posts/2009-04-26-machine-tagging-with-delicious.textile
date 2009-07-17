@@ -58,6 +58,7 @@ h3(#delicious_1). 1. Delicious Json Feed
 h3(#delicious_2). 2. Convert the Delicious Feed
 
 Machinetag's only expectation of a machine tagged object is that its machine tags in an attribute named tags as an array. Also, if I'd like to use Machinetag's default display, the object should also have a url attribute with an optional title attribute. A delicious bookmark object has these three attributes but with different attribute names:
+
 <notextile><pre class="console">
   {
      "u": "http://joshua.schachter.org/2009/04/on-url-shorteners.html",

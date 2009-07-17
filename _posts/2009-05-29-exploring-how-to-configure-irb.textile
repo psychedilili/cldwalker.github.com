@@ -24,6 +24,7 @@ Let's first cover some irb configuration basics:
 <pre class="console">bash> IRBRC='/i/like/my/irbrc/elsewhere' irb</pre>
 * Irb saves it's configuration in a hash accessible through @IRB.conf@. By convention, the config keys are symbols in all caps. Simply set an option by setting a key's value: @IRB.conf[:SAVE_HISTORY] = 1000@
 * Unlike "irb commands in the last post":/2009/05/11/demystifying-irb-commands.html, there isn't much to getting most of the global configuration options:
+
 <notextile><pre class="console">
   bash> irb -f --prompt simple
   >> IRB.conf.keys
@@ -42,6 +43,7 @@ Let's first cover some irb configuration basics:
 </pre></notextile>
 
 * Each irb subsession "copies the global config options":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/context.rb#L32-99 into its @IRB::Context@ object. Since you have easy access to this object through @irb_context() or conf()@, here's how you can figure out what configuration options you can change within irb:
+
 <notextile><pre class="console">
   bash> irb
   >> (irb_context.methods - Object.methods).grep(/=$/).sort

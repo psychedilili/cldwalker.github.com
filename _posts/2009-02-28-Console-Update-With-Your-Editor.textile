@@ -17,6 +17,7 @@ related_tag: gem:*=activerecord
 While fleshing out "my own bookmark manager":http://github.com/cldwalker/tag-tree, a console-based Rails app, I got tired of editing my database records through @update_attribute@ and @update_attributes@. Yes, you can autocomplete and alias away method calls but it __still__ didn't feel fast enough for the massive amount of retagging and annotating I was doing. So I prayed to "some deity":http://en.wikipedia.org/wiki/Flying_Spaghetti_Monster and the "console_update plugin":http://github.com/cldwalker/console_update was born. (I actually didn't 'pray' but let's not delve into semantics.)
 
 Before I go into a long spiel about how it works you probably just want **examples**:
+
 <notextile>
 <pre class="console">
   bash> script/console
@@ -45,6 +46,7 @@ Before I go into a long spiel about how it works you probably just want **exampl
 </notextile>
 
 So at this point, we've edited a record. It's nice for those records that have long text fields. But what about multiple records?
+
 <notextile>
 <pre class="console">
   

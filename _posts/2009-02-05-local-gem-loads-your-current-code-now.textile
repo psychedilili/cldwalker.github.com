@@ -31,12 +31,14 @@ LocalGem simply maps names to file paths and when given a name, adds its corresp
 LocalGem then provides two methods, @local_gem()@ and @local_require()@ to act like @gem()@ and @require()@ but with knowledge of your local gems. You can use these two methods in one of three ways, depending on how much you want LocalGem to invade your namespace:
 
 Peace time:
+
 <notextile> {% highlight ruby %}
   LocalGem.local_gem 'mygem'
   LocalGem.local_require 'anothergem'
 {% endhighlight %} </notextile>
 
 Diplomacy is fading:
+
 <notextile> {% highlight ruby %}
   include LocalGem
   local_gem 'mygem'
@@ -44,6 +46,7 @@ Diplomacy is fading:
 {% endhighlight %} </notextile>
 
 You're fscked:
+
 <notextile> {% highlight ruby %}
   require 'local_gem/override'
   gem 'mygem'
