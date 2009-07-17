@@ -16,6 +16,7 @@ related_tag: gem:*=(hirb|irb|activerecord)
 {{ page.description}}
 
 "Hirb":http://github.com/cldwalker/hirb/tree/master provides a mini view framework for console applications, designed with irb in mind. Given the output of a console application, it applies a view if there is one to apply, based on the output's class. To get a better idea of what that means, let's look at Hirb's included table view and its use with Rails:
+
 <notextile>
 <pre class="console">
   bash>script/console
@@ -50,6 +51,7 @@ related_tag: gem:*=(hirb|irb|activerecord)
 Note no configuration was needed for @Tag@ since Hirb is preconfigured to associate @ActiveRecord::Base@ descendants with a table view. Also notice that the above string and symbol resorted to irb's default echo mode. This happens whenever an output class has no configuration in @Hirb::View.formatter_config@.
   
 Hirb not only detects objects with configured output classes but also arrays of these objects:
+
 <notextile>
 <pre class="console">
   irb>> Tag.all :limit=>3, :order=>"id DESC"
@@ -68,6 +70,7 @@ Hirb not only detects objects with configured output classes but also arrays of 
 h3. Views For Everyone
 
 Although Hirb's views were built to enhance irb's echo mode, you can use them as methods:
+
 <notextile>
 <pre class="console">
   #These examples don't need to have Hirb::View enabled.
@@ -93,6 +96,7 @@ Although Hirb's views were built to enhance irb's echo mode, you can use them as
   irb>> view urls, :class=>Hirb::Helpers::ActiveRecordTable
 </pre></notextile>
 You may have noticed that most of the fields were truncated with an ellipsis. This is because those fields exceeded their allowed widths and had to be truncated. Allowed widths? Of course. Hirb's table view auto adjusts widths depending on the number of columns and has options to customize per table:
+
 <notextile>
 <pre class="console">
   # Instead of seeing all of Url's columns, let's only see certain fields.
@@ -134,6 +138,7 @@ In the last example, let me reiterate that <b>any method</b> can be a field. For
 h3. Configuration
 
 The variety of options that a view can offer can also be configured per output class. For example, say I want @Tag@ to have certain fields. I can put this into a configuration block when enabling Hirb:
+
 <notextile> {% highlight ruby %}
   Hirb::View.enable do |c|
     c.output = {"Tag"=>{:options=>{:fields=>%w{id name tag_list}} }
@@ -141,6 +146,7 @@ The variety of options that a view can offer can also be configured per output c
 {% endhighlight %} </notextile>
 
 Hirb also supports a yaml configuration file (config/hirb.yml or ~/.hirb.yml). The previous configuration block as yaml would be:
+
 <notextile>
 <pre class="github">
   ---

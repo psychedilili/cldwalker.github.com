@@ -136,6 +136,9 @@ div.post {
   overflow:auto;
   padding:2px 5px;
 }
+pre.github {
+  overflow-x:auto;
+}
 
 code {
   background: #fff5dd;

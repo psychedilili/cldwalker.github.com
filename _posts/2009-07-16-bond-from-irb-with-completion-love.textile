@@ -29,7 +29,7 @@ h2. Debrief
 
 Let's say you want to autocomplete some quoted arguments for a couple of methods. Here's how you could do that in Irb:
 
-<notextile><pre class="console">
+<notextile><pre class="github">
   # Get rid of space and quotes as word delimiters in order to read the full line
   Readline.basic_word_break_characters = "\t\n`><=;|&{("
   Readline.completion_proc = proc {|input|
@@ -308,7 +308,7 @@ Note the completion proc gets access to regex matches via @input.matched@. This 
 
 With custom autocompletions you can do some surprisingly useful things. Here's one to make typing known constants and classes oh so easy:
 
-<notextile><pre class="console">
+<notextile><pre class="github">
   def alias_constants(input)
     fetch_constants = proc {|klass, klass_alias| klass.constants.grep(/^#{klass_alias}/i).map {|f| klass.const_get(f)} }
     fetch_string_constants = proc {|klass, klass_alias|

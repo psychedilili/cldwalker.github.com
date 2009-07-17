@@ -17,11 +17,11 @@ h2. Motivation
 
 If you're like me, when you type something enough times, you tend to alias it. Sure, completion exists in your ruby shell but it doesn't consistently give you fewer keystrokes than an alias. Take for example some aliases I have in my .irbrc for Rails:
 
-<notextile>{% highlight ruby %}
+<notextile><pre class="github">
   AB = ActiveRecord::Base
   class ActiveRecord::Base; class << self; alias_method :[], :find; end; end
   class ActiveRecord::Base; alias_method :ua, :update_attribute; end
-{% endhighlight %}</notextile>
+</pre></notextile>
 
 With these aliases, finding and updating on models are down to 2-3 keystrokes for the method. Naturally, for each of these aliases I made sure that I wasn't overriding existing constants and methods. Note that each of the above aliases are different alias types i.e. a constant alias, class method alias and instance method alias.
 
@@ -160,7 +160,7 @@ h3. Alias in Your Irbrc
 
 To setup your script/console to load the aliases we've created, drop this at the end of your config/environment.rb (or .irbrc outside of Rails):
 
-<notextile>{% highlight ruby %}
+<notextile><pre class="github">
   # Ensures the code is called only by script/console
   if $0 == 'irb'
     # For the route commands. Should exist before we start aliasing to it.
@@ -171,7 +171,7 @@ To setup your script/console to load the aliases we've created, drop this at the
     # create the aliases
     Alias.create
   end
-{% endhighlight %}</notextile>
+</pre></notextile>
 
 Next time you start up script/console, the above aliases are automatically created!
 
@@ -216,7 +216,7 @@ h2. Create Your Own Alias Types
 
 So what if you didn't like the above formats for creating aliases or perhaps have your own clever alias type? No prob. It's easy to create your own alias type with an "Alias::Creator":http://github.com/cldwalker/alias/blob/f9331db8cd2c22a4edc37977399989e48cc4b834/lib/alias/creator.rb subclass. For example, here's all 10 lines needed to create constant aliases:
 
-<notextile>{% highlight ruby%}
+<notextile><pre class="github">
   class Alias::Creators::ConstantCreator < Alias::Creator
     map {|config| config.map {|k,v| {:name=>k, :alias=>v}} }
 
@@ -227,7 +227,7 @@ So what if you didn't like the above formats for creating aliases or perhaps hav
       aliases.map {|e| "::#{e[:alias]} = ::#{e[:name]}"}.join("\n")
     end
   end
-{% endhighlight %}</notextile>
+</pre></notextile>
 
 As you can see @Alias::Creator@ provides three methods for creating an alias type:
 
