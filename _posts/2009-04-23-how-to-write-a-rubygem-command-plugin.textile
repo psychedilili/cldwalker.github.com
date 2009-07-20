@@ -39,11 +39,11 @@ In rubygems_plugin.rb you need to register your gem command. You also need to re
 
 Here's what my rubygems_plugin.rb looks like:
 
-<notextile> {% highlight ruby %}
+{% highlight ruby %}
   require 'rubygems/command_manager'
   
   Gem::CommandManager.instance.register_command :grep
-{% endhighlight %} </notextile>
+{% endhighlight %}
 
 h2(#step3). Step 3: Create Your Command File
 
@@ -57,7 +57,7 @@ h3(#new). new()
 
 In this method you should define your command's name, summary and options. Here's my command's new() along with its class definition and dependencies:
 
-<notextile> {% highlight ruby %}
+{% highlight ruby %}
   require 'rubygems/commands/query_command'
   require 'rubygems/super_search'
   require 'hirb'
@@ -83,7 +83,7 @@ In this method you should define your command's name, summary and options. Here'
       remove_option '--versions'
     end
   
-{% endhighlight %} </notextile>
+{% endhighlight %}
 
 Some things to point out:
 * Normally when creating a command from scratch, you subclass from @Gem::Command@. I subclassed from @Gem::Commands::QueryCommand@ since I'm extending the query command's functionality. 
@@ -94,14 +94,14 @@ h3(#execute). execute()
 
 Whatever business your command has should be done here. Here, as in all of your command's methods, you have access to your options through @options@. My command's @execute()@ isn't much since it delegates it's business elsewhere.
 
-<notextile> {% highlight ruby %}
+{% highlight ruby %}
   def execute
     string = get_one_optional_argument
     options[:name] = /#{string}/i
     Gem.source_index.extend Gem::SuperSearch
     super
   end
-{% endhighlight %}</notextile>
+{% endhighlight %}
 
 h3(#misc). arguments(), defaults_str(), description() and usage()
 
@@ -113,7 +113,7 @@ These are all optional methods that describe different sections of your commands
 
 My two cents:
 
-<notextile> {% highlight ruby%}
+{% highlight ruby%}
   def arguments # :nodoc:
     "REGEXP          regular expression string to search specified gemspec attributes"
   end
@@ -132,7 +132,7 @@ My two cents:
    'by the first unique string that it starts with i.e. "su" for "summary". To specify multiple gemspec attributes, delimit ' +
    "them with commas. Gemspec attributes available to options are: #{self.class.valid_gemspec_columns.join(', ')}."
   end
-{% endhighlight %} </notextile>
+{% endhighlight %}
 
 h2(#gem_grep). Introducing Gem Grep
 

@@ -13,45 +13,45 @@ related_tag: *:*=ruby
 
 So I hacked up @$LOAD_PATH@:
 
-<notextile> {% highlight ruby %}
+{% highlight ruby %}
   $LOAD_PATH.unshift '/my/path/to/gem/lib'
-{% endhighlight %} </notextile>
+{% endhighlight %}
 
 This effectively made my live gem directory a gem, as far as requiring files is concerned.  However once I did this in irb a couple of times and even in a file, it started to feel dirty and repetitious.  Why couldn't I just require my local gem just like I do when it's installed in my gem directories?  So I hacked on it later and out came "LocalGem":http://github.com/cldwalker/local_gem/tree/master.
 
 LocalGem simply maps names to file paths and when given a name, adds its corresponding path to @$LOAD_PATH@ like above. You can setup the name-path mapping via a yaml config file or a method call.
 
-<notextile> {% highlight ruby %}
+{% highlight ruby %}
   require 'local_gem'
   LocalGem.setup_config do |c|
     c.gems = {'mygem'=>'/path/to/mygem', 'anothergem'=>'/path/to/anothergem'}
   end
-{% endhighlight %} </notextile>
+{% endhighlight %}
 
 LocalGem then provides two methods, @local_gem()@ and @local_require()@ to act like @gem()@ and @require()@ but with knowledge of your local gems. You can use these two methods in one of three ways, depending on how much you want LocalGem to invade your namespace:
 
 Peace time:
 
-<notextile> {% highlight ruby %}
+{% highlight ruby %}
   LocalGem.local_gem 'mygem'
   LocalGem.local_require 'anothergem'
-{% endhighlight %} </notextile>
+{% endhighlight %}
 
 Diplomacy is fading:
 
-<notextile> {% highlight ruby %}
+{% highlight ruby %}
   include LocalGem
   local_gem 'mygem'
   local_require 'anothergem'
-{% endhighlight %} </notextile>
+{% endhighlight %}
 
 You're fscked:
 
-<notextile> {% highlight ruby %}
+{% highlight ruby %}
   require 'local_gem/override'
   gem 'mygem'
   require 'anothergem'
-{% endhighlight %} </notextile>
+{% endhighlight %}
 
 Give it a whirl with:
 <pre class="code"> sudo gem install cldwalker-local_gem -s http://gems.github.com </pre>

@@ -175,7 +175,7 @@ Knowing how to extract an ri query result and feed it back to ri, let's use a Hi
 
 All of a sudden we have the choice to see the documentation of *any* method(s)! Simply type a number or a range of numbers. What if we could apply this to a Ruby class i.e. list a class' methods and choose from them?:
 
-<notextile> {% highlight ruby %}
+{% highlight ruby %}
   def ri(original_query, regex=nil)
     query = original_query.to_s
     ri_driver = RDoc::RI::Driver.new(RDoc::RI::Driver.process_args([query]))
@@ -205,7 +205,7 @@ All of a sudden we have the choice to see the documentation of *any* method(s)! 
   def system_ri(*queries)
     ::Hirb::View.capture_and_render { RDoc::RI::Driver.run(queries) }
   end
-{% endhighlight%} </notextile>
+{% endhighlight%}
 
 I'll let you figure out how the above works. Let's just use it:
 

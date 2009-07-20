@@ -16,7 +16,7 @@ It’s been awhile since I wrote here, having been busy with my usual tagging id
 
 My goal awhile back was to be able to quickly understand any ruby code given to me. To put myself on that path I did two things: learn to debug Ruby thoroughly with @Kernel::set_trace_func@ and parse ruby files. I wanted to parse ruby files so I could get a quick overview of a file’s classes and their methods. I looked at ParseTree and then rdoc’s parser. Of the two, rdoc seemed to be a little higher level and so the core method looks like:
 
-<notextile> {% highlight ruby%}
+{% highlight ruby%}
 def rdoc_parse_file(file)
   class_hash = {}
   content = File.open(file, "r") {|f| f.read}
@@ -27,7 +27,7 @@ def rdoc_parse_file(file)
   RDoc::TopLevel::reset
   class_hash
 end
-{% endhighlight %} </notextile>
+{% endhighlight %}
 
 That little bit opens a file, scans it with rdoc and then saves the methods by class with the recursive @function index_class()@. If you look at the "full version":http://github.com/cldwalker/bin/blob/95e86c4a09469f5208163ffd1d9189fc0069b177/rails-overview.rb you’ll probably laugh at how small @index_class()@ is.
 

@@ -18,7 +18,7 @@ h2. Rant
 
 If you've been using jeweler like I have, you start each new gem by copying your boilerplate Rakefile which contains a special section for your jeweler config. Taken from the jeweler readme, a Rakefile can be as easy as:
 
-<notextile> {% highlight ruby %}
+{% highlight ruby %}
   begin
     require 'jeweler'
     Jeweler::Tasks.new do |gemspec|
@@ -32,7 +32,7 @@ If you've been using jeweler like I have, you start each new gem by copying your
   rescue LoadError
     puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
   end
-{% endhighlight %} </notextile>
+{% endhighlight %}
 
 While this is easy, it's not DRY once you start copying and pasting Rakefiles across your gems. Sure, your name and email are unlikely to change. But what if you want to have other default gemspec attributes such as files, has_rdoc and extra_rdoc_files? And if you want to change some of your default attributes later? What if you'd like to reuse some of the information in your gem specifications to create a gem's web page? Do you feel yet that maybe you should've had a more DRY setup? So instead of having copy and paste configurations spread across my gems, I have __one__ "configuration file for them":http://github.com/cldwalker/dotfiles/blob/master/.gems.yml. Since this config file has "one section for common gemspec attributes":http://github.com/cldwalker/dotfiles/blob/b8bc31b4bd0844fcec9e71441eaed76e42f9529b/.gems.yml#L1-12, gemspec management becomes easy and DRY.
 
@@ -68,7 +68,7 @@ Using the gemspec config file and a given or detected gem name, "GemspecBuilder.
 
 If you aren't familiar with thor, you may be wondering why I didn't just stop with making the above Rakefile leaner:
 
-<notextile> {% highlight ruby %}
+{% highlight ruby %}
   begin
     require 'jeweler'
     require 'gemspec_builder' #if it were packaged as a gem
@@ -76,7 +76,7 @@ If you aren't familiar with thor, you may be wondering why I didn't just stop wi
   rescue LoadError
     puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
   end
-{% endhighlight %} </notextile>
+{% endhighlight %}
 
 What thor provides that rake and sake can't provide is letting you write your tasks as Ruby. This is quite powerful when you want pass arguments and options to your tasks (and testing tasks and sharing task libraries, etc...). Also, thor like sake, allows you to install your ruby tasks to be invoked from anywhere. This allows me to use my jeweler tasks without putting __any__ jeweler (gem creator specific) tasks in my gem's Rakefile. I think this is a good thing since I leave potential forkers of my gem with a *choice* of what gem creator they want to use for recreating my gemspec. In the same vein, I forgot to mention that one gemspec config file gives you the painless *choice* of switching gem creators when the need arises.
 
@@ -99,7 +99,7 @@ A few additional notes:
 
 *UPDATE*: While discussing this one gemspec config file idea, "technicalpickles":http://technicalpickles.com/ brought up a valid concern. If I only ship my gemspec and not the meta-gemspec (like in the first Rakefile above), it makes it harder for my contributors to regenerate my gemspec i.e. they have to edit it by hand. If you're familiar with gemspecs, you know the main attributes that are hard to regenerate are ones that list files. For those I agree it would be nice to give your potential contributers the file globs. My proposal is to ship an optional meta-gemspec yaml file which contains those precious file globs (unless Gem::Specification offers a globs attribute hash any time soon). You could then provide a rake task in your Rakefile as follows:
 
-<notextile> {% highlight ruby %}
+{% highlight ruby %}
 desc "Update gemspec from existing one by regenerating path globs specified in *.gemspec.yml or defaults to liberal file globs."
 task :gemspec_update  do
   if (gemspec_file = Dir['*.gemspec'][0])
@@ -121,7 +121,7 @@ task :gemspec_update  do
     puts "No existing gemspec file found."
   end
 end
-{% endhighlight %} </notextile>
+{% endhighlight %}
 
 The meta-gemspec yaml file would literally just be extracted from my gemspec config file:
 <notextile><pre class="console">

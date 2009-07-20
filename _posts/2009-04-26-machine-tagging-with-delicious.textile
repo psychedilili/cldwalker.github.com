@@ -78,11 +78,11 @@ Machinetag's only expectation of a machine tagged object is that its machine tag
 
 This is easy to convert thanks to jquery's @$.map()@:
 
-<notextile> {% highlight javascript %}
+{% highlight javascript %}
   function convertDeliciousRecords(records) {
     return $.map(records, function(e){ return {title: e.d, url: e.u, tags: e.t} } )
   }
-{% endhighlight %} </notextile>
+{% endhighlight %}
 
 That's it!
 
@@ -90,7 +90,7 @@ h3(#delicious_3). 3. Create a Form
 
 For my delicious tag tree I wanted to let the user choose a feed by a user and/or a tag. So I whipped this up:
 
-<notextile>{% highlight html %}
+{% highlight html %}
   <form action="javascript:void(deliciousMachineTagSearch())">
     <label>Delicious User: </label><input type="text" id="delicious_user"/> And/Or
     <label>Delicious Tag: </label><input type="text" id="delicious_tag"/><br/>
@@ -98,7 +98,7 @@ For my delicious tag tree I wanted to let the user choose a feed by a user and/o
     <input value="Machine Tag Search" type="submit"/>
     <span id="machine_tag_search_status" style="display:none"> Searching ...</span>
   </form>
-{% endhighlight %}</notextile>
+{% endhighlight %}
 
 Notice there is also an optional wildcard machine tag input. A wildcard machine tag specifies a subset of machine tags.
 
@@ -106,7 +106,7 @@ h3(#delicious_4). 4. JS Glue Code
 
 This is where we put it all together:
 
-<notextile> {% highlight javascript linenos %}
+{% highlight javascript linenos %}
   function deliciousMachineTagSearch() {
     var user_or_tag = ($("#delicious_user").val() != '') ? $("#delicious_user").val() : 'tag';
     var delicious_feed = "http://feeds.delicious.com/v2/json/"+user_or_tag+"/";
@@ -136,7 +136,7 @@ This is where we put it all together:
       if (params.tag || params.user) deliciousMachineTagSearch();
     }
   });
-{% endhighlight%} </notextile>
+{% endhighlight%}
 
 First, let's go over @deliciousMachineTagSearch()@, the function we execute when we submit the form.
 

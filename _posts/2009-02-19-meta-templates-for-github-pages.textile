@@ -54,7 +54,7 @@ Since you may not need to generate tag pages, you may be wondering __what can I 
 </notextile>
 As you can see the @new_post@ task generates the filename based on the date and title and also generates a basic skeleton which includes the given title. So let's examine this thor task:
 
-<notextile> {% highlight ruby linenos%}
+{% highlight ruby linenos%}
 desc "new_post TITLE IS MULTIPLE WORDS", "New jekyll blog post"
 method_options :editor=>:boolean
 def new_post(*args)
@@ -66,7 +66,8 @@ def new_post(*args)
   output_file = create_output_file(output_file, result)
   system(ENV['EDITOR'], output_file) if options['editor']
 end
-{% endhighlight %} </notextile>
+{% endhighlight %}
+
 Line by line:
 * Line 1 calls thor's @desc()@ to describe usage and description as well as mark the method as a task.
 * Line 2 defines a boolean option editor which we'll use later.
