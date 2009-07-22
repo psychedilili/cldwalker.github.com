@@ -1,0 +1,216 @@
+---
+layout: post
+title: Better Irb Completion With Bond
+keywords: better irb completion, improved irb completion, awesome irb completion, better ruby completion, irb autocompletion, irb completion bugs, irb completion issues, ruby readline completion
+description: In <a href="http://tagaholic.me/2009/07/16/bond-from-irb-with-completion-love.html">the last post</a> I introduced Bond. This post dips further into its completion arsenal to bring you a drop-in enhancement of irb's completion. Irb has had awesome autocompletion for some time. Bond is here to make it even better.
+tags:
+- gem:name=bond
+- lib:name=irb
+- post:topic=completion
+- post:lang=ruby
+- post:type=tutorial
+related_tag: *:*=irb
+---
+{{ page.description }}
+
+With the latest "Bond":http://tagaholic.me/bond/ comes "bond/completion":http://github.com/cldwalker/bond/blob/619c40ff5a18edeb89c22f05bd0eb71ea2fb844a/lib/bond/completion.rb, Bond's enhanced version of "irb/completion":http://github.com/rubyspec/matzruby/blob/e580f7b2a612e1edaa502071189a46fce7749c69/lib/irb/completion.rb that is __independent__ of irb. This file is simply a list of predefined Bond completions. What makes it special is that it offers irb's completion and some in under 30 lines. Enhancements that it brings include autocompletion of strings as files and argument autocompletion for @Kernel#require@ and @Kernel#system@. And whether you were aware of them or not, it fixes all of these "irb completion inconsistencies":#irb_completion_inconsistencies.
+
+h2. Setup
+
+Using it is mindblowingly ... straightforward. Replace @require 'irb/completion'@ in your irbrc with:
+
+{% highlight ruby %}
+  require 'bond'
+  require 'bond/completion'
+{% endhighlight %}
+
+h2. Enhancements
+
+By default irb treats string autocompletion the same as its default completion. Why not have string completion default to file completion?:
+
+<notextile><pre class="console">
+  bash> irb
+  >> File.read '[TAB]
+  .git/   LICENSE.txt   README.rdoc   Rakefile      VERSION.yml   bond.gemspec  ext/    lib/     test/
+  >> File.read 'L[TAB]
+  >> File.read 'LICENSE.txt'
+
+  >> Dir.entries '~/[TAB]
+  >> Dir.entries '/Users/bozo/.i[TAB]
+  >> Dir.entries '/Users/bozo/.irb'
+</pre></notextile>
+
+If you're executing a shell command, shouldn't you be able to autocomplete shell commands?
+
+<notextile><pre class="console">
+  >> system 'ec[TAB]
+  >> sytem 'echo'
+
+  >> `su
+  su    sudo  sum
+  >> `sud[TAB]
+  >> `sudo
+</pre></notextile>
+
+What about when you want to require a Ruby library?
+
+<notextile><pre class="console">
+  >> require 'b[TAB]
+  base64.rb          benchmark.rb       bigdecimal.bundle  bigdecimal/        bond.rb            bond/              boson.rb           boson/
+  >> require 'ba[TAB]
+  >> require 'base64.rb'
+
+  # You can navigate directories just like with normal file completion
+  >> require 'b[TAB]
+  >> require 'bigdecimal
+  >> require 'bigdecimal/[TAB]
+  bigdecimal/jacobian.rb  bigdecimal/ludcmp.rb    bigdecimal/math.rb      bigdecimal/newton.rb    bigdecimal/util.rb
+  >> require 'bigdecimal/m[TAB]
+  >> require 'bigdecimal/math.rb'
+
+  # Local completion defaults to file completion
+  >> require '../lib/b[TAB]
+  >> require '../test/b[TAB]
+  >> require '../test/bond_test.rb'
+</pre></notextile>
+
+"See here":http://github.com/cldwalker/bond/blob/619c40ff5a18edeb89c22f05bd0eb71ea2fb844a/lib/bond/actions.rb if you're curious how the argument completions are done.
+
+h2. Reload With a Tip
+
+If you're not familiar with Bond, all this pre-made completion may give you an impression that it's hard to make custom completions. Actually custom completion is Bond's strength. Consider this simple method for reloading required files in the console:
+
+{% highlight ruby %}
+  def reload(require_regex)
+    $".grep(/#{require_regex}/).each {|e| $".delete(e) && require(e) }
+  end
+{% endhighlight %}
+
+If you drop this in your irbrc you can do the following:
+
+<notextile><pre class="console">
+  # reload an individual file
+  >> reload 'bond.rb'
+  => ["bond.rb"]
+
+  # reload all bond* files in $"
+  >> reload 'bond*'
+  => ["bond/readline.rb", "bond/rawline.rb", "bond/agent.rb", "bond/search.rb", "bond/actions.rb", "bond/mission.rb",
+   "bond/missions/default_mission.rb", "bond/missions/method_mission.rb", "bond/missions/object_mission.rb", "bond/completion.rb", "bond.rb"]
+</pre></notextile>
+
+Sweet. Now to add autocompletion for it. It should autocomplete any of the paths in @$"@.
+
+<notextile><pre class="console">
+  >> Bond.complete(:method=>'reload') { $" }
+  => true
+  >> reload 'bo[TAB]
+  >> reload 'bond
+</pre></notextile>
+
+That wasn't too bad.
+
+h2(#irb_completion_inconsistencies). Irb's Completion Inconsistencies
+
+So if you're autocompleting an object's methods in irb, you should get back the object's methods, right? Right ... most of the time.
+
+First inconsistency up is irb's completion of hashes and procs. Why group them together? Because they're completed the same in irb:
+
+<notextile><pre class="console">
+  >> {}.c[TAB]
+  }.call     }.class    }.clear    }.clone    }.collect
+  >> {}.ca[TAB]
+  >> {}.call
+  NoMethodError: undefined method `call' for {}:Hash
+          from (irb):1
+
+  >> proc {}.c[TAB]
+  }.call     }.class    }.clear    }.clone    }.collect
+</pre></notextile>
+
+If you take a look at "the implementation":http://github.com/rubyspec/matzruby/blob/e580f7b2a612e1edaa502071189a46fce7749c69/lib/irb/completion.rb#L63-64, both Hash and Proc methods are added together in one completion case. This isn't a big deal as long as you don't mind the occasional misleading completion.
+
+Bond's take on this:
+
+<notextile><pre class="console">
+  >> {}.c
+  }.class    }.clear    }.clone    }.collect
+  >> proc {}.c
+  }.call   }.class  }.clone
+</pre></notextile>
+
+Next up is completion for nil, false, true and Range objects. Irb?
+
+<notextile><pre class="console">
+  # I didn't know nil had so many methods
+  >> nil.[TAB]
+  Display all 496 possibilities? (y or n)
+
+  # Or false and true for that matter
+  >> false.[TAB]
+  Display all 496 possibilities? (y or n)
+  >> true.[TAB]
+  Display all 496 possibilities? (y or n)
+
+  # Turns out we are using the default method completer
+  >> self.[TAB]
+  Display all 496 possibilities? (y or n)
+
+  # What say you monsieur range?
+  >> (1..10).[TAB]
+  # Nothing happens
+</pre></notextile>
+
+The first three cases are all the same. Irb doesn't have explicit completion cases for them and thus defaults to completing self. The last case is a little different. The object has a period which irb's default method completer doesn't allow. So, sorry range objects, no completions for you. Bond's take on all of this: just do the right thing for all cases.
+
+Last up and personally the biggest deal is completion of method chains. Irb does something funky:
+
+<notextile><pre class="console">
+  >> 'man'.to_sym.[TAB]
+  Display all 496 possibilities? (y or n)
+  >> 'man'.to_sym.s[TAB]
+  .to_sym.safe_level              .to_sym.setuid?                 .to_sym.slice!                  .to_sym.status                  .to_sym.string                  .to_sym.swapcase
+  .to_sym.save_history=           .to_sym.shift                   .to_sym.socket?                 .to_sym.step                    .to_sym.strip                   .to_sym.swapcase!
+  .to_sym.scan                    .to_sym.signaled?               .to_sym.sort                    .to_sym.sticky?                 .to_sym.strip!                  .to_sym.symlink?
+  .to_sym.sec                     .to_sym.signm                   .to_sym.sort!                   .to_sym.stime                   .to_sym.sub                     .to_sym.sync
+  .to_sym.seek                    .to_sym.signo                   .to_sym.sort_by                 .to_sym.stime=                  .to_sym.sub!                    .to_sym.sync=
+  .to_sym.select                  .to_sym.singleton_method_added  .to_sym.source                  .to_sym.stop?                   .to_sym.succ                    .to_sym.sysread
+  .to_sym.send                    .to_sym.singleton_methods       .to_sym.split                   .to_sym.stopped?                .to_sym.succ!                   .to_sym.sysseek
+  .to_sym.set_backtrace           .to_sym.size                    .to_sym.squeeze                 .to_sym.stopsig                 .to_sym.success?                .to_sym.syswrite
+  .to_sym.set_last_value          .to_sym.size?                   .to_sym.squeeze!                .to_sym.store                   .to_sym.sum
+  .to_sym.setgid?                 .to_sym.slice                   .to_sym.stat                    .to_sym.strftime                .to_sym.superclass
+</pre></notextile>
+
+Ok? I know plenty of those aren't symbol methods. If you "look at the source":http://github.com/rubyspec/matzruby/blob/e580f7b2a612e1edaa502071189a46fce7749c69/lib/irb/completion.rb#L153-163, you'll see that irb handle's method chaining by iterating over all possible methods and giving you back a little more than you asked for. As a side note, this kind of throw-all-known-methods-at-you completion can be a performance issue. For example, a Rails environment gives me 4902 completions for this.
+
+Personally, I'd like to get back completions on the current object in a chain of methods. Bond?
+
+<notextile><pre class="console">
+  >> 'man'.to_sym.s
+  .to_sym.send               .to_sym.singleton_methods
+
+  # It doesn't matter how much chaining we do, Bond returns the correct method completions for the current object.
+  >> 'man'.to_sym.to_s.to_a.se
+  .to_sym.to_s.to_a.select  .to_sym.to_s.to_a.send
+</pre></notextile>
+
+h2. Bringing a Knife to a Gun Fight
+
+So why does irb have the above inconsistencies? Well, if completion were a gun fight, irb is bringing the knife. Irb completes all of its cases _only_ knowing the last word typed. Meanwhile, Bond is "packing access":http://github.com/cldwalker/bond/blob/a19fddbf1f27ede007743ecae7f61ced2fda2a6c/ext/readline_line_buffer/readline_line_buffer.c to the full line typed. Having this allows Bond to know _exactly_ what any object is and completes its methods. 
+
+What does it mean for irb to only know the last word? Since a word is defined by Readline as any string not containing these characters @\s\t\n\"\\'`><=;|&{(@, it means there are cases where irb doesn't know the object it's completing on:
+
+<notextile><pre class="console">
+  # Irb's completion only knows what's after {
+  >> {:a=>{:a=>1}}.[TAB]
+  Display all 496 possibilities? (y or n)
+
+  # Irb's completion only knows what's after (
+  >> ([1] + [2]).[TAB]
+  Display all 496 possibilities? (y or n)
+</pre></notextile>
+
+
+h2. Completions Are Forever
+
+Well maybe not forever, but definitely longer than my standup career. As you've seen, "bond/completion":http://github.com/cldwalker/bond/blob/619c40ff5a18edeb89c22f05bd0eb71ea2fb844a/lib/bond/completion.rb improves irb's completions. But if you don't like these defaults, rip these completions apart and make your own with @Bond.complete()@. Understanding and modifying these completions should be a little easier than reading irb's 200+ line completion file. If you need a starting point for building your own completions, "here's my current Bond completion config":http://github.com/cldwalker/irbfiles/blob/96c4cb57c0dd98cfc1b429acb6e11b19dd6ad14c/.irb/libraries/irb_completion.rb.
