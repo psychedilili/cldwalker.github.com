@@ -1,0 +1,103 @@
+---
+layout: post
+title: Mini Irb and Mini Script/Console
+keywords: ruby bond, mini irb, mini script/console, improved irb, bond irb, better irb, tiny irb
+description: In <a href="http://tagaholic.me/2009/07/22/better-irb-completion-with-bond.html">my last post</a>, I introduced <a href="http://tagaholic.me/bond/">Bond</a>'s own version of irb's completion. What I didn't emphasize is that it doesn't need irb.  To prove it, I'll show you a mini irb which has persistent readline history, error handling and Bond's autocompletion ... in 7 lines.
+tags:
+- gem:name=bond
+- lib:name=irb
+- post:topic=completion
+- post:lang=ruby
+- post:type=snippet
+related_tag: *:*=irb
+---
+{{ page.description}}
+
+h2. Mini Irb
+
+A good starting point for a basic irb comes from "this github snippet":http://gist.github.com/68608:
+
+{% highlight ruby %}
+  loop do
+   print '>> '
+   output = eval($stdin.gets)
+   print '=> '
+   puts output.inspect
+  end
+{% endhighlight %}
+
+It's got the very basics of a repl: take a user's input, eval it and print the result. Being as basic as it is, there's no autocompletion, persistent readline history, etc.
+
+But who says that needs to be much larger to get those features?:
+
+{% highlight ruby linenos %}
+  %w{readline rubygems bond bond/completion}.each {|e| require e }
+  history_file = File.join(ENV["HOME"], '.mini_irb_history')
+  IO.readlines(history_file).each {|e| Readline::HISTORY << e.chomp } if File.exists?(history_file)
+  while (input = Readline.readline('>> ', true)) != 'exit'
+    begin puts "=> #{eval(input).inspect}"; rescue Exception; puts "Error: #{$!}" end
+  end
+  File.open(history_file, 'w') {|f| f.write Readline::HISTORY.to_a.join("\n") }
+{% endhighlight %}
+
+A line by line play:
+* Line 1: Loads readline, bond and "bond's improved version":http://tagaholic.me/2009/07/22/better-irb-completion-with-bond.html of irb-like completion.
+* Line 2-3: Read in previous history from a history file.
+* Line 4: Get the users input and start a loop that only ends with exit.
+* Line 5: Evaluate the input and print an exception if it occurs.
+* Line 7: Write all of the loaded history back to the history file.
+
+If you're not familiar with readline, you may be wondering where is the autocompletion being handled? Well, all of readline's goodness is channeled through @Readline.readline@. Bond simply sets @Readline.completion_proc@ and readline handles the rest. If you'd like to play with this, "fork away":http://gist.github.com/152773!
+
+Here's what mini-irb looks like:
+
+<notextile><pre class="console">
+  bash > ruby mini-irb.rb
+  # Unlike irb, mini-irb correctly completes on chains of objects
+  >> :some.to_s.split('').a
+  ).all?   ).any?   ).assoc  ).at
+
+  # Completes require's arguments
+  >> require 'a[TAB]
+  >> require 'abbrev.rb'
+  => true
+
+  # Completes files
+  >> File.read '~/[TAB]
+  >> File.read '/Users/bozo/.ir[TAB]
+  >> File.read '/Users/bozo/.irbrc'
+
+  # Oh noz, wherz my irbz?
+  >> IRB
+  Error: (eval):1: uninitialized constant IRB
+
+  # Try this one in irb
+  >> raise Exception
+  Error: Exception
+
+  >> exit
+  bash>
+</pre></notextile>
+
+h2. Mini script/console
+
+Just for fun I figured I'd see how much more code it'd take to make a mini script/console for Rails. I'm sorry. It took one more line:
+
+{% highlight ruby %}
+  ['readline', 'rubygems', 'bond','bond/completion', File.dirname(__FILE__) + '/../config/boot'].each {|e| require e }
+  ["#{RAILS_ROOT}/config/environment", 'console_app', 'console_with_helpers'].each {|e| require  e}
+  history_file = File.join(ENV["HOME"], '.myrb_history')
+  IO.readlines(history_file).each {|e| Readline::HISTORY << e.chomp } if File.exists?(history_file)
+  while (input = Readline.readline('>> ', true)) != 'exit'
+    begin puts "=> #{eval(input).inspect}"; rescue Exception; puts "Error: #{$!}" end
+  end
+  File.open(history_file, 'w') {|f| f.write Readline::HISTORY.to_a.join("\n") }
+{% endhighlight %}
+
+To be fair this is a stripped down version of script/console i.e. it doesn't offer the debugger or sandbox. But those could be easily added. If you want to improve on this, "fork away":http://gist.github.com/152780! If you want to see what this looks like, just give it a try. :)
+
+h2. Comparing Apples to Oranges
+
+So how does mini-irb compare to irb? Well, it's like comparing apples to oranges. Irb weighs in at 5000+ loc while mini-irb is 7 + 540 loc with Bond. Irb sports a number of features which I've "documented":http://tagaholic.me/05/29/exploring-how-to-configure-irb.html "extensively":http://tagaholic.me/2009/05/11/demystifying-irb-commands.html. But I'm finding less need for them every day. The only feature I'd keep is the ruby lexer to handle multiple lines of code. But even then I'd rather prototype multiple lines in an editor.
+
+What are your two cents? What features from irb would you add to mini-irb?

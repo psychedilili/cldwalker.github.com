@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Better Irb Completion With Bond
-keywords: better irb completion, improved irb completion, awesome irb completion, better ruby completion, irb autocompletion, irb completion bugs, irb completion issues, ruby readline completion
+keywords: ruby bond, better irb completion, improved irb completion, awesome irb completion, better ruby completion, irb autocompletion, irb completion bugs, irb completion issues, ruby readline completion, tab completion
 description: In <a href="http://tagaholic.me/2009/07/16/bond-from-irb-with-completion-love.html">the last post</a> I introduced Bond. This post dips further into its completion arsenal to bring you a drop-in enhancement of irb's completion. Irb has had awesome autocompletion for some time. Bond is here to make it even better.
 tags:
 - gem:name=bond
