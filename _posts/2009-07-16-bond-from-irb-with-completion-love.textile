@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Bond - From Irb With Completion Love
-keywords: irb autocompletion, irb completion, ruby completion, ruby autocompletion, ruby readline, readline completion, method autocompletion, argument autocompletion
+keywords: ruby bond, irb autocompletion, irb completion, ruby completion, ruby autocompletion, ruby readline, readline completion, method autocompletion, argument autocompletion
 description: Bond is on a mission, as usual. This time it's to make custom autocompletion <b>dead</b> easy in Irb. Simply order Bond to complete arguments, methods or your own twisted regular expressions and they will be <b>executed</b>. No questions asked.
 tags:
 - gem:name=bond
@@ -122,11 +122,8 @@ So we know Bond can handle irb's basic methods. What about class methods?
 That's pretty easy. Now what if we want to autocomplete through directories like we do in our shells? We could write one ourself or just use @Readline::FILENAME_COMPLETION_PROC@:
 
 <notextile><pre class="console">
-  # Need to reset when redefining the same completion
-  >> Bond.reset
-  => nil
   # Pass :search=>false to turn off Bond searching since FILENAME_COMPLETION_PROC does it for us.
-  >> Bond.complete(:method=>"File.read", :search=>false) {|input| 
+  >> Bond.recomplete(:method=>"File.read", :search=>false) {|input| 
       Readline::FILENAME_COMPLETION_PROC.call(input) || [] }
   => true
 
@@ -142,7 +139,7 @@ That's pretty easy. Now what if we want to autocomplete through directories like
   >> file_completion = proc {|input| (Readline::FILENAME_COMPLETION_PROC.call(input) ||
       []).map {|f| f =~ /^~/ ?  File.expand_path(f) : f } }
   => #< Proc:0x0100f1d0@(irb):20>
-  >> Bond.reset; Bond.complete :method=>"File.read", :search=>false, &file_completion
+  >> Bond.recomplete :method=>"File.read", :search=>false, &file_completion
   => true
 
   # Tilda test driving
@@ -205,7 +202,7 @@ Autocompleting an object's methods is Irb's sweet spot. It achieves this by "eva
   => true
 
  # Let's revert method autocompletion back to irb's defaults for Bond::* objects.
- >> Bond.reset; Bond.complete :object=>/^Bond::/
+ >> Bond.recomplete :object=>/^Bond::/
 </pre></notextile>
 
 Note that access in the completion proc to the current object you've typed is made available via @input.object@.
@@ -226,7 +223,7 @@ As we've seen Bond defaults to traditional autocompletion searching i.e. @possib
   # Let's redefine the anywhere completion. This way we can reuse the anywhere search in other completions.
   >> anywhere = proc {|input, list| list.grep(/#{input}/) }
   => #< Proc:0x0053cdd4@(irb):3>
-  >> Bond.reset; Bond.complete(:method=>'method1', :search=>anywhere) {|input| %w{some args to autocomplete} }
+  >> Bond.recomplete(:method=>'method1', :search=>anywhere) {|input| %w{some args to autocomplete} }
   => true
 </pre></notextile>
 

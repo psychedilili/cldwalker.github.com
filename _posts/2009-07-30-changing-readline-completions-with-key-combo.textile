@@ -1,0 +1,128 @@
+---
+layout: post
+title: Changing Readline Completions With a Key Combo
+keywords: ruby bond, changing readline completions, readline macro, readline completion, ruby readline, toggle autocompletion, ruby autocompletion, readline tricks, readline tips, readline macro example
+description: Readline has the powerful concept of a macro but there are few examples that seem to do anything other than insert text. We'll look at using a Readline macro to trigger Ruby code in a Ruby shell. Since Ruby has <a href="http://tagaholic.me/bond/">Bond</a> to easily define Readline completions, we can use a macro to change completion behavior with the flick of a key combo.
+tags:
+- gem:name=bond
+- lib:name=irb
+- post:topic=completion
+- post:lang=ruby
+- post:type=tutorial
+related_tag: *:*=bond
+---
+{{ page.description }}
+
+h2. Intro
+
+First off, you should be aware that what follows can be done with any readline, non-ruby completion setup that allows painless redefinition of a completion. This post will focus on doing this within a Ruby shell.
+
+Redefinition of an existing completion is easy in a Ruby shell with "Bond":http://github.com/cldwalker/bond/tree/master and @Bond.recomplete()@. Simply use the original completion condition and call @Bond.recomplete@ instead of @Bond.complete@ with the new completion definition:
+
+<notextile><pre class="console">
+  bash> irb
+  >> Bond.complete(:method=>'shoot') { %w{No Big Goldfinger} }
+  => true
+  >> Bond.recomplete(:method=>'shoot', :search=>:anywhere) { %w{Hammerstein Grubozaboyschikov Spang} }
+  => true
+
+  >> shoot 'b[TAB]
+  >> shoot 'Grubozaboyschikov'
+</pre></notextile>
+
+h2. Readline Macros
+
+If you use the console enough, "readline":http://cnswww.cns.cwru.edu/php/chet/readline/rltop.html is your friend. You've probably "read the docs":http://cnswww.cns.cwru.edu/php/chet/readline/readline.html and made your own @~/.inputrc@. What we care about here is readline's macros. With a macro, you can map a keystroke combo to any number of keystrokes. These mapped keystrokes can even include keystrokes that trigger other readline macros or that hit enter to execute something in a shell! Just for fun, let's execute some ruby code in irb with a keystroke combo. Drop this in your ~/.inputrc:
+
+<notextile><pre class="console">
+  # Only defined when using ruby's readline library i.e. in irb
+  $if Ruby
+    "\C-x\C-p": "puts \"So many keystrokes. So little time.\"\n"
+  $endif
+</pre></notextile>
+
+Start irb and press Control-X Control-P:
+
+<notextile><pre class="console">
+  bash> irb
+  >> [C-xC-p]
+  >> puts "So many keystrokes. So little time."
+  So many keystrokes. So little time.
+  => nil
+</pre></notextile>
+
+Ruby code executed at the flick of a key combo!
+
+h2. Ruby Readline Example
+
+I like method completion to autocomplete any method an objects responds to ... most of the time. But if I'm using a new gem and it's unfamiliar objects I usually just want to try out its functionality. Sure I can call @self.class.instance_methods(false)@ on an object but why do that every time when I can just change an object's completion behavior with a key combo? Here's the following method I use to toggle object completion for "bond/completion":http://github.com/cldwalker/bond/blob/f67187b7aa1a5339d3e03a9ac5cbb0b30215d889/lib/bond/completion.rb :
+
+{% highlight ruby %}
+  def toggle_object_complete
+    # default mode
+    if @object_complete
+      Bond.recomplete(:object=>'Object', :place=>:last)
+      Bond.recomplete(:object=>'Object', :on=>/([^.\s]+)\.([^.\s]*)$/, :place=>:last)
+    else
+      non_inherited_methods = proc {|e| 
+        e.object.is_a?(Module) ? e.object.methods(false) : e.object.class.instance_methods(false)
+      }
+      Bond.recomplete(:object=>'Object', :place=>:last, &non_inherited_methods)
+      Bond.recomplete(:object=>'Object', :on=>/([^.\s]+)\.([^.\s]*)$/, :place=>:last, &non_inherited_methods)
+    end
+    @object_complete = !@object_complete
+  end
+{% endhighlight %}
+
+This method checks the current toggle state and switches between the two completion definitions per call. Notice that two completions are redefined since bond/completion uses two completion definitions to control an object's method completion.
+
+Now let's map this to method to a key combo in ~/.inputrc:
+
+<notextile><pre class="console">
+  $if Ruby
+    "\C-x\C-p": "toggle_object_complete\n"
+  $endif
+</pre></notextile>
+
+Let's explore Bond's objects with this key combo:
+
+<notextile><pre class="console">
+  # Default method completion
+  >> Bond.agent.[TAB]
+  Bond.agent.__id__                      Bond.agent.freeze                      Bond.agent.iv                          Bond.agent.private_methods             Bond.agent.taint
+  Bond.agent.__send__                    Bond.agent.frozen?                     Bond.agent.kind_of?                    Bond.agent.protected_methods           Bond.agent.tainted?
+  Bond.agent.call                        Bond.agent.giv                         Bond.agent.line_buffer                 Bond.agent.public_methods              Bond.agent.to_a
+  Bond.agent.class                       Bond.agent.grep                        Bond.agent.local_methods               Bond.agent.recomplete                  Bond.agent.to_s
+  Bond.agent.clone                       Bond.agent.hash                        Bond.agent.ls                          Bond.agent.reset                       Bond.agent.to_yaml
+  Bond.agent.complete                    Bond.agent.id                          Bond.agent.metaclass                   Bond.agent.respond_to?                 Bond.agent.to_yaml_properties
+  Bond.agent.create_mission              Bond.agent.inspect                     Bond.agent.method                      Bond.agent.send                        Bond.agent.to_yaml_style
+  Bond.agent.default_mission             Bond.agent.instance_eval               Bond.agent.methods                     Bond.agent.setup                       Bond.agent.type
+  Bond.agent.display                     Bond.agent.instance_of?                Bond.agent.mgrep                       Bond.agent.singleton_methods           Bond.agent.untaint
+  Bond.agent.dup                         Bond.agent.instance_variable_defined?  Bond.agent.missions                    Bond.agent.siv                         Bond.agent.which
+  Bond.agent.eql?                        Bond.agent.instance_variable_get       Bond.agent.mls                         Bond.agent.sort_last_missions          
+  Bond.agent.equal?                      Bond.agent.instance_variable_set       Bond.agent.mwhich                      Bond.agent.spy                         
+  Bond.agent.extend                      Bond.agent.instance_variables          Bond.agent.nil?                        Bond.agent.taguri                      
+  Bond.agent.find_mission                Bond.agent.is_a?                       Bond.agent.object_id                   Bond.agent.taguri=                     
+  
+  # Let's use our key combo to just see what's relevant.
+  >> [C-xC-p]
+  >> toggle_object_complete
+  => true
+  >> Bond.agent.[TAB]
+  Bond.agent.call                Bond.agent.create_mission      Bond.agent.find_mission        Bond.agent.recomplete          Bond.agent.sort_last_missions  
+  Bond.agent.complete            Bond.agent.default_mission     Bond.agent.missions            Bond.agent.reset               Bond.agent.spy
+
+  >> Bond.agent.missions[0].[TAB]
+  Bond.agent.missions[0].method_condition  Bond.agent.missions[0].set_input         Bond.agent.missions[0].unique_id
+
+  # When we want to change back to default method completion
+  >> [C-xC-p]
+  >> toggle_object_complete
+  => false
+</pre></notextile>
+
+Sweet. With a simple key combo, we can now alter method completion for any ruby object! One shortcoming you can see is that the key combo must be executed when in a blank line. Otherwise you'll end up executing what's already in the line as well. It's possible to bypass this if anyone ever gets around to writing a Ruby binding for setting readline's line buffer with @rl_replace_line()@. Maybe I'll get around to brushing up on my C one of these days...
+
+h2. Outro
+
+There are two cool ideas I hope you got from this. First, that changing completion behavior with a key combo isn't limited to a ruby shell. With bash, you could map a key combo to call a bash function that redefines completions with bash's @complete()@. Second, when in a ruby shell, you can execute any ruby code with a simple key combo. Although I only looked at changing completion behavior with key combos, there are an endless number of possibilities to be played with. I'm curious to see what others will come up with. If you're hungering for more readline configuration tips, "check out":http://github.com/cldwalker/dotfiles/blob/master/.inputrc "my inputrc":http://github.com/cldwalker/dotfiles/blob/master/.input.

@@ -6,7 +6,6 @@ description: In <a href="http://tagaholic.me/2009/07/16/bond-from-irb-with-compl
 tags:
 - gem:name=bond
 - lib:name=irb
-- post:topic=completion
 - post:lang=ruby
 - post:type=tutorial
 related_tag: *:*=irb
