@@ -11,7 +11,7 @@ tags:
 - post:type=snippet
 related_tag: *:*=irb
 ---
-{{ page.description}}
+{{ page.description }}
 
 h2. Mini Irb
 

@@ -14,7 +14,7 @@ related_tag: *:*=(github|jekyll)
 ---
 {{page.description}}
 
-I found myself down this path as I wanted to generate multiple tag pages for my blog posts ("example page":http://tagaholic.me/tag/ruby.html). All these pages had the same content layout but __different yaml__. Although I could use an include tag for the content, I couldn't for the yaml. Realizing this I was faced with generating jekyll templates with well .. jekyll. But rather than go through markup-escape hell ie escaping @{{@ and @{%@, I decided to use "good 'ol ERB":http://ruby-doc.org/stdlib/libdoc/erb/rdoc/classes/ERB.html. Here were additional features I wanted while generating with meta-templates:
+I found myself down this path as I wanted to generate multiple tag pages for my blog posts ("example page":http://tagaholic.me/tag/ruby.html). All these pages had the same content layout but __different yaml__. Although I could use an include tag for the content, I couldn't for the yaml. Realizing this I was faced with generating jekyll templates with well .. jekyll. But rather than go through markup-escape hell ie escaping Liquid's brace tags, I decided to use "good 'ol ERB":http://ruby-doc.org/stdlib/libdoc/erb/rdoc/classes/ERB.html. Here were additional features I wanted while generating with meta-templates:
 * commandline ability to generate specific templates, pass options, arguments, etc.
 * verbose flag to see pages generated
 * local flag to generate pages locally ie for testing purposes
