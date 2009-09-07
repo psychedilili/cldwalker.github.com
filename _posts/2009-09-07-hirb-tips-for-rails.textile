@@ -1,0 +1,92 @@
+---
+layout: post
+title: Hirb Tips For Rails
+keywords: hirb config, hirb setup, hirb irbrc, hirb rails, script/console hirb, script/console irbrc, configure hirb, autoload hirb, customize hirb
+description: <a href="http://tagaholic.me/hirb/">Hirb</a> has been getting the attention of Rails users with <a href="http://railscasts.com/episodes/176-searchlogic">Ryan Bates'</a> <a href="http://railscasts.com/episodes/177-model-versioning">screencasts</a>. To address these newcomers I'll share some basics on setting up, customizing and configuring hirb in the context of Rails' script/console. Non-Rails hirb users may find some useful tips here as well.
+tags:
+- gem:name=hirb
+- gem:tags=rails
+- post:type=snippet
+- post:lang=ruby
+related_tag: gem:*=hirb
+---
+{{ page.description }}
+
+h2. Setting Up script/console
+
+So you're digging hirb and you want to have it autoload in script/console...
+
+To do this for a local Rails app, append this to config/environment.rb:
+
+{% highlight ruby %}
+  if $0 == 'irb'
+    require 'hirb'
+    Hirb.enable
+  end
+{% endhighlight %}
+
+And if you just want it in _all_ your Rails' script/console sessions, drop this in your ~/.irbrc:
+
+{% highlight ruby %}
+  if ENV['RAILS_ENV']
+    require 'rubygems'
+    require 'hirb'
+    Hirb.enable
+  end
+{% endhighlight %}
+
+Of course, these script/console setups work for any other gems you want to autoload. You may also want to try using/adding these gems into your script/console setup: "console_update":/2009/02/28/Console-Update-With-Your-Editor.html and "alias":/2009/07/07/alias-quickness-in-the-ruby-console.html.
+
+h2. Configuring Hirb
+
+Part of what makes hirb nice is that it just automagically works with @Hirb.enable@. But what happens when your columns are smushed and irrelevant columns are displayed? Just configure hirb. Hirb can be configured via config/hirb.yml or by passing a config directly to @Hirb.enable@.
+
+For example, if you have a model @Url@ and you only want the columns id, name, description and tag_list to show up, you could make this config file:
+
+<notextile><pre class="console">
+  :output:
+    Url:
+      :options:
+        :fields:
+          - id
+          - name
+          - description
+          - tag_list
+</pre></notextile>
+
+Or you could pass this same config without a config file:
+
+{% highlight ruby %}
+  Hirb.enable :output => {
+    "Url"=>{
+      :options=>{
+        :fields=>%w{id name description tag_list}
+      }
+    }
+  }
+{% endhighlight %}
+
+Some additional points:
+* There are "a slew of other options":http://tagaholic.me/hirb/doc/classes/Hirb/Helpers/Table.html you can pass to :options. For example if you want to have vertical tables, try the :vertical option. If you want to format certain column strings after they've come from Rails, use the :filters option.
+* To pass additional models in the above config, you would put them under :output.
+* In the above config example, tag_list is actually not a column. Rather it's a method that returns associated tag objects that have been stringified. So yes, a table's fields can be _any_ object method. If a method doesn't return a string, customize its stringification with the :filters option.
+
+h2. Customizing Hirb
+
+The other day someone private messaged me about wanting to see the model name with each table's description. Here's what I came up with:
+
+<script src="http://gist.github.com/180160.js"></script>
+
+Basically I subclassed hirb's @ActiveRecord@ helper class and overrode the necessary methods. To use this custom helper class you would need to place it before @Hirb.enable@ and then configure hirb:
+
+{% highlight ruby %}
+  Hirb.enable :output=>{
+    "ActiveRecord::Base"=>{:class=>:my_active_record_table, :ancestor=>true} 
+  }
+  # :class could also have been "Hirb::Helpers::MyActiveRecordTable"
+{% endhighlight %}
+
+Seeing how simple it is to create and use your own custom hirb helpers, it should be fairly easy to use hirb with other non-Rails ORMs i.e. DataMapper or Sequel. Simply subclass "Hirb::Helpers::ObjectTable":http://github.com/cldwalker/hirb/blob/master/lib/hirb/helpers/object_table.rb and make some reasonable defaults as "Hirb::Helpers::ActiveRecordTable":http://github.com/cldwalker/hirb/blob/master/lib/hirb/helpers/active_record_table.rb does.
+
+If you want tweak Hirb more for your script/console experience, don't forget to "read the docs":http://tagaholic.me/hirb/doc/!
+Stay tuned for more "script/console goodness":http://github.com/cldwalker/boson/tree/master...

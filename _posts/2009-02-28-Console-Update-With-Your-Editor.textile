@@ -2,7 +2,7 @@
 layout: post
 title: Console Update With Your Editor
 keywords: rails, database records, script/console, edit records, irb, console_update, activerecord, editor
-description: Rails' script/console makes it easy to fetch, view and edit your database records. But can you edit those records as quickly as you edit code in your text editor? Riiight, like editing our database records in an editor is gonna happen? <a href ="http://github.com/cldwalker/console_update">It already has.</a>
+description: Rails' script/console makes it easy to fetch, view and edit your database records. But can you edit those records as quickly as you edit code in your text editor? Riiight, like editing our database records in an editor is gonna happen? <a href="http://github.com/cldwalker/console_update">It already has.</a>
 tags:
   - gem:name=activerecord
   - lib:name=irb
