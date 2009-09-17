@@ -227,7 +227,7 @@ As we've seen Bond defaults to traditional autocompletion searching i.e. @possib
   => true
 </pre></notextile>
 
-Meh. Is there really any search of possible completions that could improve on the traditional way? Perhaps. Bond comes armed with an underscore search aka textmate-like instant aliasing of underscored words:
+<div id="autocompletion_aliasing">Meh. Is there really any search of possible completions that could improve on the traditional way? Perhaps. Bond comes armed with an underscore search aka textmate-like instant aliasing of underscored words:</div>
 
 <notextile><pre class="console">
   # Firing up a rails console
