@@ -1,0 +1,435 @@
+---
+layout: post
+title: Boson And Hirb Interactions
+keywords: ruby tasks, ruby commands, ruby task manager, ruby command manager, irb command manager, command framework, rake tasks, thor tasks, ruby shell
+description: In <a href="/2009/10/14/boson-command-your-ruby-universe.html">the last post</a>, I introduced <a href="http://github.com/cldwalker/boson">Boson</a> and its <a href="/2009/10/14/boson-command-your-ruby-universe.html#commands_with_options">options for commands</a>. What I didn't mention was that Boson also gives those commands default options. Among them are ones that control rendering your command's output with <a href="http://tagaholic.me/hirb/">Hirb</a> and even toggle rendering. Simply put, at the flick of a switch, commands can have Hirb's views.
+tags:
+- gem:name=boson
+- gem:name=hirb
+- gem:topic=options
+- lib:name=irb
+- post:lang=ruby
+- post:type=tutorial
+related_tag: gem:*=(boson|irb)
+---
+{{ page.description }}
+
+h2(#hirbs_handy_tables). "Hirb's Handy Tables":#hirbs_handy_tables
+
+Back in "an old post":/2009/06/19/page-irb-output-and-improve-ri-with-hirb.html, I concluded with a mention that Hirb's @table()@ can handle arrays of about any object (responding to @to_s@). Unless you read "the docs":http://tagaholic.me/hirb/doc/classes/Hirb/Helpers/Table.html or tests, that probably didn't register much. So let's see it in action:
+
+<notextile><pre class='console'>
+  bash> irb
+  >> require 'hirb'; extend Hirb::Console
+  => main
+
+  # Basic array or anything that responds to :to_a
+  >> table 1..3
+  +-------+
+  | value |
+  +-------+
+  | 1     |
+  | 2     |
+  | 3     |
+  +-------+
+  3 rows in set
+  => true
+
+  # Array of arrays
+  >> table (1..5).map {|e| [e, Math.sqrt(e)] }
+  +----+------------------+
+  | 0  | 1                |
+  +----+------------------+
+  | 1  | 1.0              |
+  | 2  | 1.4142135623731  |
+  | 3  | 1.73205080756888 |
+  | 4  | 2.0              |
+  | 5  | 2.23606797749979 |
+  +----+------------------+
+  5 rows in set
+  => true
+
+  # Array of hashes
+  >> table [{:name=>'Brain', :occupation=>'Take over the world'}, {:name=>'Batman', :occupation=>'Save the world'},
+    {:name=>'Joker', :occupation=>'Destroy the world'}, {:name=>'Pinky', :occupation=>'Annoy Brain'}]
+  +--------+---------------------+
+  | name   | occupation          |
+  +--------+---------------------+
+  | Brain  | Take over the world |
+  | Batman | Save the world      |
+  | Joker  | Destroy the world   |
+  | Pinky  | Annoy Brain         |
+  +--------+---------------------+
+  4 rows in set
+  => true
+
+  # Choose only certain keys of hashes with :fields
+  >> table [{:name=>'Brain', :occupation=>'Take over the world'}, {:name=>'Batman', :occupation=>'Save the world'},
+    {:name=>'Joker', :occupation=>'Destroy the world'}, {:name=>'Pinky', :occupation=>'Annoy Brain'}],
+    :fields=>[:name]
+  +--------+
+  | name   |
+  +--------+
+  | Brain  |
+  | Batman |
+  | Joker  |
+  | Pinky  |
+  +--------+
+  4 rows in set
+  => true
+
+  # Array of Date objects, stringified by to_s()
+  >> table (1..5).map {|e| Date.today + e }
+  +------------+
+  | 0          |
+  +------------+
+  | 2009-10-15 |
+  | 2009-10-16 |
+  | 2009-10-17 |
+  | 2009-10-18 |
+  | 2009-10-19 |
+  +------------+
+  5 rows in set
+  => true
+
+  # Passing :fields on any object simply calls its methods
+  # Comparing Date formats:
+  >> table (1..5).map {|e| Date.today + e }, :fields=>[:to_s, :ajd, :civil, :jd, :mjd]
+  +------------+-----------+----------+---------+-------+
+  | to_s       | ajd       | civil    | jd      | mjd   |
+  +------------+-----------+----------+---------+-------+
+  | 2009-10-15 | 4910239/2 | 20091015 | 2455120 | 55119 |
+  | 2009-10-16 | 4910241/2 | 20091016 | 2455121 | 55120 |
+  | 2009-10-17 | 4910243/2 | 20091017 | 2455122 | 55121 |
+  | 2009-10-18 | 4910245/2 | 20091018 | 2455123 | 55122 |
+  | 2009-10-19 | 4910247/2 | 20091019 | 2455124 | 55123 |
+  +------------+-----------+----------+---------+-------+
+  5 rows in set
+  => true
+</pre></notextile>
+
+Keep Hirb's handy tables in mind as you see Boson make use of them.
+
+h2(#to_render_or_not_to_render). "To Render or Not To Render":#to_render_or_not_to_render
+
+In the previous post, I demonstrated "adding options to commands":/2009/10/14/boson-command-your-ruby-universe.html#commands_with_options. Let's create another such command but this time to explore Boson's default options:
+
+{% highlight ruby %}
+  # Drop this in ~/.boson/commands/pinky.rb
+  module Pinky
+    #@options :count=>:numeric
+    # Give Pinky a voice
+    def speak(*args)
+      options = args[-1].is_a?(Hash) ? args.pop : {}
+      puts "Hey Brain! #{args.join(' ')}"
+      if options[:count]
+        puts "Brain, I can count to #{options[:count]}!"
+        1..options[:count]
+      end
+    end
+  end
+{% endhighlight %}
+
+Let Pinky do his thing:
+
+<notextile><pre class='console'>
+  bash> irb
+  >> speak "What does this do?"
+  Hey Brain! What does this do?
+  => nil
+
+  # Give Pinky a number to count to
+  >> speak 'La-di-da -c5'
+  Hey Brain! La-di-da
+  Brain, I can count to 5!
+  => 1..5
+
+  # Turn on Hirb rendering for return value
+  >> speak 'La-di-da --render -c5'
+  Hey Brain! La-di-da
+  Brain, I can count to 5!
+  +-------+
+  | value |
+  +-------+
+  | 1     |
+  | 2     |
+  | 3     |
+  | 4     |
+  | 5     |
+  +-------+
+  5 rows in set
+  => true
+
+  # Pass Hirb's rendering a :fields option
+  >> speak 'Brain!!! -r -f to_s,to_f -c3'
+  Hey Brain! Brain!!!
+  Brain, I can count to 3!
+  +------+------+
+  | to_s | to_f |
+  +------+------+
+  | 1    | 1.0  |
+  | 2    | 2.0  |
+  | 3    | 3.0  |
+  +------+------+
+  3 rows in set
+  => true
+
+</pre></notextile>
+
+Nice! Simply by passing an option, Boson converted our command's return value into a well-formatted Hirb table. Although Boson uses Hirb's @table@ rendering by default, you can use _any_ "Hirb helper class":http://github.com/cldwalker/hirb/tree/master/lib/hirb/helpers, especially ones you've made. So what are the implications of this? __Any Boson command can have any view generated from its return value without adding view code to the method__. If you're wondering how this is possible, see "Boson::Scientist":http://tagaholic.me/boson/doc/classes/Boson/Scientist.html which redefines a command's method to have a Hirb rendering engine appended to it. For a more compelling example see the "github library":#github_boson_library below.
+
+h2(#boson_commands_global_options). "A Boson Command's Global Options":#boson_commands_global_options
+
+Each Boson command with options, or an option command, comes with global command options for rendering, sorting, etc. For now, these global options must come before a command's options. So let's see what they are:
+
+<notextile><pre class='console'>
+  # Call up an option command's verbose help
+  >> speak '-hv'
+  speak [text][--count=N]
+
+  COMMAND OPTIONS
+  +---------+-------+---------+
+  | Option  | Alias | type    |
+  +---------+-------+---------+
+  | --count | -c    | numeric |
+  +---------+-------+---------+
+
+  GLOBAL/RENDER OPTIONS
+  +----------------+-------+---------+-----------------------------------------------------------+
+  | Option         | Alias | type    | Description                                               |
+  +----------------+-------+---------+-----------------------------------------------------------+
+  | --class        | -c    | string  | Hirb helper class which renders                           |
+  | --fields       | -f    | array   | Displays fields in the order given                        |
+  | --global       | -g    | string  | Pass a string of global options without the dashes        |
+  | --help         | -h    | boolean | Display a command's help                                  |
+  | --max_width    | -m    | numeric | Max width of a table                                      |
+  | --pretend      | -p    | boolean | Display what a command would execute without executing it |
+  | --render       | -r    | boolean | Toggle a command's default rendering behavior             |
+  | --reverse_sort | -R    | boolean | Reverse a given sort                                      |
+  | --sort         | -s    | string  | Sort by given field                                       |
+  | --verbose      | -v    | boolean | Increase verbosity for help, errors, etc.                 |
+  | --vertical     | -V    | boolean | Display a vertical table                                  |
+  +----------------+-------+---------+-----------------------------------------------------------+
+  => true
+
+  # Use --pretend to see what arguments are being passed to your command without running it.
+  # Useful when debugging options and aliased option values
+  >> speak '--pretend -r -c3 Testing'
+  Arguments: ["Testing", {:count=>3}]
+  Global options: {:pretend=>true, :render=>true}
+  => true
+
+  # Use --vertical to convert a table to a vertical one.
+  # Useful for database record tables
+  >> speak '-rV -c3 Que pasa!'
+  Hey Brain! Que pasa!
+  Brain, I can count to 3!
+  ******* 1. row *******
+  value: 1
+  ******* 2. row *******
+  value: 2
+  ******* 3. row *******
+  value: 3
+  3 rows in set
+  => true
+
+  # Resize a table's maximum width
+  >> speak '-r -m7 -c3 Blah blah!'
+  Hey Brain! Blah blah!
+  Brain, I can count to 3!
+  +-----+
+  | val |
+  +-----+
+  | 1   |
+  | 2   |
+  | 3   |
+  +-----+
+  3 rows in set
+  => true
+
+  # When a global option conflicts with a command's options, pass it via --global
+  >> speak '-g "c=auto_table" -r -c3 What year is it?'
+  Hey Brain! What year is it?
+  Brain, I can count to 3!
+  +-------+
+  | value |
+  +-------+
+  | 1     |
+  | 2     |
+  | 3     |
+  +-------+
+  3 rows in set
+  => true
+  # the above could also have been:
+  >> speak '--class=auto_table -r -c3 What year is it?'
+  
+  # We'll demonstrate --sort and --reverse_sort soon enough ...
+</pre></notextile>
+
+h2(#github_boson_library). "A Github Boson Library":#github_boson_library
+
+Using Pinky was fun to annoy Brain but let's dig into a more useful example. Consider this command to view a "github":http://github.com user's repositories using "the repository API":http://develop.github.com/p/repo.html:
+
+{% highlight ruby %}
+  # Drop in ~/.boson/commands/github_example.rb
+  module GithubExample
+    # @render_options :fields=>{:default=>[:name, :watchers, :forks, :homepage, :description],
+    #  :values=>[:homepage, :name, :forks, :private, :watchers, :fork, :url, :description, :owner, :open_issues]}
+    # @options :user=>'cldwalker'
+    # Displays a github user's repositories
+    def repos(options={})
+      YAML::load(get("http://github.com/api/v2/yaml/repos/show/#{options[:user]}"))['repositories']
+    end
+  end
+{% endhighlight %}
+
+Some points:
+* The output of @repos()@ is an array of hashes, perfect for Hirb's tables.
+* The @get()@ method is a default Boson command which does a get request on a url and returns the response body.
+* Unlike Pinky's @speak()@, this command defaults to rendering with Hirb because @render_options@ is present.
+* @render_options@, like @options@, takes "a hash of options":http://tagaholic.me/boson/doc/classes/Boson/OptionParser.html#M000069 which are passed to a Hirb helper.
+* @render_options@ can take option attributes for existing global options or new options specific to your Hirb helper.
+* In the above @render_options@, we pass option attributes :default and :values to the global option :fields.
+* The :values option attribute let's us do sweet "aliasing of option values":/2009/10/14/boson-command-your-ruby-universe.html#aliasing_option_values
+
+Let's try it out:
+
+<notextile><pre class='console'>
+  bash> irb
+  >> repos '-u defunkt'
+  +---------------------------+----------+-------+-------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+  | name                      | watchers | forks | homepage                                                          | description                                                                       |
+  +---------------------------+----------+-------+-------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+  | grit                      | 10       | 1     |                                                                   |                                                                                   |
+  | exception_logger          | 214      | 31    |                                                                   |                                                                                   |
+  | ambition                  | 158      | 3     | http://defunkt.github.com/ambition                                | include Enumerable                                                                |
+  | starling                  | 54       | 0     | http://rubyforge.org/projects/starling                            |                                                                                   |
+  | subtlety                  | 6        | 1     | http://subtlety.errtheblog.com/                                   | Subtlety: SVN => RSS, hAtom => Atom                                               |
+  | zippy                     | 8        | 1     |                                                                   | Zippy lil’ zipcode lib.                                                           |
+  | cache_fu                  | 265      | 34    | http://errtheblog.com                                             | Everyone's favorite memcached plugin for ActiveRecord.                            |
+  | mofo                      | 65       | 9     | http://mofo.rubyforge.org/                                        | Mofo is a fast and simple microformat parser, based on a concise DSL and Hpricot. |
+  # ...
+
+  # We can toggle rendering off by passing --render and get back the original return value
+  >> repos('-r -u defunkt').size
+  => 89
+
+  # Oh the good ol days of inspect
+  >> repos('-r -u defunkt').slice(0,2)
+  => [{:forks=>1, :url=>"http://github.com/defunkt/grit", :name=>"grit", :watchers=>10, :private=>false, :owner=>"defunkt", :fork=>true,
+    :open_issues=>0}, {:forks=>31, :url=>"http://github.com/defunkt/exception_logger", :name=>"exception_logger", :watchers=>214,
+    :private=>false, :description=>"", :owner=>"defunkt", :fork=>false, :open_issues=>0, :homepage=>""}]
+  
+  # Remembering we can pass rendering options, let's only view a couple of fields
+  >> repos '-f n,w,op -u defunkt'  # or '--fields name,watchers,open_issues --user defunkt'
+  +---------------------------+----------+-------------+
+  | name                      | watchers | open_issues |
+  +---------------------------+----------+-------------+
+  | grit                      | 10       | 0           |
+  | exception_logger          | 214      | 0           |
+  | ambition                  | 158      | 0           |
+  | starling                  | 54       | 0           |
+  | subtlety                  | 6        | 0           |
+  | zippy                     | 8        | 0           |
+  | cache_fu                  | 265      | 2           |
+  | mofo                      | 65       | 1           |
+  # ...
+
+  # What about global sorting options?
+  # Let's see wycats least popular repositories
+  >> repos '-s=w -u wycats' # or '--sort=watchers --user=wycats'
+  +---------------------------+----------+-------+------------------------------------------+---------------------------------------------------------------------------------------------+
+  | name                      | watchers | forks | homepage                                 | description                                                                                 |
+  +---------------------------+----------+-------+------------------------------------------+---------------------------------------------------------------------------------------------+
+  | rails-shared-benches      | 0        | 0     |                                          | Some Rails benches that work across Rails versions and can be used to compare perf progress |
+  | rails                     | 0        | 7     | http://rubyonrails.org                   | Ruby on Rails                                                                               |
+  | serialize_location_header | 1        | 0     |                                          | Serialize the location header if it exists                                                  |
+  | ufo_book                  | 2        | 0     |                                          | Uses the flying_saucer jruby gem to compile books                                           |
+  | ruby-mozjs                | 2        | 0     |                                          | Mozilla JavaScript Engine (SpiderMonkey) bindings for Ruby                                  |
+  | rack                      | 3        | 0     | http://rack.rubyforge.org/               | a modular Ruby webserver interface                                                          |
+  | lonestar                  | 3        | 0     |                                          |                                                                                             |
+ # ...
+
+ # And most popular repositories
+ >> repos '-s=w -R -u wycats' # or '--sort=watchers --reverse_sort --user=wycats'
+ +---------------------------+----------+-------+------------------------------------------+---------------------------------------------------------------------------------------------+
+ | name                      | watchers | forks | homepage                                 | description                                                                                 |
+ +---------------------------+----------+-------+------------------------------------------+---------------------------------------------------------------------------------------------+
+ | merb-core                 | 611      | 59    | http://www.merbivore.com                 | Merb Core: All you need. None you don't.                                                    |
+ | merb                      | 508      | 102   | http://www.merbivore.com                 | master merb branch                                                                          |
+ | thor                      | 330      | 26    | http://www.yehudakatz.com                | A scripting framework that replaces rake and sake                                           |
+ | merb-more                 | 316      | 32    | http://www.merbivore.com                 | Merb More: The Full Stack. Take what you need; leave what you don't.                        |
+ | merb-plugins              | 313      | 42    | http://www.merbivore.com                 | Merb Plugins: Even more modules to hook up your Merb installation                           |
+ | moneta                    | 264      | 28    | http://www.yehudakatz.com                | a unified interface to key/value stores                                                     |
+ | bundler                   | 228      | 20    |                                          |                                                                                             |
+ # ...
+</pre></notextile>
+
+As you can see, writing a Boson command to interact with the Github API is pretty easy. If you liked this sample command, install and try my "Github Boson library":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/site/github.rb :
+
+<notextile><pre class='console'>
+  bash> boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/site/github.rb
+  Saved to /Users/bozo/.boson/commands/github.rb.
+
+  # List the commands that come with the github library
+  bash> boson commands -q=l github
+ +---------------+--------+-------+------------------------------------------------+-----------------------------------------------------------------------+
+  | full_name     | lib    | alias | usage                                          | description                                                           |
+  +---------------+--------+-------+------------------------------------------------+-----------------------------------------------------------------------+
+  | checkout      | github |       | [url]                                          | Clones a github repo and opens in textmate                            |
+  | user_search   | github |       | [query]                                        | Search users                                                          |
+  | repo          | github |       | [_search(query]                                | Opens a repo with an optional path in a browser                       |
+  | repo_search   | github |       | [query]                                        | Search repositories                                                   |
+  | commit_list   | github |       | [user_repo][--branch=master]                   | List commits of a given user-repo                                     |
+  | user_repos    | github |       | [--user=cldwalker] [--fork_included] [--stats] | Displays a user's repositories                                        |
+  | raw_file      | github |       | [file_url]                                     | Downloads the raw form of a github repo file url                      |
+  | repo_network  | github |       | [user_repo][--user=cldwalker]                  | Displays network of a given user-repo i.e. wycats-thor or defunkt/rip |
+  | repos_watched | github |       | [user]                                         | Lists repos watched by user                                           |
+  | user_follows  | github |       | [user]                                         | List users a user follows                                             |
+  +---------------+--------+-------+------------------------------------------------+-----------------------------------------------------------------------+
+
+  # Let's do a repository search
+  bash> boson repo_search tagging -s=f  #or tagging --sort=followers
+  +------------------------------+---------------+-----------+------------+----------------------+------------+-----------------------------------------------------------------+
+  | name                         | username      | followers | language   | pushed               | score      | description                                                     |
+  +------------------------------+---------------+-----------+------------+----------------------+------------+-----------------------------------------------------------------+
+  | acts-as-taggable-on          | mbleigh       | 633       | Ruby       | 2009-10-14T15:16:26Z | 0.46670222 | A tagging plugin for Rails applications that allows for cust... |
+  | is_taggable                  | giraffesoft   | 201       | Ruby       | 2009-08-19T16:03:36Z | 0.3879375  | Tagging that doesn't want to be on steroids. It's skinny and... |
+  | acts_as_taggable_on_steroids | jviney        | 118       | Ruby       | 2009-06-12T06:15:45Z | 0.57809234 | Tagging for Ruby on Rails                                       |
+  | acts_as_taggable_redux       | geemus        | 100       | Ruby       | 2009-10-05T20:30:11Z | 0.46670222 | Allows for user owned tags to be added to multiple classes, ... |
+  | prettyPrint.js               | jamespadolsey | 99        | JavaScript | 2009-06-07T10:17:55Z | 0.3879375  | An in-browser JavaScript variable dumper, similar in functio... |
+  | django-uni-form              | pydanny       | 79        | Python     | 2009-09-12T23:47:49Z | 0.31662944 | Django forms are easily rendered as tables, paragraphs, and ... |
+  | odf-report                   | sandrods      | 74        | Ruby       | 2009-09-24T03:49:09Z | 0.4354762  | Generates ODF files, given a template (.odt) and data, repla... |
+  | prawn-format                 | jamis         | 64        | Ruby       | 2009-03-24T15:30:25Z | 0.3403988  | An extension to the Prawn PDF generation library that allows... |
+  # ...
+
+  # Latest commits for a given project in format :user/:repo
+  bash> boson commit_list wycats/bundler
+  | id                                       | authored_date             | message                                                                              |
+  +------------------------------------------+---------------------------+--------------------------------------------------------------------------------------+
+  | 8795746808647860b7b44bbb23bf3c64423eb1c8 | 2009-10-06T17:30:31-07:00 | Always generate bin files no matter what.                                            |
+  | 87201c825ff487077c4e1b55d449202007be1a42 | 2009-10-06T15:15:41-07:00 | Bump up the version number to 0.7.0.pre                                              |
+  | 53c589e1d440c2874ce57ee80047b54af2e8a646 | 2009-10-06T15:15:26-07:00 | Fix branches and #git with block calls                                               |
+  | 5bbb5740f3d576f57bd1c7b5c5557b781c22189b | 2009-10-06T12:15:24-07:00 | Add a glob option to directories                                                     |
+  | 6f263a435645a2fb76874d0c7f2c83d59eef8e92 | 2009-10-06T00:06:34-07:00 | Add a test that tests overwriting existing bin files                                 |
+  | a3694bf09ac8d3093c2ce1a744992e590ab50b5e | 2009-10-05T23:34:39-07:00 | It handles the simple git method as a block                                          |
+  # ...
+
+  # List network of a given :user/:repo sorted by most watched
+  bash> boson repo_network rails/rails -s=w -R  # or rails/rails --sort=watchers --reverse_sort
+  +-----------------------+----------+-------+-----------------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+  | owner                 | watchers | forks | homepage                    | description                                                                                                                          |
+  +-----------------------+----------+-------+-----------------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+  | rails                 | 4308     | 702   | http://rubyonrails.org      | Ruby on Rails                                                                                                                        |
+  | josh                  | 35       | 4     | http://rubyonrails.org      | Ruby on Rails                                                                                                                        |
+  | relevance             | 13       | 0     | http://rubyonrails.org      | Ruby on Rails                                                                                                                        |
+  | miloops               | 11       | 0     | http://rubyonrails.org      | Ruby on Rails                                                                                                                        |
+  | revolutionhealth      | 10       | 0     | http://rubyonrails.org      | Ruby on Rails                                                                                                                        |
+  | xing                  | 10       | 0     | http://rubyonrails.org      | Ruby on Rails                                                                                                                        |
+  | 37signals             | 9        | 0     | http://rubyonrails.org      | Ruby on Rails                                                                                                                        |
+ # ...
+</pre></notextile>
+
+h2. Conclusion
+
+As you've seen, Boson-Hirb interactions are quite good. To learn more about Boson, "read it's docs":http://tagaholic.me/boson/doc/. I'm eager to see what useful Boson libraries others will come up with. If you haven't already <span class='github'>gem install boson</span>.

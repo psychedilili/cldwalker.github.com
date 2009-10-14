@@ -449,7 +449,7 @@ Let's commandify it:
   * Edwin Moss
 </pre></notextile>
 
-To start using third-party Boson libraries, "check mine out":http://github.com/cldwalker/irbfiles. Note that some of libraries depend on other libraries. Currently, installing via a url won't pick up those dependencies.
+To start using third-party Boson libraries, "check mine out":http://github.com/cldwalker/irbfiles. Note that some of libraries depend on other libraries which the install doesn't yet pick up.
 
 h2(#namespaces). "Namespaces":#namespaces
 
