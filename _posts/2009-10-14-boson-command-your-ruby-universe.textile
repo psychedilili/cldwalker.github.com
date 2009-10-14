@@ -1,0 +1,467 @@
+---
+layout: post
+title: Boson - Command Your Ruby Universe
+keywords: ruby tasks, ruby commands, ruby task manager, ruby command manager, irb command manager, command framework, rake tasks, thor tasks, ruby shell
+description: Introducing <a href="http://tagaholic.me/boson/">Boson</a>, a command/task framework that could change how you collect and execute your ruby code. Sure, there's <a href='http://rake.rubyforge.org/'>rake</a>, <a href='http://github.com/wycats/thor'>thor</a> and <a href="http://delicious.com/tag/gem:type=task">a dozen other gems.</a> But how many will let you create a universe of ruby commands you can run from the commandline _and_ irb?
+tags:
+- gem:name=boson
+- gem:topic=options
+- lib:name=irb
+- post:lang=ruby
+- post:type=tutorial
+related_tag: gem:*=(boson|irb)
+---
+{{ page.description }}
+
+<img src="/images/post-higgs_boson_decay.jpg" alt="higgs boson decay" width="300" height="300"/>
+
+h2. Spinning On
+
+To go along with this post:
+
+<notextile><pre class="console">
+  gem install boson
+</pre></notextile>
+
+To get an idea of Boson's features, here's an outline:
+
+* "Shell and Irb Duality":#shell_and_irb_duality
+* "Creating Commands":#creating_commands
+* "Commands With Options":#commands_with_options
+* "Just Alias It":#just_alias_it
+** "Aliasing Commands":#aliasing_commands
+** "Aliasing Options":#aliasing_options
+** "Aliasing Option Values":#aliasing_option_values
+* "Using Third Party Commands":#using_third_party_commands
+* "Namespaces":#namespaces
+
+h2(#shell_and_irb_duality). "Shell and Irb Duality":#shell_and_irb_duality
+
+Like traditional command frameworks, Boson executes commands(tasks) from the commandline:
+
+<notextile><pre class="console">
+  # Let's list boson's default libraries
+  bash> boson libraries
+  +----------+----------+------+--------------+
+  | name     | commands | gems | library_type |
+  +----------+----------+------+--------------+
+  | core     | 6        |      | module       |
+  | web_core | 3        |      | module       |
+  +----------+----------+------+--------------+
+  2 rows in set
+
+  # And default commands
+  bash> boson commands
+  +--------------+----------+-------+--------------------------------------------+-----------------------------------------------------------------------------+
+  | full_name    | lib      | alias | usage                                      | description                                                                 |
+  +--------------+----------+-------+--------------------------------------------+-----------------------------------------------------------------------------+
+  | usage        | core     |       | [name][--verbose]                          | Print a command's usage                                                     |
+  | libraries    | core     |       | [query=''][--index] [--query_fields=A,B,C] | List or search libraries                                                    |
+  | render       | core     |       | [object] [options={}]                      | Render any object using Hirb                                                |
+  | load_library | core     |       | [library][--verbose] [--reload]            | Load/reload a library                                                       |
+  | commands     | core     |       | [query=''][--index] [--query_fields=A,B,C] | List or search commands                                                     |
+  | menu         | core     |       | [output] [options={}] [&block]             | Provide a menu to multi-select elements from a given array                  |
+  | get          | web_core |       | [url]                                      | Gets the body of a url                                                      |
+  | install      | web_core |       | [url][--force] [--name=NAME]               | Installs a library by url. Library should then be loaded with load_library. |
+  | browser      | web_core |       | [*urls]                                    | Opens urls in a browser                                                     |
+  +--------------+----------+-------+--------------------------------------------+-----------------------------------------------------------------------------+
+  9 rows in set
+  => true
+</pre></notextile>
+
+But unlike others, you can do the same in the ruby console:
+
+<notextile><pre class="console">
+  bash> irb
+  # You could drop this line in your irbrc
+  >> require 'boson'; Boson.start :verbose=>true
+  Loaded library core
+  Loaded library web_core
+  => nil
+
+  >> libraries
+  +----------+----------+------+--------------+
+  | name     | commands | gems | library_type |
+  +----------+----------+------+--------------+
+  | core     | 6        |      | module       |
+  | web_core | 3        |      | module       |
+  +----------+----------+------+--------------+
+  2 rows in set
+  => true
+
+  >> commands
+  # same as above ...
+</pre></notextile>
+
+How is this done? Commands are simply methods on Ruby's top level object, main. You provide the methods and Boson manages and empowers them. Even with more complex command usage, the shell/irb duality holds:
+
+<notextile><pre class="console">
+  # Print basic command usage in irb
+  irb>> commands '-h'
+  commands [query=''][--index] [--query_fields=full_name]
+  => nil
+  # Or in your shell
+  bash> boson commands -h
+  # same as above ...
+  
+  # Search command fields full_name and description for 'lib' and sort by full_name
+  irb>> commands 'lib --sort full_name --query_fields=full_name,description'
+  +--------------+----------+-------+-------------------------------------------+-----------------------------------------------------------------------------+
+  | full_name    | lib      | alias | usage                                     | description                                                                 |
+  +--------------+----------+-------+-------------------------------------------+-----------------------------------------------------------------------------+
+  | install      | web_core |       | [url][--force] [--name=NAME]              | Installs a library by url. Library should then be loaded with load_library. |
+  | libraries    | core     | lib   | [query=''][--index] [--query_fields=name] | List or search libraries                                                    |
+  | load_library | core     | ll    | [library][--verbose] [--reload]           | Load/reload a library                                                       |
+  +--------------+----------+-------+-------------------------------------------+-----------------------------------------------------------------------------+
+  3 rows in set
+  => true
+
+  # In your shell
+  bash> boson commands lib --sort full_name --query_fields=full_name,description
+  # same as above ...
+
+  # Using option aliases
+  bash> boson commands lib -s f -q=f,d
+  # same as above ...
+
+  # Execute a command repo_search under namespace github in irb
+  irb>> github.repo_search 'crazy'
+  # or in a shell
+  bash> boson github.repo_search crazy
+</pre></notextile>
+
+h2(#creating_commands). "Creating Commands":#creating_commands
+
+Creating a Boson command is as easy as opening a module and defining a method:
+
+{% highlight ruby %}
+  # Drop this in ~/.boson/commands/brain.rb
+  # The module name can be anything but it makes sense to name it the same as the file.
+  # The module is evaluated under Boson::Commands
+  module Brain
+    # Help Brain live his dream
+    def take_over(destination)
+      puts "Pinky, it's time to take over the #{destination}!"
+    end
+  end
+{% endhighlight %}
+
+
+Let's give the new command a spin:
+
+<notextile><pre class="console">
+  # Unfortunately Brain can't do much right now
+  bash> boson take_over farm
+  Pinky, it's time to take over the farm!
+
+  # Of course we now have a brain library
+  bash> boson libraries
+  +----------+----------+------+--------------+
+  | name     | commands | gems | library_type |
+  +----------+----------+------+--------------+
+  | core     | 6        |      | module       |
+  | web_core | 3        |      | module       |
+  | brain    | 1        |      | file         |
+  +----------+----------+------+--------------+
+  3 rows in set
+
+  # And a brain command
+  bash> boson commands take
+  +-----------+-------+-------+---------------+---------------------------+
+  | full_name | lib   | alias | usage         | description               |
+  +-----------+-------+-------+---------------+---------------------------+
+  | take_over | brain |       | [destination] | Help Brain live his dream |
+  +-----------+-------+-------+---------------+---------------------------+
+  1 row in set
+
+  # And of course you can execute this all from irb ...
+</pre></notextile>
+
+As you can see, Boson lets you write your libraries and commands in _plain_ ruby. Module-method DSLs be damned. If you want more commands for the brain library, add more methods to @Brain@ in the file. Also notice that Boson automatically generates a command's usage and description from the method's arguments and the comment above it.
+
+So that's cool. Boson's libraries are just modules and its commands just methods. But if this is all the functionality Boson offers, why bother with it at all?
+
+h2(#commands_with_options). "Commands With Options":#commands_with_options
+
+Borrowing from "Thor":http://github.com/wycats/thor, Boson commands can have simple yet powerful options. Let's add some to @take_over()@:
+
+{% highlight ruby %}
+  module Brain
+    options :execute=>:boolean, :countdown=>:numeric
+    # Help Brain live his dream
+    def take_over(destination, options={})
+      puts "Pinky, it's time to take over the #{destination}!"
+      sleep(options[:countdown]) if options[:countdown]
+      system("/home/brain/take_over/#{destination}") if options[:execute]
+    end
+  end
+{% endhighlight %}
+
+Brain always has the best of intentions:
+
+<notextile><pre class="console">
+  bash> boson take_over world --execute --countdown=3
+  Pinky, it's time to take over the world!
+  # program sleeps 3 seconds
+  # executes `/home/brain/take_over/world`
+
+  # Thanks to auto-generated option aliases
+  bash> boson take_over world -e -c3
+  # same as above ...
+
+  # Boson still holds true to its irb duality
+  bash> irb
+  >> take_over 'world -e -c3'
+  # same as above ...
+
+  # And if you want, call your command in plain ruby
+  >> take_over 'world', :execute=>true, :countdown=>3
+</pre></notextile>
+
+A few points:
+* @options()@ takes a hash of options with names mapping to option types
+* Short flags or option aliases are automatically generated based on the first letter of the option name.
+* Options have "plenty of functionality":http://tagaholic.me/boson/doc/classes/Boson/OptionParser.html.
+* Commands with options must expect their last argument to be an options hash.
+
+So it's great that options can be defined concisely, but whatever happened to just writing commands in plain ruby? Well, Boson actually lets you but it's gonna cost you *2* more characters:
+ 
+{% highlight ruby %}
+  module Brain
+    #@options :execute=>:boolean, :countdown=>:numeric
+    # Help Brain live his dream
+    def take_over(destination, options={})
+    # ....
+  end
+{% endhighlight %}
+ 
+ As you can see, I commented out the DSL method and prepended 'options' with '@'. This command still has the same functionality while still keeping it all in _plain_ ruby.
+
+h2(#just_alias_it). "Just Alias It":#just_alias_it
+
+Built with the power user in mind, Boson encourages aliasing of commands, options and even option values. Let's take a look at each.
+
+h3(#aliasing_commands). "Aliasing Commands":#aliasing_commands
+
+Aliasing commands is done through Boson's main config file at ~/.boson/config/boson.yml. For an example config file, "see mine":http://github.com/cldwalker/irbfiles/blob/master/boson/config/boson.yml. Let's add command aliases for the default command @commands@ and our example command @take_over@:
+
+<notextile><pre class='console'>
+  # Drop this in ~/.boson/config/boson.yml
+  :command_aliases:
+    commands: com
+    take_over: take
+
+  # Back in the shell
+  # List commands with 'com' or 'take in its name:
+  bash> boson -l=brain com com\|take
+  +-----------+-------+-------+------------------------------------------------+---------------------------+
+  | full_name | lib   | alias | usage                                          | description               |
+  +-----------+-------+-------+------------------------------------------------+---------------------------+
+  | commands  | core  | com   | [query=''][--index] [--query_fields=full_name] | List or search commands   |
+  | take_over | brain | take  | [destination]                                  | Help Brain live the dream |
+  +-----------+-------+-------+------------------------------------------------+---------------------------+
+  2 rows in set
+
+  # And if we wanted to execute take_over with the new alias
+  bash> boson take world -e -c3
+</pre></notextile>
+
+h3(#aliasing_options). "Aliasing Options":#aliasing_options
+
+As "explained above":#commands_with_options, options automatically have aliases generated for them. But if you want, specify your own aliases in @options()@:
+
+<notextile><pre class='console'>
+  # Let's add some aliases to the execute option
+  
+  module Brain
+    #@options [:execute, :conquer, :x]=>:boolean, :countdown=>:numeric
+    # ...
+  end
+
+  # The execute option can now be called with -x and --conquer
+</pre></notextile>
+
+h3(#aliasing_option_values). "Aliasing Option Values":#aliasing_option_values
+
+Aliasing option values is possible for option types :string and :array. But unlike the other aliases, you specify a unique string that a value starts with rather than define explicit aliases. Let's redo @take_over()@ to take a :string option with some expected values:
+
+{% highlight ruby %}
+  module Brain
+    #@options :destination=>{:type=>:string, :values=>%w{world farm fjord}},
+    # :execute=>:boolean, :countdown=>:numeric
+    # Help Brain live his dream
+    def take_over(options={})
+      puts "Pinky, it's time to take over the #{options[:destination]}!"
+      sleep(options[:countdown]) if options[:countdown]
+      system("/home/brain/take_over/#{options[:destination]}") if options[:execute]
+    end
+  end
+{% endhighlight %}
+
+As you can see we added a :destination option with a :values attribute. With this attribute, the :destination option is able to instantly alias those values. For more about the :values attribute "see here":http://tagaholic.me/boson/doc/classes/Boson/OptionParser.html#M000069. Let's see this aliasing in action:
+
+<notextile><pre class='console'>
+  # 'f' will match 'farm' over 'fjord' since values are searched alphabetically
+  bash> boson take -d=f
+  Pinky, it's time to take over the farm!
+
+  # It's still easy to get fjord
+  bash> boson take -d=fj
+  Pinky, it's time to take over the fjord!
+
+  # This is what Brain really wants to do
+  bash> boson take -d=w -e
+  Pinky, it's time to take over the world!
+
+  # If at any time you need to remember your option's values
+  bash> boson -hv take
+  Loaded library core
+  Loaded library web_core
+  Loaded library brain
+  take [--execute] [--destination=DESTINATION] [--countdown=N]
+
+  COMMAND OPTIONS
+  +---------------+-------+---------+------------------+
+  | Option        | Alias | type    | Values           |
+  +---------------+-------+---------+------------------+
+  | --countdown   | -c    | numeric |                  |
+  | --destination | -d    | string  | world,farm,fjord |
+  | --execute     | -e    | boolean |                  |
+  +---------------+-------+---------+------------------+
+  # ...
+</pre></notextile>
+
+You may be pleased to know that the default commands @libraries@ and @commands@ come with all this goodness:
+
+<notextile><pre class='console'>
+  bash> irb
+  >> commands '-hv'
+  commands [query=''][--index] [--query_fields=full_name]
+
+  COMMAND OPTIONS
+  +----------------+-------+---------+----------------+------------------------------------------------------------------------+
+  | Option         | Alias | type    | Description    | Values                                                                 |
+  +----------------+-------+---------+----------------+------------------------------------------------------------------------+
+  | --index        | -i    | boolean | Searches index |                                                                        |
+  | --query_fields | -q    | array   |                | name,lib,alias,description,options,args,usage,full_name,render_options |
+  +----------------+-------+---------+----------------+------------------------------------------------------------------------+
+
+  GLOBAL/RENDER OPTIONS
+  +----------------+-------+---------+-----------------------------------------------------------+------------------------------------------------------------------------+
+  | Option         | Alias | type    | Description                                               | Values                                                                 |
+  +----------------+-------+---------+-----------------------------------------------------------+------------------------------------------------------------------------+
+  | --class        | -c    | string  | Hirb helper class which renders                           |                                                                        |
+  | --fields       | -f    | array   | Displays fields in the order given                        | name,lib,alias,description,options,args,usage,full_name,render_options |
+  | --global       | -g    | string  | Pass a string of global options without the dashes        |                                                                        |
+  | --help         | -h    | boolean | Display a command's help                                  |                                                                        |
+  | --max_width    | -m    | numeric | Max width of a table                                      |                                                                        |
+  | --pretend      | -p    | boolean | Display what a command would execute without executing it |                                                                        |
+  | --render       | -r    | boolean | Toggle a command's default rendering behavior             |                                                                        |
+  | --reverse_sort | -R    | boolean | Reverse a given sort                                      |                                                                        |
+  | --sort         | -s    | string  | Sort by given field                                       | name,lib,alias,description,options,args,usage,full_name,render_options |
+  | --verbose      | -v    | boolean | Increase verbosity for help, errors, etc.                 |                                                                        |
+  | --vertical     | -V    | boolean | Display a vertical table                                  |                                                                        |
+  +----------------+-------+---------+-----------------------------------------------------------+------------------------------------------------------------------------+
+ => true
+
+  # Don't worry about the other options. To be covered in another blog post :p
+</pre></notextile>
+
+So yes, you can search commands and libraries while choosing which fields to search, sort and display with aliased options and option values!
+
+h2(#using_third_party_commands). "Using Third Party Commands":#using_third_party_commands
+
+Boson makes it dead easy to install someone else's commands:
+
+<notextile><pre class='console'>
+  # Let's download a library which explains irb's default commands
+  bash> boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/irb_core.rb
+  Saved to /Users/bozo/.boson/commands/irb_core.rb
+
+  # Let's see the commands in irb
+  bash> irb
+  >> commands '-q=l irb_core'
+  +-------------------------------+----------+------------+-------+-----------------------------------------------------------------------------+
+  | full_name                     | lib      | alias      | usage | description                                                                 |
+  +-------------------------------+----------+------------+-------+-----------------------------------------------------------------------------+
+  | irb_pop_workspace             | irb_core | popws      |       | Pops current workspace and changes to next workspace in context             |
+  | irb_require                   | irb_core |            |       | Evals file like require line by line                                        |
+  | public                        | irb_core |            |       | Works same as module#public                                                 |
+  | private                       | irb_core |            |       | Works same as module#private                                                |
+  | irb                           | irb_core |            |       | Starts a new workspace/subsession                                           |
+  | irb_push_workspace            | irb_core | pushws     |       | Creates a workspace for given object and pushes it into the current context |
+  | irb_load                      | irb_core |            |       | Evals file like load line by line                                           |
+  | irb_change_workspace          | irb_core | cws        |       | Changes current workspace to given object                                   |
+  | irb_source                    | irb_core | source     |       | Evals full path file line by line                                           |
+  | irb_jobs                      | irb_core | jobs       |       | List workspaces/subsessions                                                 |
+  | irb_fg                        | irb_core | fg         |       | Switch to a workspace/subsession                                            |
+  | irb_help                      | irb_core | help       |       | Ri based help                                                               |
+  | irb_kill                      | irb_core | kill       |       | Kills a given workspace/subsession                                          |
+  | include                       | irb_core |            |       | Works same as module#include                                                |
+  | irb_exit                      | irb_core | exit       |       | Kills the current workspace/subsession                                      |
+  | irb_workspaces                | irb_core | workspaces |       | Array of workspaces for current context                                     |
+  | irb_context                   | irb_core | conf       |       | Displays configuration for current workspace/subsession                     |
+  | install_alias_method          | irb_core |            |       | Aliases given method, allows lazy loading of dependent file                 |
+  | irb_current_working_workspace | irb_core | cwws       |       | Prints current workspace                                                    |
+  +-------------------------------+----------+------------+-------+-----------------------------------------------------------------------------+
+  19 rows in set
+  => true
+
+  # Sweet! Now we have a list and description of commands that come with irb.  
+</pre></notextile>
+
+If you remember, Boson's libraries are just modules. So _any_ url that points to a ruby module now offers you a library of Boson commands. You can even have the installer automatically wrap ruby code in a method and a module to make it a valid Boson library.
+For example, take "this gist":http://gist.github.com/203861 for displaying authors on a git repository:
+
+<script src="http://gist.github.com/203861.js"></script>
+
+Let's commandify it:
+
+<notextile><pre class='console'>
+  bash> boson install http://gist.github.com/raw/203861/c063260bef7f004c9db4c2a7719ff649b59d3ade/git-authors -m
+  Saved to /Users/bozo/.boson/commands/git_authors.rb.
+  
+  # Verify we have the command
+  bash> boson commands auth
+  +-------------+-------------+-------+-------+-------------+
+  | full_name   | lib         | alias | usage | description |
+  +-------------+-------------+-------+-------+-------------+
+  | git_authors | git_authors |       |       |             |
+  +-------------+-------------+-------+-------+-------------+
+  1 row in set
+
+  # Running this in my local repo of http://github.com/wycats/thor
+  bash> boson git_authors
+  * José Valim
+  * Nathan Weizenbaum
+  * Yehuda Katz
+  * Brian Donovan
+  * Fabien Franzen
+  * Mislav Marohnić
+  * James Herdman
+  * Charles Jolley
+  * Markus Prinz
+  * Luis Lavena
+  * Damian Janowski
+  * Jack Dempsey
+  * valodzka
+  * Gabriel Horner
+  * Edwin Moss
+</pre></notextile>
+
+To start using third-party Boson libraries, "check mine out":http://github.com/cldwalker/irbfiles. Note that some of libraries depend on other libraries. Currently, installing via a url won't pick up those dependencies.
+
+h2(#namespaces). "Namespaces":#namespaces
+
+If you're familiar with rake and thor, you may be surprised that there has been no mention of namespaces. That's because by default they're optional. Boson, like Ruby, assumes you're grown up enough to balance power and peril. To aid with keeping the default namespace clean, Boson doesn't load a library if it introduces a command which will conflict with existing commands. This conflict detector will even catch third-party gems who pollute the default namespace by monkeypatching @Kernel@ or @Object@. You can turn off the conflict detector per library as needed. If Boson's conflict detector isn't comforting enough, no worries. You can "configure any library":http://tagaholic.me/boson/doc/classes/Boson/Library.html#M000074 to have a namespace. And if you yearn for namespacing by default, simply drop @:auto_namespace: true@ into your ~/.boson/config/boson.yml.
+
+h2. Spinning Off
+
+Although we've covered most of Boson's basics, we still haven't touched on how Boson integrates with "Hirb":http://tagaholic.me/hirb/. That's for the next post.
+
+For all you physics geeks out there:
+
+<notextile><pre class='console'>
+  >> Boson.higgs.instance_eval("class << self; self end").ancestors[1]
+  => Boson::Universe
+</pre></notextile>
