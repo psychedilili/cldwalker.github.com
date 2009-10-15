@@ -2,8 +2,7 @@
 layout: post
 title: Boson And Hirb Interactions
 keywords: ruby tasks, ruby commands, ruby task manager, ruby command manager, irb command manager, command framework, rake tasks, thor tasks, ruby shell
-description: In <a href="/2009/10/14/boson-command-your-ruby-universe.html">the last post</a>, I introduced <a href="http://github.com/cldwalker/boson">Boson</a> and its <a href="/2009/10/14/boson-command-your-ruby-universe.html#commands_with_options">options for commands</a>. What I didn't mention was that Boson also gives those commands default options. Among them are ones that control rendering your command's output with <a href="http://tagaholic.me/hirb/">Hirb</a> and even toggle rendering. Simply put, at the flick of a switch, commands can have Hirb's views.
-published: false
+description: In <a href="/2009/10/14/boson-command-your-ruby-universe.html">the last post</a>, I introduced <a href="http://github.com/cldwalker/boson">Boson</a> and its <a href="/2009/10/14/boson-command-your-ruby-universe.html#commands_with_options">options for commands</a>. What I didn't mention was that Boson also gives those commands default options. Among them are ones to control rendering a command's output with <a href="http://tagaholic.me/hirb/">Hirb</a> and even toggle rendering. At the flick of a switch, Boson commands (Ruby methods) can have Hirb's views.
 tags:
 - gem:name=boson
 - gem:name=hirb
@@ -11,7 +10,7 @@ tags:
 - lib:name=irb
 - post:lang=ruby
 - post:type=tutorial
-related_tag: gem:*=(boson|irb)
+related_tag: gem:*=(boson|hirb)
 ---
 {{ page.description }}
 
@@ -234,7 +233,7 @@ Each Boson command with options, or an option command, comes with global command
   3 rows in set
   => true
 
-  # Resize a table's maximum width
+  # Resize a table's maximum width to 7 characters
   >> speak '-r -m7 -c3 Blah blah!'
   Hey Brain! Blah blah!
   Brain, I can count to 3!
@@ -287,11 +286,12 @@ Using Pinky was fun to annoy Brain but let's dig into a more useful example. Con
 Some points:
 * The output of @repos()@ is an array of hashes, perfect for Hirb's tables.
 * The @get()@ method is a default Boson command which does a get request on a url and returns the response body.
-* Unlike Pinky's @speak()@, this command defaults to rendering with Hirb because @render_options@ is present.
-* @render_options@, like @options@, takes "a hash of options":http://tagaholic.me/boson/doc/classes/Boson/OptionParser.html#M000069 which are passed to a Hirb helper.
-* @render_options@ can take option attributes for existing global options or new options specific to your Hirb helper.
-* In the above @render_options@, we pass option attributes :default and :values to the global option :fields.
-* The :values option attribute let's us do sweet "aliasing of option values":/2009/10/14/boson-command-your-ruby-universe.html#aliasing_option_values
+* @render_options@
+** Unlike Pinky's @speak()@, this command defaults to rendering with Hirb because @render_options@ is present.
+** @render_options@, like @options@, takes "a hash of options":http://tagaholic.me/boson/doc/classes/Boson/OptionParser.html#M000069 which are passed to a Hirb helper.
+** Can take existing global options or new options specific to your Hirb helper.
+** The above commented render_options could also have been a method call, as was "shown with options":/2009/10/14/boson-command-your-ruby-universe.html#commands_with_options.
+* The :values option attribute of the :fields option let's us do sweet "aliasing of option values":/2009/10/14/boson-command-your-ruby-universe.html#aliasing_option_values for :fields and :sort options.
 
 Let's try it out:
 
@@ -364,6 +364,19 @@ Let's try it out:
  | moneta                    | 264      | 28    | http://www.yehudakatz.com                | a unified interface to key/value stores                                                     |
  | bundler                   | 228      | 20    |                                          |                                                                                             |
  # ...
+
+ # Of course you can do all of the above from the commandline with the boson command.
+ # Even manipulating the command's return value with ruby:
+ #
+ # bash> boson -e "p repos('-r -u defunkt').size"
+ # Loaded library github
+ # 89
+ #
+ # bash> boson -e "p repos('-r -u defunkt').slice(0,2)"
+ # Loaded library github
+ # [{:forks=>1, :url=>"http://github.com/defunkt/grit", :name=>"grit", :watchers=>10, :private=>false, :owner=>"defunkt", :fork=>true,
+ #  :open_issues=>0}, {:forks=>31, :url=>"http://github.com/defunkt/exception_logger", :name=>"exception_logger", :watchers=>214,
+ #  :private=>false, :description=>"", :owner=>"defunkt", :fork=>false, :open_issues=>0, :homepage=>""}]
 </pre></notextile>
 
 As you can see, writing a Boson command to interact with the Github API is pretty easy. If you liked this sample command, install and try my "Github Boson library":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/site/github.rb :
@@ -433,4 +446,4 @@ As you can see, writing a Boson command to interact with the Github API is prett
 
 h2. Conclusion
 
-As you've seen, Boson-Hirb interactions are quite good. To learn more about Boson, "read it's docs":http://tagaholic.me/boson/doc/. I'm eager to see what useful Boson libraries others will come up with. If you haven't already <span class='github'>gem install boson</span>.
+As you've seen, Boson-Hirb interactions can lead to some novel and useful Ruby commands. Hirb's instant views, controlled by Boson commands, can make one think of Boson as a commandline MVC framework with an optional V. To learn more about Boson, "read it's docs":http://tagaholic.me/boson/doc/. I'm eager to see what useful Boson libraries others will come up with. To try out Boson <span class='github'>gem install boson</span>.
