@@ -14,6 +14,8 @@ related_tag: gem:*=(boson|hirb)
 ---
 {{ page.description }}
 
+<img src="/images/post-quark_anti_quark_collision.jpg" alt="particle interaction" width="350" height="250" />
+
 h2(#hirbs_handy_tables). "Hirb's Handy Tables":#hirbs_handy_tables
 
 Back in "an old post":/2009/06/19/page-irb-output-and-improve-ri-with-hirb.html, I concluded with a mention that Hirb's @table()@ can handle arrays of about any object (responding to @to_s@). Unless you read "the docs":http://tagaholic.me/hirb/doc/classes/Hirb/Helpers/Table.html or tests, that probably didn't register much. So let's see it in action:
