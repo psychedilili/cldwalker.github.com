@@ -3,6 +3,7 @@ layout: post
 title: Boson And Hirb Interactions
 keywords: ruby tasks, ruby commands, ruby task manager, ruby command manager, irb command manager, command framework, rake tasks, thor tasks, ruby shell
 description: In <a href="/2009/10/14/boson-command-your-ruby-universe.html">the last post</a>, I introduced <a href="http://github.com/cldwalker/boson">Boson</a> and its <a href="/2009/10/14/boson-command-your-ruby-universe.html#commands_with_options">options for commands</a>. What I didn't mention was that Boson also gives those commands default options. Among them are ones that control rendering your command's output with <a href="http://tagaholic.me/hirb/">Hirb</a> and even toggle rendering. Simply put, at the flick of a switch, commands can have Hirb's views.
+published: false
 tags:
 - gem:name=boson
 - gem:name=hirb

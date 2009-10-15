@@ -17,7 +17,7 @@ related_tag: gem:*=(boson|irb)
 
 h2. Spinning On
 
-To go along with this post:
+Feel free to "follow Boson on the Hub":http://github.com/cldwalker/boson and to install it:
 
 <notextile><pre class="console">
   gem install boson
@@ -74,7 +74,7 @@ But unlike others, you can do the same in the ruby console:
 <notextile><pre class="console">
   bash> irb
   # You could drop this line in your irbrc
-  >> require 'boson'; Boson.start :verbose=>true
+  >> require 'boson'; Boson.start
   Loaded library core
   Loaded library web_core
   => nil
@@ -165,7 +165,7 @@ Let's give the new command a spin:
   +----------+----------+------+--------------+
   3 rows in set
 
-  # And a brain command
+  # And a take_over command
   bash> boson commands take
   +-----------+-------+-------+---------------+---------------------------+
   | full_name | lib   | alias | usage         | description               |
@@ -237,6 +237,7 @@ So it's great that options can be defined concisely, but whatever happened to ju
  
  As you can see, I commented out the DSL method and prepended 'options' with '@'. This command still has the same functionality while still keeping it all in _plain_ ruby.
 
+<p/>
 h2(#just_alias_it). "Just Alias It":#just_alias_it
 
 Built with the power user in mind, Boson encourages aliasing of commands, options and even option values. Let's take a look at each.
@@ -449,7 +450,7 @@ Let's commandify it:
   * Edwin Moss
 </pre></notextile>
 
-To start using third-party Boson libraries, "check mine out":http://github.com/cldwalker/irbfiles. Note that some of libraries depend on other libraries which the install doesn't yet pick up.
+To try some third-party Boson libraries, "here":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/site/github.rb "are":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/ruby_ref.rb "some":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/ri.rb of mine I recommend.
 
 h2(#namespaces). "Namespaces":#namespaces
 
@@ -459,7 +460,7 @@ h2. Spinning Off
 
 Although we've covered most of Boson's basics, we still haven't touched on how Boson integrates with "Hirb":http://tagaholic.me/hirb/. That's for the next post.
 
-For all you physics geeks out there:
+And for all you physics geeks out there:
 
 <notextile><pre class='console'>
   >> Boson.higgs.instance_eval("class << self; self end").ancestors[1]
