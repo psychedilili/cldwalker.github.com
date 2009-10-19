@@ -2,7 +2,7 @@
 layout: post
 title: How Boson Enhances Your Irb Experience
 keywords: ruby boson, boson ruby, ruby tasks, ruby commands, improve irb, enhance irb, ruby shell, ruby command manager, irb command manager, command framework, irb commands
-description: In <a href='/2009/10/14/boson-command-your-ruby-universe.html'>previous</a> <a href='/2009/10/15/boson-and-hirb-interactions.html'>posts</a>, <a href='http://tagaholic.me/boson/'>Boson</a> was introduced as a command framework, usable from the commandline and irb. In this post, we'll focus on how Boson enhances irb by treating methods like shell commands.
+description: In <a href='/2009/10/14/boson-command-your-ruby-universe.html'>previous</a> <a href='/2009/10/15/boson-and-hirb-interactions.html'>posts</a>, <a href='http://tagaholic.me/boson/'>Boson</a> was introduced as a command framework, usable from the commandline and irb. In this post, we'll focus on how <a href='http://github.com/cldwalker/boson'>Boson</a> enhances irb by treating methods like shell commands.
 tags:
 - gem:name=boson
 - lib:name=irb
@@ -42,7 +42,7 @@ To use Boson in irb, drop this in your ~/.irbrc. For any other ruby console appl
 
 h2(#organization_and_philosophy). "Organization and Philosophy":#organization_and_philosophy
 
-When Boson starts, it loads libraries of commands. "Boson libraries":http://tagaholic.me/boson/doc/classes/Boson/Library.html are just Ruby modules and "Boson commands":http://tagaholic.me/boson/doc/classes/Boson/Command.html are just methods in those modules. Most libraries are in their own file under ~/.boson/commands. Each library can have an optional namespace defined in a config file. With this organization commands are _independent_ of Boson. There are no @namespace@  dsl methods as with Rake and no required Thor subclassing as with Thor. This is on purpose. Boson strives to allow _all_ of its functionality to be written in plain ruby. This way you are free to easily test your commands and use them with other applications _independent_ of Boson. Also, if you decided to stop using Boson, all libraries you've built for it can still be used in irb without modifying them. To do this you would simply extend your library's modules into Ruby's top-level object @main@.
+When Boson starts, it loads libraries of commands. "Boson libraries":http://tagaholic.me/boson/doc/classes/Boson/Library.html are just Ruby modules and "Boson commands":http://tagaholic.me/boson/doc/classes/Boson/Command.html are just methods in those modules. Most libraries are in their own file under ~/.boson/commands. Each library can have an optional namespace defined in a config file. With this organization commands are _independent_ of Boson. There are no @namespace@  dsl methods as with Rake and no required Thor subclassing as with "Thor":http://github.com/wycats/thor. This is on purpose. Boson strives to allow _all_ of its functionality to be written in plain ruby. This way you are free to easily test your commands and use them with other applications _independent_ of Boson. Also, if you decided to stop using Boson, all libraries you've built for it can still be used in irb without modifying them. To do this you would simply extend your library's modules into Ruby's top-level object @main@.
 
 h2(#core_commands). "Core Commands":#core_commands
 
@@ -431,7 +431,7 @@ h3(#require_library). "Require Library":#require_library
 
 h3(#module_library). "Module Library":#module_library
 
-"Boson::ModuleLibrary":http://tagaholic.me/boson/doc/classes/Boson/ModuleLibrary.html simply makes commands from a class or module's class methods:
+"Boson::ModuleLibrary":http://tagaholic.me/boson/doc/classes/Boson/ModuleLibrary.html simply makes commands from a module's class methods:
 
 <notextile><pre class='console'>
   >> load_library Math, :commands=>%w{sin cos tan}
@@ -496,4 +496,4 @@ Lastly, you should decide which libraries to load at startup. The default is to 
 
 h2. Postface
 
-In this post, we've seen how Boson treats methods like shell commands. In doing so, it makes irb (or any ruby console) a shell you can easily customize. For more traditional ruby shell implementations, see "rubish":http://github.com/hayeah/rubish/, "rush":http://github.com/adamwiggins/rush and "pope":http://www.creo.hu/~csaba/ruby/pope/. If you're interested in giving autocompletion to your commands, check out "Bond":/2009/07/16/bond-from-irb-with-completion-love.html.
+In this post, we've seen how Boson treats methods like shell commands. In doing so, it makes irb (or any ruby console) a simple yet powerful method-based shell. For more traditional ruby shell implementations, see "rubish":http://github.com/hayeah/rubish/, "rush":http://github.com/adamwiggins/rush and "pope":http://www.creo.hu/~csaba/ruby/pope/. If you're interested in giving autocompletion to your commands, check out "Bond":/2009/07/16/bond-from-irb-with-completion-love.html.

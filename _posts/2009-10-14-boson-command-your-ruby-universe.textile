@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Boson - Command Your Ruby Universe
-keywords: ruby tasks, ruby commands, ruby task manager, ruby command manager, irb command manager, command framework, rake tasks, thor tasks, ruby shell
+keywords: boson ruby, ruby boson, ruby tasks, ruby commands, ruby task manager, ruby command manager, irb command manager, command framework, rake tasks, thor tasks, ruby shell
 description: Introducing <a href="http://tagaholic.me/boson/">Boson</a>, a command/task framework that could change how you collect and execute your ruby code. Sure, there's <a href='http://rake.rubyforge.org/'>rake</a>, <a href='http://github.com/wycats/thor'>thor</a> and <a href="http://delicious.com/tag/gem:type=task">a dozen other gems.</a> But how many will let you create a universe of ruby commands you can run from the commandline _and_ irb?
 tags:
 - gem:name=boson
