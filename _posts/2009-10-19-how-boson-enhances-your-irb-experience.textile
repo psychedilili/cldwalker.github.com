@@ -1,0 +1,499 @@
+---
+layout: post
+title: How Boson Enhances Your Irb Experience
+keywords: ruby boson, boson ruby, ruby tasks, ruby commands, improve irb, enhance irb, ruby shell, ruby command manager, irb command manager, command framework, irb commands
+description: In <a href='/2009/10/14/boson-command-your-ruby-universe.html'>previous</a> <a href='/2009/10/15/boson-and-hirb-interactions.html'>posts</a>, <a href='http://tagaholic.me/boson/'>Boson</a> was introduced as a command framework, usable from the commandline and irb. In this post, we'll focus on how Boson enhances irb by treating methods like shell commands.
+tags:
+- gem:name=boson
+- lib:name=irb
+- post:lang=ruby
+- post:type=tutorial
+related_tag: *:*=(boson|irb)
+---
+{{ page.description }}
+
+h2. Preface
+
+If you're an avid irb user "like me":http://github.com/cldwalker/irbfiles, your ~/.irbrc is littered with methods. These methods are sometimes favorite tweaks to Ruby's core libraries and sometimes interfaces to gems. But regardless of what they represent, when you use them they're just like shell commands. With this user in mind, Boson aims to give methods command-like functionality. This means giving a method the ability to have "simple yet powerful options":/2009/10/14/boson-command-your-ruby-universe.html#commands_with_options. This means "aliasing":/2009/10/14/boson-command-your-ruby-universe.html#just_alias_it and annotating methods are commonplace. This means "searching":#core_commands and "sharing your commands":/2009/10/14/boson-command-your-ruby-universe.html#using_third_party_commands with others are easy to do. And if you want, you can even give a method "instant views":/2009/10/15/boson-and-hirb-interactions.html.
+
+Here's the order we'll be covering using Boson with irb:
+* "Setup":#setup
+* "Organization and Philosophy":#organization_and_philosophy
+* "Core Commands":#core_commands
+** "commands()":#commands
+** "libraries()":#libraries
+** "load_library()":#load_library
+* "Boson Libraries":#boson_libraries
+** "Gem Library":#gem_library
+** "Require Library":#require_library
+** "Module Library":#module_library
+* "Migrating Your Irb Commands":#migrating_your_irb_commands
+
+h2(#setup). "Setup":#setup
+
+To use Boson in irb, drop this in your ~/.irbrc. For any other ruby console application the setup is the same:
+
+{% highlight ruby %}
+  require 'boson'
+  Boson.start
+{% endhighlight %}
+
+@Boson.start@ comes with "some options":http://tagaholic.me/boson/doc/classes/Boson/ConsoleRunner.html#M000064. If you don't like that Boson tells you every library it loads, set @:verbose=>false@.
+
+h2(#organization_and_philosophy). "Organization and Philosophy":#organization_and_philosophy
+
+When Boson starts, it loads libraries of commands. "Boson libraries":http://tagaholic.me/boson/doc/classes/Boson/Library.html are just Ruby modules and "Boson commands":http://tagaholic.me/boson/doc/classes/Boson/Command.html are just methods in those modules. Most libraries are in their own file under ~/.boson/commands. Each library can have an optional namespace defined in a config file. With this organization commands are _independent_ of Boson. There are no @namespace@  dsl methods as with Rake and no required Thor subclassing as with Thor. This is on purpose. Boson strives to allow _all_ of its functionality to be written in plain ruby. This way you are free to easily test your commands and use them with other applications _independent_ of Boson. Also, if you decided to stop using Boson, all libraries you've built for it can still be used in irb without modifying them. To do this you would simply extend your library's modules into Ruby's top-level object @main@.
+
+h2(#core_commands). "Core Commands":#core_commands
+
+Boson comes with a handful of core commands but let's focus on three you'll probably use the most: @commands@, @libraries@ and @load_library@. Since these commands have options, you should "familiarize yourself":/2009/10/15/boson-and-hirb-interactions.html#boson_commands_global_options with the default global options they have. Also, you should be aware that "option values can be aliased":/2009/10/14/boson-command-your-ruby-universe.html#aliasing_option_values.
+
+h3(#commands). "commands()":#commands
+
+This command searches your commands in a myriad of ways.
+
+<notextile><pre class='console'>
+  # With no arguments commands() lists all loaded commands
+  >> commands
+  +------------------------+----------------------+-------+---------------------------------------------------------------------------+---------------------------------------------------------------------------+
+  | full_name              | lib                  | alias | usage                                                                     | description                                                               |
+  +------------------------+----------------------+-------+---------------------------------------------------------------------------+---------------------------------------------------------------------------+
+  | usage                  | core                 |       | [name][--verbose]                                                         | Print a command's usage                                                   |
+  | libraries              | core                 | lib   | [query=''][--index] [--query_fields=name]                                 | List or search libraries                                                  |
+  | render                 | core                 | v     | [object] [options={}]                                                     | Render any object using Hirb                                              |
+  | load_library           | core                 | ll    | [library][--verbose] [--reload]                                           | Load/reload a library                                                     |
+  | commands               | core                 | com   | [query=''][--index] [--query_fields=full_name]                            | List or search commands                                                   |
+  | menu                   | core                 |       | [output] [options={}] [&block]                                            | Provide a menu to multi-select elements from a given array                |
+  # ...
+
+  # By default searches in a command's full_name
+  >> commands 'usa'
+  +-----------+------+-------+-------------------+-------------------------+
+  | full_name | lib  | alias | usage             | description             |
+  +-----------+------+-------+-------------------+-------------------------+
+  | usage     | core |       | [name][--verbose] | Print a command's usage |
+  +-----------+------+-------+-------------------+-------------------------+
+  1 row in set
+
+  # Since searches are regular expressions, we can search multiple terms
+  >> commands 'usa|lib'
+  +--------------------+-------+-------+-------------------------------------------+---------------------------------------------+
+  | full_name          | lib   | alias | usage                                     | description                                 |
+  +--------------------+-------+-------+-------------------------------------------+---------------------------------------------+
+  | usage              | core  |       | [name][--verbose]                         | Print a command's usage                     |
+  | libraries          | core  | lib   | [query=''][--index] [--query_fields=name] | List or search libraries                    |
+  | load_library       | core  | ll    | [library][--verbose] [--reload]           | Load/reload a library                       |
+  +--------------------+-------+-------+-------------------------------------------+---------------------------------------------+
+  3 rows in set
+  => true
+
+  # Before we can use a command's options we have to know what options it has
+  >> commands '-h'  # or commands '--help'
+  commands [query=''][--index] [--query_fields=full_name]
+  => nil
+  # another way of getting a command's usage
+  >> usage 'commands'
+
+  # To search in fields other than full_name we need to use the query_fields option.
+  # To search full_name and description fields for 'lib'
+  >> commands 'lib --query_fields=full_name,description'
+  +--------------------+----------+-------+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
+  | full_name          | lib      | alias | usage                                                                         | description                                                                 |
+  +--------------------+----------+-------+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
+  | libraries          | core     | lib   | [query=''][--index] [--query_fields=name]                                     | List or search libraries                                                    |
+  | load_library       | core     | ll    | [library][--verbose] [--reload]                                               | Load/reload a library                                                       |
+  | install            | web_core |       | [url][--force] [--module_wrap] [--name=NAME] [--method_wrap]                  | Installs a library by url. Library should then be loaded with load_library. |  
+ +--------------------+----------+-------+-------------------------------------------------------------------------------+-----------------------------------------------------------------------------+
+  3 rows in set
+  => true
+
+  # With option name and value aliasing, the above can also be
+  >> commands 'lib -q=f,d'
+</pre></notextile>
+
+Since @commands()@ comes with "Boson's global rendering options":/2009/10/15/boson-and-hirb-interactions.html#boson_commands_global_options, commands can be sorted by command attribute and have only certain attributes displayed.
+
+<notextile><pre class='console'>
+  # Before sorting and selecting command attributes, we need to know what attributes we can choose from in our options.
+  # Let's call up verbose help:
+  >> commands '-hv'    # or commands '--help --verbose'
+  commands [query=''][--index] [--query_fields=full_name]
+
+  COMMAND OPTIONS
+  +----------------+-------+---------+-------------------+------------------------------------------------------------------------+
+  | Option         | Alias | type    | Description       | Values                                                                 |
+  +----------------+-------+---------+-------------------+------------------------------------------------------------------------+
+  | --index        | -i    | boolean | Searches index    |                                                                        |
+  | --query_fields | -q    | array   | Searchable fields | name,lib,alias,description,options,args,usage,full_name,render_options |
+  +----------------+-------+---------+-------------------+------------------------------------------------------------------------+
+
+  GLOBAL/RENDER OPTIONS
+  +----------------+-------+---------+-----------------------------------------------------------+------------------------------------------------------------------------+
+  | Option         | Alias | type    | Description                                               | Values                                                                 |
+  +----------------+-------+---------+-----------------------------------------------------------+------------------------------------------------------------------------+
+  | --class        | -c    | string  | Hirb helper class which renders                           |                                                                        |
+  | --fields       | -f    | array   | Displays fields in the order given                        | name,lib,alias,description,options,args,usage,full_name,render_options |
+  | --global       | -g    | string  | Pass a string of global options without the dashes        |                                                                        |
+  | --help         | -h    | boolean | Display a command's help                                  |                                                                        |
+  | --max_width    | -m    | numeric | Max width of a table                                      |                                                                        |
+  | --pretend      | -p    | boolean | Display what a command would execute without executing it |                                                                        |
+  | --render       | -r    | boolean | Toggle a command's default rendering behavior             |                                                                        |
+  | --reverse_sort | -R    | boolean | Reverse a given sort                                      |                                                                        |
+  | --sort         | -s    | string  | Sort by given field                                       | name,lib,alias,description,options,args,usage,full_name,render_options |
+  | --verbose      | -v    | boolean | Increase verbosity for help, errors, etc.                 |                                                                        |
+  | --vertical     | -V    | boolean | Display a vertical table                                  |                                                                        |
+  +----------------+-------+---------+-----------------------------------------------------------+------------------------------------------------------------------------+
+  => nil
+
+  # Looking under values column, we can see the available values for --sort and --fields i.e.
+  # name,lib,alias,description,options,args,usage,full_name,render_options
+  # To sort by library
+  >> commands '--sort=lib'     # or commands '-s=l'
+  +--------------+----------+-------+--------------------------------------------------------------+-----------------------------------------------------------------------------+
+  | full_name    | lib      | alias | usage                                                        | description                                                                 |
+  +--------------+----------+-------+--------------------------------------------------------------+-----------------------------------------------------------------------------+
+  | usage        | core     |       | [name][--verbose]                                            | Print a command's usage                                                     |
+  | libraries    | core     | lib   | [query=''][--index] [--query_fields=name]                    | List or search libraries                                                    |
+  | render       | core     | v     | [object] [options={}]                                        | Render any object using Hirb                                                |
+  | load_library | core     | ll    | [library][--verbose] [--reload]                              | Load/reload a library                                                       |
+  | commands     | core     | com   | [query=''][--index] [--query_fields=full_name]               | List or search commands                                                     |
+  | menu         | core     |       | [output] [options={}] [&block]                               | Provide a menu to multi-select elements from a given array                  |
+  | get          | web_core |       | [url] [options={}]                                           | Gets the body of a url                                                      |
+  # ...
+
+  # To reverse sort
+  >> commands '--sort=lib --reverse_sort'     # or commands '-s=l -R'
+  +--------------+----------+-------+--------------------------------------------------------------+-----------------------------------------------------------------------------+
+  | full_name    | lib      | alias | usage                                                        | description                                                                 |
+  +--------------+----------+-------+--------------------------------------------------------------+-----------------------------------------------------------------------------+
+  | browser      | web_core |       | [*urls]                                                      | Opens urls in a browser on a Mac                                            |
+  | install      | web_core |       | [url][--force] [--module_wrap] [--name=NAME] [--method_wrap] | Installs a library by url. Library should then be loaded with load_library. |
+  | post         | web_core |       | [url] [options={}]                                           | Posts to url                                                                |
+  | get          | web_core |       | [url] [options={}]                                           | Gets the body of a url                                                      |
+  | menu         | core     |       | [output] [options={}] [&block]                               | Provide a menu to multi-select elements from a given array                  |
+  # ...
+
+  # To only display command attributes full_name and description
+  >> commands '--fields=full_name,description    # or commands '-f=f,d'
+  +--------------+-----------------------------------------------------------------------------+
+  | full_name    | description                                                                 |
+  +--------------+-----------------------------------------------------------------------------+
+  | usage        | Print a command's usage                                                     |
+  | libraries    | List or search libraries                                                    |
+  | render       | Render any object using Hirb                                                |
+  | load_library | Load/reload a library                                                       |
+  | commands     | List or search commands                                                     |
+  | menu         | Provide a menu to multi-select elements from a given array                  |
+  | get          | Gets the body of a url                                                      |
+  | post         | Posts to url                                                                |
+  | install      | Installs a library by url. Library should then be loaded with load_library. |
+  | browser      | Opens urls in a browser on a Mac                                            |
+  +--------------+-----------------------------------------------------------------------------+
+  10 rows in set
+  => true
+
+  # Don't forget that rendering can be switched off to give us the actual command objects. Any of the above
+  # examples could yield command objects if prefixed with --render.
+  >> commands('--render usa|lib').size   # or commands '-r usa|lib'
+  => 3
+</pre></notextile>
+
+h3(#libraries). "libraries()":#libraries
+
+Like "commands":#commands, libraries can be searched, sorted and displayed with a number of library attributes:
+
+<notextile><pre class='console'>
+  # These examples are specific to my libraries.
+  
+  # To find out valid library attributes and option values
+  >> libraries '-hv'
+  # ...
+
+  # Sort by name
+  >> libraries '--sort=name'     # or libraries '-s=n'
+  +----------------------+----------+-----------------------+--------------+
+  | name                 | commands | gems                  | library_type |
+  +----------------------+----------+-----------------------+--------------+
+  | alias                | 6        |                       | file         |
+  | boson                | 10       |                       | file         |
+  | boson_method_missing | 3        |                       | file         |
+  | completion           | 3        |                       | file         |
+  # ...
+
+  # See the module for each library
+  >> libraries '--fields=name,module'  # or libraries '-f=n,m'
+  +----------------------+-------------------------------------+
+  | name                 | module                              |
+  +----------------------+-------------------------------------+
+  | core                 | Boson::Commands::Core               |
+  | web_core             | Boson::Commands::WebCore            |
+  | boson_method_missing | Boson::Commands::BosonMethodMissing |
+  | completion           | Boson::Commands::Completion         |
+  | alias                | Boson::Commands::AliasLib           |
+  # ...
+  
+  # Search inside all libraries (that Boson has indexed)
+  # for libraries of type gem
+  >> libraries '--index --query_fields=library_type file'  # or libraries '-i -q=l gem'
+  +---------------+----------+--------------------------------------------+--------------+
+  | name          | commands | gems                                       | library_type |
+  +---------------+----------+--------------------------------------------+--------------+
+  | httparty      | 2        | httparty,crack                             | gem          |
+  | method_lister | 3        | matthew-method_lister                      | gem          |
+  | sketches      | 5        | sketches                                   | gem          |
+  | andand        | 4        | andand                                     | gem          |
+  | local_gem     | 2        | local_gem                                  | gem          |
+  | what_methods  | 2        | what_methods                               | gem          |
+  | unroller      | 1        | colored,unroller,quality_extensions,facets | gem          |
+  | restclient    | 1        | adamwiggins-rest-client                    | gem          |
+  +---------------+----------+--------------------------------------------+--------------+
+  8 rows in set
+  => true
+</pre></notextile>
+
+h3(#load_library). "load_library()":#load_library
+
+This command loads a library and its commands. This allows you to load the bare minimum functionality you need in irb and then load commands as needed.
+
+<notextile><pre class='console'>
+  # Verify the desired ri command doesn't exist yet
+  >> ri 'method_mis'
+  NameError: undefined local variable or method `ri' for main:Object
+          from (irb):1
+
+  # Load my ri library and its commands
+  >> load_library 'ri'
+  Loaded library ri
+  => true
+
+  >> ri 'method_mis'
+  +--------+------------------------------------+
+  | number | full_name                          |
+  +--------+------------------------------------+
+  | 1      | DRb::DRbObject#method_missing      |
+  | 2      | Delegator#method_missing           |
+  | 3      | Kernel#method_missing              |
+  | 4      | REXML::Functions::method_missing   |
+  | 5      | REXML::QuickPath::method_missing   |
+  | 6      | SOAP::SOAPReference#method_missing |
+  +--------+------------------------------------+
+  6 rows in set
+  Choose:
+  # ...
+</pre></notextile>
+
+To make your life even easier, you can put Boson in a mode where unloaded commands are automatically loaded once they're executed. How does this work? Since commands are just methods on @main@, Boson redefines @main@ 's method_missing ...
+
+<notextile><pre class='console'>
+  # To enable this you need to modify your ~/.irbrc:
+  # Boson.start :autoload_libraries=>true
+
+  # Assuming irb doesn't have the ri command again
+  >> ri 'method_mes'
+  Loaded library 'ri'
+  +--------+------------------------------------+
+  | number | full_name                          |
+  +--------+------------------------------------+
+  | 1      | DRb::DRbObject#method_missing      |
+  | 2      | Delegator#method_missing           |
+  | 3      | Kernel#method_missing              |
+  | 4      | REXML::Functions::method_missing   |
+  | 5      | REXML::QuickPath::method_missing   |
+  | 6      | SOAP::SOAPReference#method_missing |
+  +--------+------------------------------------+
+  6 rows in set
+  Choose:
+  # ...
+</pre></notextile>
+
+h2(#boson_libraries). "Boson Libraries":#boson_libraries
+
+Up to now, "Boson libraries":http://tagaholic.me/boson/doc/classes/Boson/Library.html have been described as a module sitting in a file. While this type of library, a "Boson::FileLibrary":http://tagaholic.me/boson/doc/classes/Boson/FileLibrary.html is the most common and functionally-rich, there are other library types.
+
+h3(#gem_library). "Gem Library":#gem_library
+
+"Boson::GemLibrary":http://tagaholic.me/boson/doc/classes/Boson/GemLibrary.html makes commands from a gem. Let's see this library in action by loading the "sketches gem":http://sketches.rubyforge.org/:
+
+<notextile><pre class='console'>
+  # Without any configuration, let's load sketches as a library
+  >> load_library 'sketches'
+  Loaded library sketches
+  => true
+
+  # Let's see what commands Boson picked up
+  >> commands '-q=l sket'   # or commands '--query_fields=lib sket'
+  +-------------+----------+-------+-------+-------------+
+  | full_name   | lib      | alias | usage | description |
+  +-------------+----------+-------+-------+-------------+
+  | sketch_from | sketches |       |       |             |
+  | name_sketch | sketches |       |       |             |
+  | save_sketch | sketches |       |       |             |
+  | sketches    | sketches |       |       |             |
+  | sketch      | sketches |       |       |             |
+  +-------------+----------+-------+-------+-------------+
+  5 rows in set
+
+  # Begin sketching
+  >> sketch
+  # ...
+</pre></notextile>
+
+Is sketches already built to work with Boson? Not quite. Rather, this demonstrates how Boson safeguards @main@ by tracking what gems dump in @Object@ and @Kernel@. Unfortunately this is all too common with irb-related gems. Now let's use "a gem":http://github.com/jnunemaker/httparty that doesn't dump methods on us:
+
+<notextile><pre class='console'>
+  # Create commands put and delete from HTTParty's API.
+  # Values of :class_commands hash can point to any ruby code ending with a method call.
+  >> load_library 'httparty', :class_commands=>{'put'=>'HTTParty.put', 'delete'=>'HTTParty.delete' }
+  => true
+
+  >> commands '-q=l http'  # or commands '--query_fields=lib http'
+  +-----------+----------+-------+-------+-------------+
+  | full_name | lib      | alias | usage | description |
+  +-----------+----------+-------+-------+-------------+
+  | blank?    | httparty |       |       |             |
+  | dclone    | httparty |       |       |             |
+  | delete    | httparty |       |       |             |
+  | put       | httparty |       |       |             |
+  +-----------+----------+-------+-------+-------------+
+  4 rows in set
+  => true
+
+  # Well, we spoke to soon. blank? and dclone are again monkeypatched methods.
+  # If you'd rather have Boson not detect these methods for you:
+  # load_library 'httparty', :object_methods=>false, :class_commands ...
+
+  # To avoid typing out configurations for each gem you use, save them in the config file
+  # ~/.boson/config/boson.yml under the :libraries key :
+  #
+  # :libraries:
+  #   httparty:
+  #     :class_commands:
+  #       put: HTTParty.put
+  #       delete: HTTParty.delete
+
+  # Next irb session we can just load httparty and use our preconfigured commands
+  bash> irb
+  >> load_library 'httparty'
+  => true
+
+  >> put 'http://blah/blah'
+  # ...
+</pre></notextile>
+
+h3(#require_library). "Require Library":#require_library
+
+"Boson::RequireLibrary":http://tagaholic.me/boson/doc/classes/Boson/RequireLibrary.html makes its commands centered around any require-able library (i.e. standard libraries and "rip":http://github.com/defunkt/rip packages):
+
+<notextile><pre class='console'>
+  # Let's make a command from the standard library abbrev
+  >> load_library 'abbrev', :class_commands=>{'abbrev'=>'Abbrev.abbrev'}, :command_aliases=>{'abbrev'=>'ab'}
+  => true
+
+  # abbrev() shows a hash of all unique strings that abbreviate an array
+  >> abbrev %w{awesome audacious asinine}
+  => {"audacious"=>"audacious", "asini"=>"asinine", "aw"=>"awesome", "asi"=>"asinine", "awesome"=>"awesome", "awe"=>"awesome",
+    "aweso"=>"awesome", "asin"=>"asinine", "aud"=>"audacious", "audaci"=>"audacious", "asinin"=>"asinine", "audacio"=>"audacious",
+    "awesom"=>"awesome", "as"=>"asinine", "audac"=>"audacious", "audaciou"=>"audacious", "awes"=>"awesome", "asinine"=>"asinine",
+    "au"=>"audacious", "auda"=>"audacious"}
+
+  # Even though we haven't hooked up abbrev() to Boson/Hirb rendering
+  # we can still use it with the default command render
+  >> render ab(%w{awesome audacious asinine}).sort
+  +-----------+-----------+
+  | 0         | 1         |
+  +-----------+-----------+
+  | as        | asinine   |
+  | asi       | asinine   |
+  | asin      | asinine   |
+  | asini     | asinine   |
+  | asinin    | asinine   |
+  | asinine   | asinine   |
+  # ...
+
+  # Let's make irb feel more like a shell with fileutils
+  >> load_library 'fileutils', :class_commands=>%w{cd cp ln mv chmod}.inject({}) {|h,e| h[e] = "FileUtils.#{e}"; h}
+  => true
+
+  # Let's see what commands we have now
+  >> commands '-q=l fileu'   # or commands '--query_fields=lib fileu'
+  +-----------+-----------+-------+-------+-------------+
+  | full_name | lib       | alias | usage | description |
+  +-----------+-----------+-------+-------+-------------+
+  | chmod     | fileutils |       |       |             |
+  | ln        | fileutils |       |       |             |
+  | cd        | fileutils |       |       |             |
+  | cp        | fileutils |       |       |             |
+  | mv        | fileutils |       |       |             |
+  +-----------+-----------+-------+-------+-------------+
+  5 rows in set
+  => true
+</pre></notextile>
+
+h3(#module_library). "Module Library":#module_library
+
+"Boson::ModuleLibrary":http://tagaholic.me/boson/doc/classes/Boson/ModuleLibrary.html simply makes commands from a class or module's class methods:
+
+<notextile><pre class='console'>
+  >> load_library Math, :commands=>%w{sin cos tan}
+  => true
+
+  >> commands '-q=l math'    # or commands '--query_fields=lib math'
+  +-----------+------+-------+-------+-------------+
+  | full_name | lib  | alias | usage | description |
+  +-----------+------+-------+-------+-------------+
+  | cos       | math |       |       |             |
+  | sin       | math |       |       |             |
+  | tan       | math |       |       |             |
+  +-----------+------+-------+-------+-------------+
+  3 rows in set
+
+  # Let's brush up on ol trig
+  >> sin (Math::PI/2)
+  => 1.0
+  >> tan (Math::PI/4)
+  => 1.0
+  # Close enough :)
+  >> cos (Math::PI/2)
+  => 6.12323399573677e-17
+</pre></notextile>
+
+h2(#migrating_your_irb_commands). "Migrating Your Irb Commands":#migrating_your_irb_commands
+
+Before migrating your methods or irb commands, remember Boson's "philosophy":#organization_and_philosophy. Whatever time you spend organizing your irbrc isn't in vain. You can always take what you've made and use it without Boson.
+
+The easiest way to migrate is to simply wrap all your irbrc methods in a module and explicitly pass that module to @Boson.start@:
+
+{% highlight ruby %}
+  # in ~/.irbrc
+  module Easy
+    def command1
+    end
+    # ...
+  end
+
+  require 'boson'
+  Boson.start :libraries=>[Easy]
+{% endhighlight %}
+
+The downside to this is that your commands don't have "options":/2009/10/14/boson-command-your-ruby-universe.html#commands_with_options or "views":/2009/10/15/boson-and-hirb-interactions.html
+
+If you want those features and still want the simplest thing possible, put all your methods in a module and drop that module into a file under ~/.boson/commands/.
+
+If you're serious about organizing your irbrc, you should break your methods up into libraries. If any of your methods are simply wrappers around a gem or a require-able library, consider making a "gem library":#gem_library or a "require library":#require_library. Otherwise make each library by wrapping it in a module and placing it in under ~/.boson/commands/.
+
+Next you should consider adding aliases and descriptions to your commands. "Command aliasing is explained here":/2009/10/14/boson-command-your-ruby-universe.html#aliasing_commands. To add a command description, simply add a comment "directly above it":/2009/10/14/boson-command-your-ruby-universe.html#creating_commands. If your description spans multiple lines than use the desc method attribute:
+
+{% highlight ruby %}
+  #@desc My description spans multiple lines
+  #  because I have a lot to say and
+  #  not enough space to say it
+  def talk
+    # ...
+  end
+{% endhighlight %}
+
+Lastly, you should decide which libraries to load at startup. The default is to load all libraries. You'll probably want to change that once your libraries load multiple gems. To specify these libraries, open up Boson's main config file at ~/.boson/config/boson.yml. Add a @:console_defaults@ key and give it an array of libraries. "See my config file":http://github.com/cldwalker/irbfiles/blob/master/boson/config/boson.yml as an example.
+
+h2. Postface
+
+In this post, we've seen how Boson treats methods like shell commands. In doing so, it makes irb (or any ruby console) a shell you can easily customize. For more traditional ruby shell implementations, see "rubish":http://github.com/hayeah/rubish/, "rush":http://github.com/adamwiggins/rush and "pope":http://www.creo.hu/~csaba/ruby/pope/. If you're interested in giving autocompletion to your commands, check out "Bond":/2009/07/16/bond-from-irb-with-completion-love.html.
