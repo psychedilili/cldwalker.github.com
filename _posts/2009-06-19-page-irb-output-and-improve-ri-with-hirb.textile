@@ -247,7 +247,17 @@ I'll let you figure out how the above works. Let's just use it:
 
 In the first example above, paging works not only for the menu but also for all the ri output. If you take a look at the above @ri()@ method, you'll see that it wrap ri's output with a @Hirb::View.capture_and_render@ block. As you may have guessed, that method capture's ri's STDOUT and run's it through Hirb's pager.
 
-If you're curious, the actual ri library I use in irb is "here":http://github.com/cldwalker/irbfiles/blob/9f89694eddd05e534c795a508f072c23e64b91d2/.irb/libraries/ri.rb. It covers some more ri edge cases I didn't go into here. That library could easily be made into a command if you want. To use it in irb, drop this in your irbrc:
+If you're curious, the actual ri library I use in irb is "here":http://github.com/cldwalker/irbfiles/blob/9f89694eddd05e534c795a508f072c23e64b91d2/.irb/libraries/ri.rb. It covers some more ri edge cases I didn't go into here. That library could easily be made into a command if you want. 
+
+*Update*: To install this code to be run from the commandline or irb as a "Boson":/2009/10/14/boson-command-your-ruby-universe.html library:
+
+<notextile><pre class="console">
+  bash> boson install http://github.com/cldwalker/irbfiles/blob/master/boson/commands/ri.rb
+  bash> boson ri Array
+  # ...
+</pre></notextile>
+
+Or if you just want to use it in irb without Boson, drop this in your irbrc:
 <notextile><pre class="console">
   require 'hirb'
   Hirb.enable

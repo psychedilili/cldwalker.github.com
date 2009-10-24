@@ -34,6 +34,7 @@ irb>> tg '=irb -v result'
 irb>> tg '=irb -v r'
 {% endhighlight %}
 
+*Update*: If you want a solution to this that just works, see my gem "boson":/2009/10/14/boson-command-your-ruby-universe.html.
 Handling aliasing for this simple case isn't too hard. But what happens if certain options are boolean flags, if some options are required while other's aren't, if some options need default values ... So rather than reinvent an inferior wheel, I remembered a simple yet powerful "option parser":http://github.com/wycats/thor/blob/e046b96ac6c35e3f495ad70aee415e448e657667/lib/thor/options.rb embedded within "thor":http://github.com/wycats/thor.
 A few examples:
 
