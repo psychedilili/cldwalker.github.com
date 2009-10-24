@@ -19,7 +19,7 @@ related_tag: gem:*=(hirb|irb)
 To play with what follows, you'll need the latest Hirb:
 
 <notextile><pre class="github">
-  gem install cldwalker-hirb --source http://gems.github.com
+  gem install hirb
 </pre></notextile>
 
 h2. Paging With Irb

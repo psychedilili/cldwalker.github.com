@@ -54,7 +54,7 @@ You're fscked:
 {% endhighlight %}
 
 Give it a whirl with:
-<pre class="code"> sudo gem install cldwalker-local_gem -s http://gems.github.com </pre>
+<pre class="code"> sudo gem install local_gem</pre>
 
 Since LocalGem effectively lets you make any subset of Ruby code gem-like, some other cool uses for it could be:
 * To gemify all those cloned Github projects that aren't gems. You may want to look at "coral":http://github.com/mislav/coral/tree/master if you're doing this enough.

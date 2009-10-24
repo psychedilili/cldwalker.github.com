@@ -18,10 +18,6 @@ h2. Bond's Coordinates
 Bond's getting old nowadays, regardless of what Hollywood says. So old that I even got his coordinates:
 
 <notextile><pre class="github">
-  # From the hub
-  gem install cldwalker-bond --source http://gems.github.com
-
-  # OR the forge
   gem install bond
 </pre></notextile>
 

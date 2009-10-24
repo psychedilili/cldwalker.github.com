@@ -315,5 +315,5 @@ In this post, we focused on using Hirb with its console methods. If you didn't r
 
 As always, I encourage you to "fork and share":http://github.com/cldwalker/hirb your custom views for irb. "Some food for thought":http://rubyquiz.com/quiz40.html for more tree visualizations. If you haven't already:
 <pre class="github">
-  gem install cldwalker-hirb --source http://gems.github.com
+  gem install hirb
 </pre>
