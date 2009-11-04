@@ -252,7 +252,7 @@ If you're curious, the actual ri library I use in irb is "here":http://github.co
 *Update*: To install this code to be run from the commandline or irb as a "Boson":/2009/10/14/boson-command-your-ruby-universe.html library:
 
 <notextile><pre class="console">
-  bash> boson install http://github.com/cldwalker/irbfiles/blob/master/boson/commands/ri.rb
+  bash> boson install http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/ri.rb
   bash> boson ri Array
   # ...
 </pre></notextile>

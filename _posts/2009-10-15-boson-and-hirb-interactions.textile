@@ -381,10 +381,10 @@ Let's try it out:
  #  :private=>false, :description=>"", :owner=>"defunkt", :fork=>false, :open_issues=>0, :homepage=>""}]
 </pre></notextile>
 
-As you can see, writing a Boson command to interact with the Github API is pretty easy. If you liked this sample command, install and try my "Github Boson library":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/site/github.rb :
+As you can see, writing a Boson command to interact with the Github API is pretty easy. If you liked this sample command, install and try my "Github Boson library":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/site/github.rb :
 
 <notextile><pre class='console'>
-  bash> boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/site/github.rb
+  bash> boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/site/github.rb
   Saved to /Users/bozo/.boson/commands/github.rb.
 
   # List the commands that come with the github library

@@ -376,7 +376,7 @@ Boson makes it dead easy to install someone else's commands:
 
 <notextile><pre class='console'>
   # Let's download a library which explains irb's default commands
-  bash> boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/irb_core.rb
+  bash> boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/irb_core.rb
   Saved to /Users/bozo/.boson/commands/irb_core.rb
 
   # Let's see the commands in irb
@@ -450,7 +450,7 @@ Let's commandify it:
   * Edwin Moss
 </pre></notextile>
 
-To try some third-party Boson libraries, "here":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/site/github.rb "are":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/ruby_ref.rb "some":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/ri.rb of mine I recommend.
+To try some third-party Boson libraries, "here":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/site/github.rb "are":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/ruby_ref.rb "some":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/ri.rb of mine I recommend.
 
 h2(#namespaces). "Namespaces":#namespaces
 
