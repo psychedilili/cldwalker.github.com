@@ -1,0 +1,398 @@
+---
+layout: post
+title: Ruby Reference Commands With Boson
+keywords: ruby boson, boson ruby, ruby reference, rbconfig, global variables, loaded paths, require paths, object's instance variables, gem versions, boson irb
+description: Continuing where <a href="http://tagaholic.me/2009/10/15/boson-and-hirb-interactions.html">this post</a> left off, we'll look at more examples of the unique command and view framework interaction that <a href='http://tagaholic.me/boson/'>Boson</a> and <a href='http://tagaholic.me/hirb/'>Hirb</a> have. In particular, we'll look at commands that are useful references to your current Ruby environment. Since Boson's commands are just methods in a module, any of these commands work fine in irb without <a href='http://github.com/cldwalker/boson'>Boson</a>.
+tags:
+- gem:name=boson
+- lib:name=irb
+- post:lang=ruby
+- post:type=tutorial
+related_tag: gem:*=(boson|irb)
+---
+{{ page.description}}
+
+h2. Game Plan
+
+We'll be looking at my "ruby_ref library":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/ruby_ref.rb and commands that reference:
+
+* "Global variables":#global_variables
+* "Loaded paths and their respective full paths":#loaded_paths
+* "Gems and their versions":#gem_versions
+* "Any object's instance variables":#object_instance_variables
+* "RbConfig":#rbconfig
+
+For all these commands, I will only show the original ruby method. To see the Boson configuration for each, see the "library source":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/ruby_ref.rb.
+
+To follow along with the examples using boson:
+
+<notextile><pre class='console'>
+  bash> gem install boson
+  bash> boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/ruby_ref.rb
+</pre></notextile>
+
+h2(#global_variables). "Global Variables":#global_variables
+
+As we all know, Ruby comes with "predefined global variables":http://www.zenspider.com/Languages/Ruby/QuickRef.html#16. Using the @Kernel@ method @global_variables@ to retrieve them, here's a simple method to list global variables and their values:
+
+{% highlight ruby %}
+  def global_var
+    global_variables.sort.map {|e| [e, (eval e).inspect] }
+  end
+{% endhighlight %}
+
+When Boson commandifies this method here's what happens:
+
+<notextile><pre class='console'>
+  bash> boson global_var
+  +---------------------------+----------------------------------------------------------------------------------------------------+
+  | variable                  | value                                                                                              |
+  +---------------------------+----------------------------------------------------------------------------------------------------+
+  | $!                        | nil                                                                                                |
+  | $"                        | ["rubygems/defaults.rb", "thread.bundle", "thread.rb", "etc.bundle", "rbconfig.rb", "rubygems/e... |
+  | $$                        | 33292                                                                                              |
+  | $&                        | nil                                                                                                |
+  | $'                        | nil                                                                                                |
+  | $*                        | []                                                                                                 |
+  # ...
+  48 rows in set
+
+  # Alphabetical sort on the value column
+  bash> boson global_var '-s=val'   # global_var '--sort=value'
+  +---------------------------+----------------------------------------------------------------------------------------------------+
+  | variable                  | value                                                                                              |
+  +---------------------------+----------------------------------------------------------------------------------------------------+
+  | $FILENAME                 | "-"                                                                                                |
+  | $0                        | "/usr/bin/boson"                                                                                   |
+  | $PROGRAM_NAME             | "/usr/bin/boson"                                                                                   |
+  | $-K                       | "UTF8"                                                                                             |
+  | $KCODE                    | "UTF8"                                                                                             |
+  | $/                        | "\n"                                                                                               |
+  | $-0                       | "\n"                                                                                               |  
+  # ...
+  48 rows in set
+
+  # Boson has a new global command option --query which allows us to search inside of a table's fields
+  bash> boson global_var '-q=var:load'   # global_var '--query=variable:load'
+  +------------------+-------------------------------------------------------------------------------------------------------------+
+  | variable         | value                                                                                                       |
+  +------------------+-------------------------------------------------------------------------------------------------------------+
+  | $LOADED_FEATURES | ["rubygems/defaults.rb", "thread.bundle", "thread.rb", "etc.bundle", "rbconfig.rb", "rubygems/exceptions... |
+  | $LOAD_PATH       | ["/Users/bozo/code/gems/bond/lib", "/Users/bozo/code/gems/boson/lib", "/Users/bozo/code/gems/alias/lib",... |
+  +------------------+-------------------------------------------------------------------------------------------------------------+
+  2 rows in set
+
+  # If you're new to Boson, we can do any of the above from irb as well
+  bash> irb
+  >> global_var '-q=var:load'   # global_var '--query=variable:load'
+  +------------------+-------------------------------------------------------------------------------------------------------------+
+  | variable         | value                                                                                                       |
+  +------------------+-------------------------------------------------------------------------------------------------------------+
+  | $LOADED_FEATURES | ["rubygems/defaults.rb", "thread.bundle", "thread.rb", "etc.bundle", "rbconfig.rb", "rubygems/exceptions... |
+  | $LOAD_PATH       | ["/Users/bozo/code/gems/bond/lib", "/Users/bozo/code/gems/boson/lib", "/Users/bozo/code/gems/alias/lib",... |
+  +------------------+-------------------------------------------------------------------------------------------------------------+
+  2 rows in set
+  => true
+</pre></notextile>
+
+As you can see, Boson took a simple one-line method and made it a useful command that searches, sorts and displays global variables and their values.
+
+h2(#loaded_paths). "Loaded Paths":#loaded_paths
+
+@$LOADED_FEATURES@ (@$"@) and @$LOAD_PATH@ (@$:@) are handy global variables that give us required paths and the directories we can require from. Although we don't know the full paths to the required files, it's easy to calculate them with these global variables:
+
+{% highlight ruby %}
+  def loaded_paths
+    hash = {}
+    $".each {|file|
+      $:.each {|dir|
+        if test(?e, File.join(dir, file))
+          hash[file] = File.join(dir, file)
+          break
+        end
+      }
+    }
+    hash
+  end
+{% endhighlight %}
+
+This method gives us a hash mapping the required paths to their full paths. Let's see what Boson does with this:
+
+<notextile><pre class="console">
+  >> loaded_paths '-s=req'  # loaded_paths '--sort=require_path'
+  +----------------------------------------------------+---------------------------------------------------------------------------+
+  | require_path                                       | full_path                                                                 |
+  +----------------------------------------------------+---------------------------------------------------------------------------+
+  | alias.rb                                           | /Users/bozo/code/gems/alias/lib/alias.rb                                  |
+  | alias/console.rb                                   | /Users/bozo/code/gems/alias/lib/alias/console.rb                          |
+  | alias/creator.rb                                   | /Users/bozo/code/gems/alias/lib/alias/creator.rb                          |
+  | alias/creators/any_to_instance_method_creator.rb   | /Users/bozo/code/gems/alias/lib/alias/creators/any_to_instance_method_... |
+  | alias/creators/class_method_creator.rb             | /Users/bozo/code/gems/alias/lib/alias/creators/class_method_creator.rb    |
+  | alias/creators/class_to_instance_method_creator.rb | /Users/bozo/code/gems/alias/lib/alias/creators/class_to_instance_metho... |
+  | alias/creators/constant_creator.rb                 | /Users/bozo/code/gems/alias/lib/alias/creators/constant_creator.rb        |
+  | alias/creators/instance_method_creator.rb          | /Users/bozo/code/gems/alias/lib/alias/creators/instance_method_creator.rb |
+  | alias/manager.rb                                   | /Users/bozo/code/gems/alias/lib/alias/manager.rb                          |
+  # ...
+  128 rows in set
+  => true
+
+  >> loaded_paths '-q=req:bundle   # loaded_paths '--query=require_path:bundle'
+  +-----------------------------+---------------------------------------------------------------------------------------------------------------+
+  | require_path                | full_path                                                                                                     |
+  +-----------------------------+---------------------------------------------------------------------------------------------------------------+
+  | digest.bundle               | /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/universal-darwin9.0/digest.bundle     |
+  | digest/md5.bundle           | /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/universal-darwin9.0/digest/md5.bundle |
+  | etc.bundle                  | /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/universal-darwin9.0/etc.bundle        |
+  | readline.bundle             | /Library/Ruby/Site/1.8/universal-darwin9.0/readline.bundle                                                    |
+  | readline_line_buffer.bundle | /Users/bozo/code/gems/bond/lib/readline_line_buffer.bundle                                                    |
+  | stringio.bundle             | /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/universal-darwin9.0/stringio.bundle   |
+  | syck.bundle                 | /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/universal-darwin9.0/syck.bundle       |
+  | thread.bundle               | /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/universal-darwin9.0/thread.bundle     |
+  +-----------------------------+---------------------------------------------------------------------------------------------------------------+
+  8 rows in set
+  => true
+
+  # We can always toggle rendering on a command to get the method's return value with --render
+  >> load_path('--render').values.slice(0,5)
+  => ["/System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/universal-darwin9.0/syck.bundle",
+   "/Users/bozo/code/gems/bond/lib/bond/missions/default_mission.rb", "/Users/bozo/code/gems/boson/lib/boson/libraries/file_library.rb",
+   "/Users/bozo/code/gems/hirb/lib/hirb/menu.rb", "/System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/ostruct.rb"]
+</pre></notextile>
+
+h2(#gem_versions). "Gem Versions":#gem_versions
+
+For any number of reasons, it can be handy to know the versions of the gems you're using. Since most gems don't come with a @VERSION@ constant, the easiest way to get their version is from their loaded gemspec. But since not everything we use nowadays comes as a gem i.e. rip packages, we could also extract the versions from $LOAD_PATH. Here's a command that can do either one of these depending on the presence of a :loaded_path option:
+
+{% highlight ruby %}
+  def gem_versions(options={})
+    if options[:loaded_path]
+      $:.map {|e| e =~ /\/([\w-]+)-(\d\.\d(\.\d)?)\/lib/ ? [$1,$2] : nil }.compact.uniq
+    else
+      Gem.loaded_specs.values.map {|e| [e.name, e.version] }
+    end
+  end
+{% endhighlight %}
+
+Let's see it in action:
+
+<notextile><pre class='console'>
+  # Using gemspecs to get the versions
+  >> gem_versions
+  +-----------------------+---------+
+  | name                  | version |
+  +-----------------------+---------+
+  | matthew-method_lister | 0.2.3   |
+  | mynyml-every          | 0.6     |
+  | local_gem             | 0.1.1   |
+  | duration              | 0.1.0   |
+  +-----------------------+---------+
+  4 rows in set
+  => true
+
+  # Using $: to get the versions
+  >> gem_versions '-l'  # gem_versions '--loaded_path'  or gem_versions :loaded_path=>true
+  +-----------------------+---------+
+  | name                  | version |
+  +-----------------------+---------+
+  | local_gem             | 0.1.1   |
+  | matthew-method_lister | 0.2.3   |
+  | duration              | 0.1.0   |
+  | mynyml-every          | 0.6     |
+  +-----------------------+---------+
+  4 rows in set
+  => true
+
+  # How does this command look inside a Rails' irb session?
+  >> gem_versions '-s=n'   # gem_versions '--sort=name'
+  +----------------------------+---------+
+  | name                       | version |
+  +----------------------------+---------+
+  | RedCloth                   | 4.2.1   |
+  | actionmailer               | 2.2.2   |
+  | actionpack                 | 2.2.2   |
+  | activerecord               | 2.2.2   |
+  | activeresource             | 2.2.2   |
+  | activesupport              | 2.2.2   |
+  | alias                      | 0.2.1   |
+  | cldwalker-has_machine_tags | 0.1.3   |
+  | duration                   | 0.1.0   |
+  | hirb                       | 0.2.7   |
+  | local_gem                  | 0.1.1   |
+  | matthew-method_lister      | 0.2.3   |
+  | mynyml-every               | 0.6     |
+  | rails                      | 2.2.2   |
+  | rake                       | 0.8.7   |
+  +----------------------------+---------+
+  15 rows in set
+  => true
+</pre></notextile>
+
+h2(#object_instance_variables). "Object Instance Variables":#object_instance_variables
+
+Whether you're getting acquainted with a new class of objects or just trying to figure an object's current state, looking at an object's instance variables can be useful. Here's a command that gives us any object's instance variables and their values:
+
+{% highlight ruby %}
+  def instance_var(obj)
+    obj.instance_variables.map {|e| [e, obj.instance_variable_get(e)] }
+  end
+{% endhighlight %}
+
+Using this with Boson:
+
+<notextile><pre class='console'>
+  # Let's start with a Boson::Command object
+  >> instance_var Boson.commands[0]
+  +-------------------+-------------------------------+
+  | instance          | value                         |
+  +-------------------+-------------------------------+
+  | @lib              | "core"                        |
+  | @name             | "usage"                       |
+  | @options          | {[:verbose, :V]=>:boolean}    |
+  | @args             | [["name"], ["options", "{}"]] |
+  | @file_parsed_args | true                          |
+  | @description      | "Print a command's usage"     |
+  +-------------------+-------------------------------+
+  6 rows in set
+  => true
+
+  # How about the bigger Gem::Specification object?
+  >> instance_var Gem.loaded_specs.values[0], '-s=i'  #  or '--sort=instance'
+  +----------------------------+-----------------------------------------------------------------------------------------------------------------------+
+  | instance                   | value                                                                                                                 |
+  +----------------------------+-----------------------------------------------------------------------------------------------------------------------+
+  | @authors                   | ["Matthew O'Connor"]                                                                                                  |
+  | @autorequire               | nil                                                                                                                   |
+  | @bindir                    | "bin"                                                                                                                 |
+  | @cert_chain                | []                                                                                                                    |
+  | @date                      | Mon Oct 27 00:00:00 -0400 2008                                                                                        |
+  | @default_executable        | nil                                                                                                                   |
+  | @dependencies              | []                                                                                                                    |
+  | @description               | nil                                                                                                                   |
+  | @email                     | "matthew @nospam@ canonical.org"                                                                                      |
+  | @executables               | []                                                                                                                    |
+  | @extensions                | []                                                                                                                    |
+  | @extra_rdoc_files          | ["README.markdown"]                                                                                                   |
+  | @files                     | ["lib/method_lister/color_display.rb", "lib/method_lister/find_result.rb", "lib/method_lister/finder.rb", "lib/met... |
+  | @has_rdoc                  | true                                                                                                                  |
+  | @homepage                  | "http://github.com/matthew/method_lister/tree/master"                                                                 |
+  | @licenses                  | []                                                                                                                    |
+ # ...
+ 35 rows in set
+ => true
+
+ #  Search instances containing files
+ >> instance_var Gem.loaded_specs.values[0], '-q=i:files'   #  or '--query=instance:files'
+ +-------------------+--------------------------------------------------------------------------------------------------------------------------------+
+ | instance          | value                                                                                                                          |
+ +-------------------+--------------------------------------------------------------------------------------------------------------------------------+
+ | @files            | ["lib/method_lister/color_display.rb", "lib/method_lister/find_result.rb", "lib/method_lister/finder.rb", "lib/method_liste... |
+ | @test_files       | ["spec/color_display_spec.rb", "spec/find_result_spec.rb", "spec/finder_spec.rb", "spec/ruby_ext_spec.rb", "spec/simple_dis... |
+ | @extra_rdoc_files | ["README.markdown"]                                                                                                            |
+ +-------------------+--------------------------------------------------------------------------------------------------------------------------------+
+ 3 rows in set
+ => true
+
+ # So what if want to see everything inside the value field?
+ >> instance_var Gem.loaded_specs.values[0], '-q=i:files -V'   # or '--query=instance:files --vertical'
+ ************ 1. row ************
+ instance: @files
+    value: ["lib/method_lister/color_display.rb", "lib/method_lister/find_result.rb", "lib/method_lister/finder.rb",
+  "lib/method_lister/ruby_ext.rb", "lib/method_lister/simple_display.rb", "lib/method_lister.rb", "spec/color_display_spec.rb",
+  "spec/find_result_spec.rb", "spec/finder_spec.rb", "spec/helpers/matchers/list_methods.rb",
+  "spec/helpers/object_mother/find_result.rb", "spec/helpers/object_mother/find_scenario.rb", "spec/rcov.opts", "spec/ruby_ext_spec.rb",
+  "spec/scenarios/class_with_inheritance.rb", "spec/scenarios/class_with_inheritance_and_modules.rb", "spec/scenarios/eigenclass.rb",
+  "spec/scenarios/eigenclass_with_modules.rb", "spec/scenarios/filters_results_without_methods.rb",
+  "spec/scenarios/mixed_visibility_methods.rb", "spec/scenarios/object_without_eigenclass.rb", "spec/scenarios/overloaded_methods.rb"
+  "spec/scenarios/overloaded_methods_with_modules_mixed_in.rb", "spec/scenarios/private_methods.rb", "spec/scenarios/single_class.rb",
+  "spec/scenarios/single_class_with_module_mixed_in.rb", "spec/simple_display_spec.rb", "spec/spec.opts", "spec/spec_helper.rb",
+   "README.markdown"]
+ ************ 2. row ************
+ instance: @test_files
+    value: ["spec/color_display_spec.rb", "spec/find_result_spec.rb", "spec/finder_spec.rb", "spec/ruby_ext_spec.rb",
+  "spec/simple_display_spec.rb"]
+ ************ 3. row ************
+ instance: @extra_rdoc_files
+    value: ["README.markdown"]
+ 3 rows in set
+ => true 
+</pre></notextile>
+
+The @pp@ method from the standard library is another good alternative for displaying an object's instance variables. Personally, I find the fact that any class can customize their @pp@ output to be a strength but also a weakness. The weakness lies in that formatting of objects become inconsistent across classes and there's no guarantee that @pp@  will give you all instance variables. Also, to get a good overview of an object I think it helps to stick to one instance variable per line.
+
+h2(#rbconfig). "RbConfig":#rbconfig
+
+If you have ever had to ensure a gem works across multiple platforms, you've probably encountered @RbConfig@. This module, which is generated by mkconfig.rb when your ruby is built, contains a hash constant, @CONFIG@, containing platform-specific configuration. So let's make a command that simply points to this config hash:
+
+{% highlight ruby %}
+  def rbconfig
+    require 'rbconfig'
+    RbConfig::CONFIG
+  end
+{% endhighlight %}
+
+From the above, we already know we can display, search and sort data structures pretty easily. So let's just focus on searching features that have been dormant til now:
+
+<notextile><pre class='console'>
+  # We know we can search in a field
+  bash> boson rbconfig -q=n:arch    # or --query=name:arch
+  +-------------+---------------------------------------------------------------------------------------------+
+  | name        | value                                                                                       |
+  +-------------+---------------------------------------------------------------------------------------------+
+  | archdir     | /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/universal-darwin9.0 |
+  | sitearch    | universal-darwin9.0                                                                         |
+  | arch        | universal-darwin9.0                                                                         |
+  | sitearchdir | /Library/Ruby/Site/1.8/universal-darwin9.0                                                  |
+  | ARCHFILE    |                                                                                             |
+  | ARCH_FLAG   |                                                                                             |
+  +-------------+---------------------------------------------------------------------------------------------+
+  6 rows in set
+
+  # But you can also search in all fields with '*'
+  bash> boson rbconfig -q=*:arch    # or --query=name,value:arch
+  +------------------+---------------------------------------------------------------------------------------------+
+  | name             | value                                                                                       |
+  +------------------+---------------------------------------------------------------------------------------------+
+  | archdir          | /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/universal-darwin9.0 |
+  | sitearch         | universal-darwin9.0                                                                         |
+  | arch             | universal-darwin9.0                                                                         |
+  | sitearchdir      | /Library/Ruby/Site/1.8/universal-darwin9.0                                                  |
+  | ARCHFILE         |                                                                                             |
+  | ARCH_FLAG        |                                                                                             |
+  | LDSHARED         | cc -arch ppc -arch i386 -pipe -bundle -undefined dynamic_lookup                             |
+  | LDFLAGS          | -L. -arch ppc -arch i386                                                                    |
+  | LIBRUBY_LDSHARED | cc -arch ppc -arch i386 -pipe -dynamiclib                                                   |
+  | CFLAGS           | -arch ppc -arch i386 -Os -pipe -fno-common                                                  |
+  +------------------+---------------------------------------------------------------------------------------------+
+  10 rows in set
+
+  # Searches are regular expressions
+  bash> boson rbconfig -q=n:ruby$   # or --query=name:ruby$
+  +----------+--------------------------------------------------+
+  | name     | value                                            |
+  +----------+--------------------------------------------------+
+  | LIBRUBY  | libruby.1.dylib                                  |
+  | MINIRUBY | ./miniruby                                       |
+  | RUNRUBY  | ./miniruby $(srcdir)/runruby.rb --extout=.ext -- |
+  +----------+--------------------------------------------------+
+  3 rows in set
+
+  # Multiple searches can be joined together by a comma
+  bash> boson rbconfig -q=n:ruby$,v:package  # or --query=name:ruby$,value:package
+  +----------+---------------------------------------------------------------------------------+
+  | name     | value                                                                           |
+  +----------+---------------------------------------------------------------------------------+
+  | LIBRUBY  | libruby.1.dylib                                                                 |
+  | MINIRUBY | ./miniruby                                                                      |
+  | RUNRUBY  | ./miniruby $(srcdir)/runruby.rb --extout=.ext --                                |
+  | docdir   | /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/share/doc/$(PACKAGE) |
+  | dvidir   | /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/share/doc/$(PACKAGE) |
+  | psdir    | /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/share/doc/$(PACKAGE) |
+  | htmldir  | /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/share/doc/$(PACKAGE) |
+  | pdfdir   | /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/share/doc/$(PACKAGE) |
+  +----------+---------------------------------------------------------------------------------+
+  8 rows in set
+</pre></notextile>
+
+h2. Game Over
+
+As you can see, Boson does a decent job of turning simple methods into useful commands. In these examples, we saw the return values of these commands converted into well-formatted, sortable and searchable tables without adding _any_ code. If you look at "the library source":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/ruby_ref.rb you will see commented @render_options@ calls for each command. These are what hooked into Boson to give us all this functionality. To understand how this all works and create your own similar commands, "check out the Boson docs":http://tagaholic.me/boson/doc/ and the "Hirb table docs":http://tagaholic.me/hirb/doc/classes/Hirb/Helpers/Table.html. If you want to check out more libraries like this, "there are plenty":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/. If you have ruby reference commands/methods, feel free to share them below.
