@@ -98,14 +98,14 @@ How is this done? Commands are simply methods on Ruby's top level object, main. 
 <notextile><pre class="console">
   # Print basic command usage in irb
   irb>> commands '-h'
-  commands [query=''][--index] [--query_fields=full_name]
+  commands [query=''][--index]
   => nil
   # Or in your shell
   bash> boson commands -h
   # same as above ...
   
   # Search command fields full_name and description for 'lib' and sort by full_name
-  irb>> commands 'lib --sort full_name --query_fields=full_name,description'
+  irb>> commands 'full_name,description:lib --sort full_name'
   +--------------+----------+-------+-------------------------------------------+-----------------------------------------------------------------------------+
   | full_name    | lib      | alias | usage                                     | description                                                                 |
   +--------------+----------+-------+-------------------------------------------+-----------------------------------------------------------------------------+
@@ -117,7 +117,7 @@ How is this done? Commands are simply methods on Ruby's top level object, main. 
   => true
 
   # In your shell
-  bash> boson commands lib --sort full_name --query_fields=full_name,description
+  bash> boson commands full_name,description:lib --sort full_name
   # same as above ...
 
   # Using option aliases
@@ -337,14 +337,13 @@ You may be pleased to know that the default commands @libraries@ and @commands@ 
 <notextile><pre class='console'>
   bash> irb
   >> commands '-hv'
-  commands [query=''][--index] [--query_fields=full_name]
+  commands [query=''][--index]
 
   COMMAND OPTIONS
   +----------------+-------+---------+----------------+------------------------------------------------------------------------+
   | Option         | Alias | type    | Description    | Values                                                                 |
   +----------------+-------+---------+----------------+------------------------------------------------------------------------+
   | --index        | -i    | boolean | Searches index |                                                                        |
-  | --query_fields | -q    | array   |                | name,lib,alias,description,options,args,usage,full_name,render_options |
   +----------------+-------+---------+----------------+------------------------------------------------------------------------+
 
   GLOBAL/RENDER OPTIONS
@@ -465,4 +464,27 @@ And for all you physics geeks out there:
 <notextile><pre class='console'>
   >> Boson.higgs.instance_eval("class << self; self end").ancestors[1]
   => Boson::Universe
+</pre></notextile>
+
+*UPDATE:* The format for querying commands and libraries has changed since this was posted. The above examples have been updated to reflect this. Examples:
+
+<notextile><pre class='console'>
+  # With the old format fields to query were passed to --query_fields
+  bash> boson commands lib --query_fields=full_name --sort=full_name   # or commands lib -q=f -s=f
+
+  # With the new format, fields are placed before a query with a ':'
+  # --query_fields doesn't exist
+  bash> boson commands full_name:lib --sort=full_name     # or commands f:lib -s=f
+
+  # The new format still maintains the old format of querying with an implicit query field.
+  # The implicit field is 'name' for libraries.
+  bash> boson libraries core     # same as libraries name:core
+
+  # With the new format all fields can be queried using a '*'
+  # Searches library fields: gems,dependencies,commands,loaded,module,name,namespace,indexed_namespace,library_type
+  bash> boson libraries *:core
+
+  # The new format allows for multiple searches to be joined together by ','
+  # This query searches for libraries that have the name matching core or a library_type matching gem
+  bash> boson libraries name:core,library_type:gem
 </pre></notextile>
