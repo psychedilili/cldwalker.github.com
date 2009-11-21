@@ -1,0 +1,398 @@
+---
+layout: post
+title: Boson - Command Your Ruby Universe - Part Deux
+keywords: boson ruby, ruby boson, ruby tasks, ruby commands, ruby command manager, method commandification, option to object mapper, ruby one liners, ruby console, asynchronous pipes
+description: With the latest release of <a href="http://github.com/cldwalker/boson">Boson</a>, there are a slew of new features that need some explaining. Yes, there is a <a href='http://github.com/cldwalker/boson/tree/master/CHANGELOG.rdoc'>changelog</a> and <a href='http://tagaholic.me/boson/doc/'>documentation</a>, but some of these features are novel enough that a good intro is in order.
+tags:
+- gem:name=boson
+- lib:name=irb
+- post:lang=ruby
+- post:type=tutorial
+related_tag: *:*=(boson|irb)
+---
+{{ page.description }}
+
+h2. Overview
+
+Here's an overview of features:
+
+* "Command Options":#command_options
+** "Pipe Options":#pipe_options
+** "Query Option":#query_option
+* "Libraries":#libraries
+** "Local Libraries":#local_libraries
+** "Directory-Spaced Libraries":#directory_spaced_libraries
+** "Social Libraries":#social_libraries
+** "Plugin Libraries":#plugin_libraries
+** "Invoking Commands":#invoking_commands
+** "Library Dependencies":#library_dependencies
+* "Option Parser":#option_parser
+** "Option to Object Mapper":#option_to_object_mapper
+** "Custom Option Types":#custom_option_types
+* "Miscellaneous":#miscellaneous
+** "Custom Consoles":#custom_consoles
+** "Powerful One-Liners":#powerful_one_liners
+** "Method Commandification":#method_commandification
+
+h2(#command_options). "Command Options":#command_options
+
+Boson is unique among command frameworks for providing commands with global options. Global options are options that are common to all commands (that enable options). There are three types of global options: "basic options":http://tagaholic.me/boson/doc/classes/Boson/OptionCommand.html, "render options":http://tagaholic.me/boson/doc/classes/Boson/View.html and "pipe options":http://tagaholic.me/boson/doc/classes/Boson/Pipe.html. The first two were covered in "this previous post":/2009/10/15/boson-and-hirb-interactions.html. Now let's a take a look at the newcomer, pipe options.
+
+h3(#pipe_options). "Pipe Options":#pipe_options
+
+Whereas render options generate different views from a command's return value, pipe options pipe a command's return value to command(s). Since a pipe option maps directly to a command, using piping options is much like piping between unix commands but asynchronously.
+
+For example, say we have pipe options @--browser@ and @--copy@ which given a url, open it in a browser and copy it to clipboard respectively:
+
+<notextile><pre class='console'>
+  bash> irb
+  # Assume a command generate_url which returns a url string
+  >> generate_url
+  => 'http://example.com'
+
+  # With the assumed global pipe options, let's apply them to the return value of generate_url
+  >> generate_url '-bC'   #  or generate_url '--browser --copy'
+  => 'http://example.com'
+
+  # The above one liner is functionally equivalent to the following three lines
+  >> url = generate_url
+  >> browser(url)
+  >> copy(url)
+
+  # In a unix shell assuming boson commands are shell commands we could do the above as
+  bash> generate_url | browser
+  bash> generate_url | copy
+</pre></notextile>
+
+Now that you understand what pipe options do, here's how you set it up:
+
+<notextile><pre class='console'>
+  # Let's set up the commands for mac osx:
+  # browser() already ships with boson.
+
+  # Drop this in a library that gets loaded with :defaults config key
+  def copy(str)
+    IO.popen('pbcopy', 'w+') {|clipboard| clipboard.write(str)}
+  end
+
+  # Configure them in ~/.boson/config/boson.yml
+  :pipe_options:
+    :browser:
+      :type: :boolean
+      :desc: Open in browser
+    :copy:
+      :type: :boolean
+      :desc: Copy to clipboard
+</pre></notextile>
+
+As you've noticed, pipe options are returning the command's original return value. To have pipe options behave like unix pipes (i.e. the return value changes per pipe), add a @:filter: true@ to a pipe option's config. "See here":http://tagaholic.me/boson/doc/classes/Boson/Pipe.html for more pipe docs.
+
+h3(#query_option). "Query Option":#query_option
+
+As explained "at the end of a previous post":/2009/10/14/boson-command-your-ruby-universe.html, this option used to be @--query_fields@. This option is a default pipe option that queries an array of anything with a search hash. Since this option is a :hash option type, "check the docs":http://tagaholic.me/boson/doc/classes/Boson/OptionParser.html for a syntax overview. Some examples with default commands:
+
+<notextile><pre class='console'>
+  # A query field is delimited from its query value with ':'
+  # Like arrays, hash keys can be aliased if the field keys are known.
+  bash> boson commands -q=f:lib     # or commands --query=full_name:lib
+
+  # With the new format all fields can be queried using a '*'.
+  # Searches library fields: gems,dependencies,commands,loaded,module,name,namespace,indexed_namespace,library_type
+  bash> boson libraries -q=*:core   # or libraries --query=*:core
+
+  # Multiple searches to be joined together by ','. This query searches for libraries that
+  # have the name matching core or a library_type matching gem.
+  bash> boson libraries -q=n:core,l:gem   # or libraries --query=name:core,library_type:gem
+</pre></notextile>
+
+For examples of the different kinds of arrays that query can search, "see the previous post":/2009/11/07/ruby-reference-commands-with-boson.html.
+
+h2(#libraries). "Libraries":#libraries
+
+Boson's libraries, which are just modules, are loaded by being included in @main@ 's eigenclass. During its loading process, a module's include callbacks are called i.e. @included@ as well as boson-specific ones i.e. @after_included@. "Read the docs":http://tagaholic.me/boson/doc/classes/Boson/Loader.html for an explanation of these callbacks.
+
+h3(#local_libraries). "Local Libraries":#local_libraries
+
+Like most command frameworks, Boson now supports local command libraries. For just one library, simply create a Bosonfile and write commands as you would for any "Boson::FileLibrary":http://tagaholic.me/boson/doc/classes/Boson/FileLibrary.html. For multiple libraries, create the directory lib/boson/commands or .boson/commands and place libraries under the directory. For more, "see the docs":http://tagaholic.me/boson/doc/classes/Boson/LocalFileLibrary.html.
+
+h3(#directory_spaced_libraries). "Directory-Spaced Libraries":#directory_spaced_libraries
+
+Like "Thor":http://github.com/wycats/thor, Boson has a central repository for its libraries so that the user can invoke commands from any directory. For Boson, these libraries are stored at ~/.boson/commands/. With this release, any subdirectory in this directory is automatically namespaced when loaded. What this means for the user is that they can create any number/depth of directories without worry that a module in one directory will conflict with a module in another. As an example say that I use the module @Misc@ in two different directories, ~/.boson/commands/public and ~/.boson/commands/personal. Boson will load @Misc@ as @Boson::Commands::Public::Misc@ and @Boson::Commands::Personal::Misc@ respectively. This makes it very convenient to collect and organize a large number of libraries. If it means anything, my "main repository's":http://github.com/cldwalker/irbfiles current count is 87 libraries and 284 commands.
+
+h3(#social_libraries). "Social Libraries":#social_libraries
+
+As "I explained before":/2009/10/14/boson-command-your-ruby-universe.html#using_third_party_commands, Boson's libraries are easy to share with others. Simply give a url to a plain text version of your library and other users can install it. What I didn't explain was that you can customize any attribute of the library and its commands _without touching_ the installed library.
+
+For this example, we'll use "the github library":/2009/10/15/boson-and-hirb-interactions.html#github_boson_library. To install it:
+
+<notextile><pre class='console'>
+  bash> boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/site/github.rb
+  Saved to /Users/bozo/.boson/commands/github.rb
+
+  # How one of the library's commands looks before we customize
+  bash> boson commands user_repo
+  +------------+--------+-------+------------------------------------------------+--------------------------------+
+  | full_name  | lib    | alias | usage                                          | description                    |
+  +------------+--------+-------+------------------------------------------------+--------------------------------+
+  | user_repos | github |       | [--user=cldwalker] [--fork_included] [--stats] | Displays a user's repositories |
+  +------------+--------+-------+------------------------------------------------+--------------------------------+
+  1 row in set
+  
+</pre></notextile>
+
+Let's add an alias and change the options and description of the above user_repos command:
+
+<notextile><pre class='console'>
+  # Add entry under the :libraries key of config file ~/.boson/config/boson.yml
+  :libraries:
+    github:
+      :commands:
+        user_repos:
+          :alias: guser
+          :description: Github user page
+          :options:
+            :user: rails
+    
+  # Reindex library to pick up the config change
+  bash> boson -i=github commands user_repo  # or --index=github commands user_repo
+  Indexing the following libraries: github
+  Loaded library github
+  +------------+--------+-------+--------------------------------------------+------------------+
+  | full_name  | lib    | alias | usage                                      | description      |
+  +------------+--------+-------+--------------------------------------------+------------------+
+  | user_repos | github | guser | [--user=rails] [--fork_included] [--stats] | Github user page |
+  +------------+--------+-------+--------------------------------------------+------------------+
+  1 row in set
+
+  # Calls user_repos defaulting to rails user
+  bash> boson guser
+  +-------------------------+----------+-------+-----------------------------------+-------------------------------------------+
+  | name                    | watchers | forks | homepage                          | description                               |
+  +-------------------------+----------+-------+-----------------------------------+-------------------------------------------+
+  | rails                   | 4468     | 718   | http://rubyonrails.org            | Ruby on Rails                             |
+  | account_location        | 82       | 2     | http://rubyonrails.org            | Account Location Plugin                   |
+  | acts_as_list            | 251      | 28    | http://rubyonrails.org            | ActsAsList plugin                         |
+  | acts_as_nested_set      | 43       | 7     | http://rubyonrails.org            | ActsAsNestedSet                           |
+  # ...
+</pre></notextile>
+
+You've just seen how Boson can customize command invocation via :alias and functionality via :options without modifying the command's source. Since commands are functionally equivalent to scripts, this has interesting implications for scripting. This basically allows us to use and preserve third-party scripts _without being bound_ to the author's naming/aliasing of commands and options. By preserving a script's source, we can update our third-party scripts when new versions come out. Perhaps Boson's script/command configuration will make scripting more social.
+
+h3(#invoking_commands). "Invoking Commands":#invoking_commands
+
+If you don't already know, Boson's commands are just methods on @main@, Ruby's top-level object. What this means is that the @self@ inside of any Boson command is @main@. Once a command is loaded, it's available across libraries as a top-level method. For example:
+
+{% highlight ruby %}
+  # Drop this in ~/.boson/commands/input.rb
+  module Input
+    def ask(prompt)
+      print prompt + ' '
+      gets.strip
+    end
+  end
+
+  # Now let's use this in another library
+  module Quarantine
+    # A boson callback to specify a library's configuration
+    def self.config
+      {:dependencies=>['input']}
+    end
+
+    # Opens a reddit url in browser. Is it really worth it?
+    def reddit(url)
+      if ask("Are you sure you want to do this to yourself? (y/N)")[/^y/i]
+        browser(url)
+      end
+    end
+  end
+{% endhighlight %}
+
+As you can see, there is no @Rake::Task['reddit'].invoke(url)@ or @Quarantine.new.invoke(:reddit, url)@ as with Rake and Thor respectively. Invoking commands from different libraries is done in plain ruby per "Boson's philosophy":/2009/10/19/how-boson-enhances-your-irb-experience.html#organization_and_philosophy. With this philosophy, you can still use these commands without Boson.
+
+<notextile><pre class='console'>
+  >> obj = Object.new.extend(Input).extend(Quarantine)
+  >> obj.reddit('lovely reddit url')
+</pre></notextile>
+
+h3(#library_dependencies). "Library Dependencies":#library_dependencies
+
+In the above command invocation example, you probably noticed that the quarantine library depends on the input library. Boson supports libraries depending on other libraries. This begins to show the collaborative and swappable nature of Boson libraries. Swappable in that you could swap one library for another as a dependency as long as it implements the same methods and api. Collaborative in that the functionality defined in one library can be made available to any another without modifying any code. Personally, this is is an improvement over having a directory full of scripts that can't communicate and depend on each other.
+
+h3(#plugin_libraries). "Plugin Libraries":#plugin_libraries
+
+While Boson has a number of features, you may want to add/modify some of them. No problem. Boson's "config file":http://tagaholic.me/boson/doc/classes/Boson/Repo.html#M000079 has a :defaults key to load up specified Boson libraries at startup. From the "Invoking Commands section":#invoking_commands, if we wanted to make the @ask@ method available to all libraries, we would specify the input library under :defaults. For more examples, "see my plugins":http://github.com/cldwalker/irbfiles/tree/master/boson/commands/public/plugins.
+
+h2(#option_parser). "Option Parser":#option_parser
+
+With this release, Boson's option parser is available for any Ruby scripts. For example:
+
+{% highlight ruby %}
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'boson'
+
+# Define options and parse them from ARGV into a hash
+options = Boson::OptionParser.parse(:verbose=>:boolean, :times=>:numeric, :help=>:boolean)
+return puts("$0 #{Boson::OptionParser.usage}") if options[:help]
+
+# Process remaining args in ARGV ...
+{% endhighlight %}
+
+Since Boson has dependencies, I'd consider making Boson's OptionParser a separate gem if requested.
+
+h3(#option_to_object_mapper). "Option to Object Mapper":#option_to_object_mapper 
+
+With this release, Boson's "option parser":http://tagaholic.me/boson/doc/classes/Boson/OptionParser.html has become an option-to-object mapper. To understand what that means, let's see Boson's five default option types and the Ruby objects they create. First, we create a library:
+
+{% highlight ruby %}
+  # Drop in ~/.boson/commands/option_test.rb
+  module OptionTest
+    options :a=>:array, :b=>:hash, :c=>:string, :d=>:numeric, :e=>:boolean
+    def testin(options={})
+      p options
+      p options.each {|k,v| options[k] = v.class }
+    end
+
+    # The default for :hash has to be passed as a :default attribute since hashes
+    # are already reserved for setting option attributes.
+    options :a=>[1,2], :b=>{:default=>{:a=>1}}, :c=>'yo', :d=>1.3, :e=>false
+    def testin2(options={})
+      p options
+      p options.each {|k,v| options[k] = v.class }
+    end
+  end
+{% endhighlight %}
+
+Then, back in the shell:
+
+<notextile><pre class='console'>
+  # Each option type maps to a different ruby object. The classes of most of these objects
+  # match directly to the option type's name.
+  bash> boson testin -a=1,2 -b a:b,c:d -c=hey -d 1 -e
+  {:e=>true, :d=>1, :b=>{"a"=>"b", "c"=>"d"}, :c=>"hey", :a=>["1", "2"]}
+  {:e=>TrueClass, :d=>Fixnum, :b=>Hash, :c=>String, :a=>Array}
+
+  # Each option type has an expected format it uses for converting to an object as indicated
+  # by the usage.
+  bash> boson testin -h
+  testin [-c=C] [-d=N] [-e] [-a=A,B,C] [-b=A:B,C:D]
+
+  # When options are defined with default values, the parser uses the default value's class to determine
+  # the appropriate option type.
+  # As expected, whatever option isn't set has its default value set.
+  bash> boson testin2 -b=z:y -d=2.1
+  {:e=>false, :d=>2.1, :b=>{"z"=>"y"}, :c=>"yo", :a=>[1, 2]}
+  {:e=>FalseClass, :d=>Float, :b=>Hash, :c=>String, :a=>Array}  
+</pre></notextile>
+
+As you can see, an option type maps to objects of one or more Ruby classes i.e. :array -> Array and :numeric -> Float or Fixnum. But what if you want to create objects of other classes?
+
+h3(#custom_option_types). "Custom Option Types":#custom_option_types
+
+To define an option type that creates objects of your choice, you only need to define the method that creates the object. Here's a basic example to create a :date option type that creates Date objects:
+
+{% highlight ruby %}
+  # Drop this in ~/.boson/commands/date.rb
+  # Then make this library a plugin by putting it
+  # under :defaults key in the main config
+  module ::Boson::Options::Date
+    def create_date(value)
+     Date.parse(value + "/#{Date.today.year}")
+    end
+  end
+
+  module OptionsLib
+    def self.after_included
+     ::Boson::OptionParser.send :include, ::Boson::Options::Date
+    end
+  end
+
+  # ====
+  # Now in any library we can use the :date option type ...
+  # Drop this in ~/.boson/commands/date_test.rb
+  module DateTest
+    options :day=>:date
+    def day_of_week(options={})
+      puts "#{options[:day]} falls on a #{Date::DAYNAMES[options[:day].cwday]}"
+    end
+    # to define :day with a default we could modify options to be:
+    # options :day=>Date.today
+  end
+{% endhighlight %}
+
+Now to try @day_of_week@:
+
+<notextile><pre class='console'>
+  bash> boson day_of_week -d 12/25   # or day_of_week --date 12/25
+  2009-12-25 falls on a Friday
+
+  # Default usage for new option type
+  bash> boson day_of_week -h
+  day_of_week [--day=:date]
+</pre></notextile>
+
+As you saw, simply creating a method with the name create_@type in the option parser made the option type available. If you want to add validation or custom usage for a new option type, "see the docs":http://tagaholic.me/boson/doc/classes/Boson/Options.html. When creating your own option types, you may find it cleaner to define your options "in a plugin library":#plugin_libraries.
+
+h2(#miscellaneous). "Miscellaneous":#miscellaneous
+
+Now for some miscellaneous features.
+
+h3(#custom_consoles). "Custom Consoles":#custom_consoles
+
+Being able to start irb around certain setups you use often can be quite handy. Good examples of this are Rails' script/console and the more recent "racksh":#http://github.com/sickill/racksh. Boson makes it easy to start irb with specified Boson libraries loaded:
+
+<notextile><pre class='console'>
+  # Assuming you have a library github
+  bash> boson -l=g -c   # or boson --load=github --console
+
+  # Assuming you have libraries misc and ruby_ref
+  bash> boson -l=m,r -c  # or boson --load=misc,ruby_ref --console
+  
+  # Irb can require libraries in a more verbose way but it *doesn't*
+  # load Boson libraries as commands
+  bash> irb -I ~/.boson/commands -r misc -r ruby_ref
+</pre></notextile>
+
+h3(#powerful_one_liners). "Powerful One-Liners":#powerful_one_liners
+
+Much like @ruby -e@, you can do a @boson -e@ with any ruby code. The big difference is that _any_ Boson command is available and loaded lazily automatically:
+
+<notextile><pre class='console'>
+  # Drop in ~/.boson/commands/objects.rb
+  module Objects
+    def objects(klass)
+      object = []
+      ObjectSpace.each_object(klass) {|e| object.push(e) }
+      object
+    end
+  end
+
+  # Prints number of String objects
+  bash> boson -e 'p objects(String).size'  # or boson --execute 'p objects(String).size'
+  56573
+
+  # Prints default classes not including its defaults
+  bash> boson -e 'p objects(Class).select {|e| e.to_s !~ /^(Boson|Alias|Hirb)/ }'
+  [Gem::LoadError, Struct::Group, Struct::Passwd, SizedQueue, Queue, ConditionVariable, Mutex, Gem::Builder, Gem::SourceIndex, Binding,
+   UnboundMethod, Method, Proc, SystemStackError, LocalJumpError, Struct::Tms, Process::Status, Time, Dir, File::Stat, File, IO, EOFError,
+   IOError, Range, MatchData, Regexp, RegexpError, Struct, Hash, Array, Errno::EDQUOT, Errno::ESTALE, Errno::EINPROGRESS, Errno::EALREADY
+  # ...
+</pre></notextile>
+
+h3(#method_commandification). "Method Commandification":#method_commandification
+
+This feature redefines a method to act like a shell command using "Boson::Scientist.commandify":http://tagaholic.me/boson/doc/classes/Boson/Scientist.html#M000034. This means that a method can take any number of arguments and options as one string. Since Boson commands already do this automatically, this feature is for those who want to give this functionality to any method:
+
+<notextile><pre class='console'>
+  >> def checkit(*args); args; end
+  => nil
+  >> Boson::Scientist.commandify(self, :name=>'checkit', :options=>{:verbose=>:boolean, :num=>:numeric})
+  => ['checkit']
+  # regular invocation
+  >> checkit 'one', 'two', :num=>13, :verbose=>true
+  => ["one", "two", {:num=>13, :verbose=>true}]
+  # commandline invocation
+  >> checkit 'one two -v -n=13'
+  => ["one", "two", {:num=>13, :verbose=>true}]
+</pre></notextile>
