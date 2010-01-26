@@ -187,6 +187,12 @@ code {
   color:#444444;
 }
 
+div.highlight code {
+  background-color: white;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+
 .mbleigh pre {
   background: #f8f8f8;
   border: 1px solid #E7E5DC;
