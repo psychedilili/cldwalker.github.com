@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Typing Less in Irb with method_missing
-description: Being the efficiency prick I am, let's look at a @method_missing@ that let's us type less where underscored methods are involved. This means that instead of typing @some_really_long_ass_method@ we can type @s_r_l_a_s@.
+description: Being the console-efficient prick I am, let's look at a <code>method_missing</code> that let's us type less where underscored methods are involved. This means that instead of typing <code>some_really_long_ass_method</code> we can type <code>s_r_l_a_s</code>.
 tags:
 - post:method=method_missing
 - post:type=snippet
