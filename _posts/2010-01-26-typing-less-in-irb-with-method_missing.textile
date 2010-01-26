@@ -1,0 +1,134 @@
+---
+layout: post
+title: Typing Less in Irb with method_missing
+description: Being the efficiency prick I am, let's look at a @method_missing@ that let's us type less where underscored methods are involved. This means that instead of typing @some_really_long_ass_method@ we can type @s_r_l_a_s@.
+tags:
+- post:method=method_missing
+- post:type=snippet
+- post:lang=ruby
+- lib:name=irb
+related_tag: *:*=irb
+---
+First off, Happy New Year! Now back to our regularly scheduled program.
+
+{{page.description}} So why do this if we have autocompletion? For starters, try typing the Object method @instance_variable_get@ in five keystrokes (tabs included). Or for more inefficiency, try typing @ActiveRecord@ class methods that start with @before_*@ and @validate_*@.
+
+h2. Explanation
+
+To write this @method_missing@, we're going to need a method that finds methods given a method query we type:
+
+{% highlight ruby %}
+  def underscore_search(input, list)
+    if input.include?("_")
+      underscore_regex = input.split('_').map {|e| Regexp.escape(e) }.join("([^_]+)?_")
+      list.select {|e| e.to_s =~ /^#{underscore_regex}/ }
+    else
+      escaped_input = Regexp.escape(input)
+      list.select {|e| e.to_s =~ /^#{escaped_input}/ }
+    end
+  end
+{% endhighlight %}
+
+If you try this out in irb, it works as follows:
+
+<notextile><pre class='console'>
+  # Doing the same as autocompletion would
+  >> underscore_search 'si', %w{set_trace_func singleton_methods select}%
+  => ['singleton_methods']
+
+  # Doing something autocompletion can't do
+  >> underscore_search 'i_v_g', %w{instance_of? instance_variables instance_variable_get instance_eval}%
+  => ['instance_variable_get']
+
+  # If our method query is too broad we get multiple results
+  >> underscore_search 'i_v', %w{instance_of? instance_variables instance_variable_get instance_eval}%
+  => ['instance_variables', 'instance_variable_get']
+
+  # Multiple letters can be typed per underscore
+  >> underscore_search 're_o_ag', %w{reflect_on_aggregation reflect_on_association raise_on_association}
+  => ['reflect_on_aggregation']
+</pre></notextile>
+
+Now that we have a way of querying underscore methods, let's wrap a method_missing around it:
+
+{% highlight ruby %}
+  def method_missing(meth, *args, &block)
+    possible_methods = self.methods.map {|e| e.to_s }.sort
+    meths = underscore_search(meth.to_s, possible_methods)
+
+    if meths.size > 1
+      puts "Multiple methods match: #{meths.join(', ')}"
+    elsif (meths.size == 1)
+      send(meths[0], *args, &block)
+    else
+      super
+    end
+  end
+{% endhighlight %}
+
+After pasting @method_missing()@ and @underscore_search()@ in irb:
+
+<notextile><pre class='console'>
+  # Calls private_methods()
+  >> pri_m
+  => [...]
+
+  # Method queries that match multiple methods don't get executed
+  >> pr_m
+  Multiple methods match: private_methods, protected_methods
+  => nil
+
+  # method_missing works as normal for method queries that don't match anything
+  >> blah
+  NameError: undefined local variable or method `blah' for main:Object
+          from /Users/bozo/.boson/commands/public/underscore_alias.rb:57:in `method_missing'
+          from (irb):8
+</pre></notextile>
+
+h2. Finished Snippet
+
+To make this snippet easy to apply to any object or class of objects, I wrapped @method_missing@ into a module and did a little more meta programming. The result is "this module":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/underscore_alias.rb. If you use "boson":http://github.com/cldwalker/boson to manage your irb snippets: @boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/underscore_alias.rb@.
+
+Here's how I use the finished snippet in a Rails console session:
+
+<notextile><pre class='console'>
+  bash> script/console
+
+  # Load UnderscoreAlias
+  >> load 'path/to/underscore_alias.rb'
+  # If using boson
+  >> load_library 'underscore_alias'
+
+  # Let's give an ActiveRecord model class (i.e. Url) underscore aliasing abilities
+  >> Url.extend UnderscoreAlias
+  => Url
+
+  # Call Url.original_table_name
+  >> Url.o_t
+  => 'urls'
+
+  # Call Url.columns_hash
+  >> Url.col_h
+  => {"name"=> #< ActiveRecord::ConnectionAdapters::MysqlColumn:0x23766d8 @type=:string, @precision=nil ...>,
+  "updated_at"=> ...}
+
+  # Now let's give ActiveRecord objects underscore aliasing abilities
+  >> Url.send :include, UnderscoreAlias
+  => Url
+
+  # Call Url#to_json
+  >> Url.first.t_j
+  => "{\"url\":{\"name\":\"http://github.com\", ... }"
+
+  # Call Url#clear_association_cache
+  >> Url.first.c_as
+  => [...]
+
+  # Call Url#has_attribute?
+  >> Url.first.h_a 'name'
+  => true
+</pre></notextile>
+
+When using the above snippet, you may find it annoying that sometimes a method query results in a multiple choices that vary only by ending i.e. @updated_at? updated_at updated_at=@. If only there was a way to autocomplete like this ... Actually, "bond":http://github.com/cldwalker/bond "accomplished this a while ago":http://tagaholic.me/2009/07/16/bond-from-irb-with-completion-love.html#autocompletion_aliasing.
+
+Now a general question to you all: Would anyone find it useful to apply this same instant aliasing technique to their rake/thor commandline tasks? For example, typing r:u:s instead of rails:update:scripts? I have found it quite useful in instantly aliasing "boson's":http://github.com/cldwalkwer/boson commands, arguments and options.
