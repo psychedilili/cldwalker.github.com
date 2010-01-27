@@ -2,7 +2,7 @@
 layout: post
 title: Exploring How To Configure Irb
 keywords: irb ruby, ruby irb, irb configuration, irb conf, irb tutorial, irb documentation, how to configure irb, irb config options, customize irb, irb tips, irb guide
-description: In <a href="/2009/05/11/demystifying-irb-commands.html">my last post</a> we discussed irb's commands. This post goes further into irb's innards, exploring <b>all</b> of it's configuration options.
+description: In <a href="/2009/05/11/demystifying-irb-commands.html">my last post</a> we discussed irb's commands. This post goes further into irb's innards, exploring <b>all</b> of its configuration options.
 tags:
   - lib:name=irb
   - post:type=tutorial
@@ -22,7 +22,7 @@ Let's first cover some irb configuration basics:
 * By default, irb loads the first configuration file it finds among these files: @~/.irbrc, .irbrc, irb.rc, _irbrc, $irbrc and /etc/irbrc@. For the curious, "read the source":http://github.com/rubyspec/matzruby/blob/06a20966430c002e04b54bbd35aa5eaa2386a0df/lib/irb/init.rb#L234. That file is also where most of irb's configuration is setup.
 * To override the default configuration file, set the IRBRC environment variable: 
 <pre class="console">bash> IRBRC='/i/like/my/irbrc/elsewhere' irb</pre>
-* Irb saves it's configuration in a hash accessible through @IRB.conf@. By convention, the config keys are symbols in all caps. Simply set an option by setting a key's value: @IRB.conf[:SAVE_HISTORY] = 1000@
+* Irb saves its configuration in a hash accessible through @IRB.conf@. By convention, the config keys are symbols in all caps. Simply set an option by setting a key's value: @IRB.conf[:SAVE_HISTORY] = 1000@
 * Unlike "irb commands in the last post":/2009/05/11/demystifying-irb-commands.html, there isn't much to getting most of the global configuration options:
 
 <notextile><pre class="console">
@@ -358,7 +358,7 @@ h2(#visual_options). "Visual Options":#visual_options
 
 h3(#echo). ":ECHO":#echo
 
-A common irb complaint is that it's output is too verbose. Disabling this option makes irb print __no output__. Here's a handy snippet that uses this option to toggle irb output:
+A common irb complaint is that its output is too verbose. Disabling this option makes irb print __no output__. Here's a handy snippet that uses this option to toggle irb output:
 
 {% highlight ruby%}
   def irb_verbosity_toggle

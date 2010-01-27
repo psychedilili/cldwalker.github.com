@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Typing Less in Irb with method_missing
-description: Being the console-efficient prick I am, let's look at a <code>method_missing</code> that let's us type less where underscored methods are involved. This means that instead of typing <code>some_really_long_ass_method</code> we can type <code>s_r_l_a_s</code>.
+keywords: method_missing tips, type less, irb shortcuts, efficient ruby console, ruby shortcuts, instant aliasing, underscore search, textmate search
+description: Being the console-efficient prick I am, let's look at a <code>method_missing</code> that let's us type less where underscored methods are involved. This means that instead of typing <code>some_really_long_ass_method</code> we can type the shortcut method <code>s_r_l_a_s</code>.
 tags:
 - post:method=method_missing
 - post:type=snippet
@@ -11,11 +12,13 @@ related_tag: *:*=irb
 ---
 First off, Happy New Year! Now back to our regularly scheduled program.
 
-{{page.description}} So why do this if we have autocompletion? For starters, try typing the Object method @instance_variable_get@ in five keystrokes (tabs included). Or for more inefficiency, try typing @ActiveRecord@ class methods that start with @before_*@ and @validate_*@.
+{{page.description}} Instant aliasing! As you can see this works by typing the beginning letter of each word separated by underscores.
+
+So why do this if we have autocompletion? For starters, try typing the @Object@ method @instance_variable_get@ in five keystrokes (tabs included). Or for more inefficiency, try typing @ActiveRecord@ class methods that start with @before_*@ and @validate_*@.
 
 h2. Explanation
 
-To write this @method_missing@, we're going to need a method that finds methods given a method query we type:
+To write this @method_missing@, we're going to need a method that finds methods given a shortcut method we type:
 
 {% highlight ruby %}
   def underscore_search(input, list)
@@ -40,7 +43,7 @@ If you try this out in irb, it works as follows:
   >> underscore_search 'i_v_g', %w{instance_of? instance_variables instance_variable_get instance_eval}%
   => ['instance_variable_get']
 
-  # If our method query is too broad we get multiple results
+  # If our shortcut method is too broad we get multiple results
   >> underscore_search 'i_v', %w{instance_of? instance_variables instance_variable_get instance_eval}%
   => ['instance_variables', 'instance_variable_get']
 
@@ -87,7 +90,7 @@ After pasting @method_missing()@ and @underscore_search()@ in irb:
 
 h2. Finished Snippet
 
-To make this snippet easy to apply to any object or class of objects, I wrapped @method_missing@ into a module and did a little more meta programming. The result is "this module":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/underscore_alias.rb. If you use "boson":http://github.com/cldwalker/boson to manage your irb snippets: @boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/underscore_alias.rb@.
+To make this snippet easy to apply to any object or class of objects, I wrapped @method_missing@ into a module and did a little more meta programming. The result is "this module":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/underscore_alias.rb. If you use "boson":http://github.com/cldwalker/boson to manage your ruby snippets: @boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/underscore_alias.rb@.
 
 Here's how I use the finished snippet in a Rails console session:
 
@@ -129,6 +132,6 @@ Here's how I use the finished snippet in a Rails console session:
   => true
 </pre></notextile>
 
-When using the above snippet, you may find it annoying that sometimes a method query results in a multiple choices that vary only by ending i.e. @updated_at? updated_at updated_at=@. If only there was a way to autocomplete like this ... Actually, "bond":http://github.com/cldwalker/bond "accomplished this a while ago":http://tagaholic.me/2009/07/16/bond-from-irb-with-completion-love.html#autocompletion_aliasing.
+When using the above snippet, you may find it annoying that sometimes a shortcut method results in a multiple choices that vary only by ending i.e. @updated_at? updated_at updated_at=@. If only there was a way to autocomplete like this ... Actually, "bond":http://github.com/cldwalker/bond "accomplished this a while ago":http://tagaholic.me/2009/07/16/bond-from-irb-with-completion-love.html#autocompletion_aliasing.
 
-Now a general question to you all: Would anyone find it useful to apply this same instant aliasing technique to their rake/thor commandline tasks? For example, typing r:u:s instead of rails:update:scripts? I have found it quite useful in instantly aliasing "boson's":http://github.com/cldwalkwer/boson commands, arguments and options.
+Now a general question to you all: Would you find it useful to apply this same instant aliasing technique to your rake/thor commandline tasks? For example, typing r:u:s instead of rails:update:scripts? I have found this instant aliasing technique to be quite handy with "boson's":http://github.com/cldwalkwer/boson commands, arguments and options.

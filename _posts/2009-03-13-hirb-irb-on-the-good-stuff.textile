@@ -140,9 +140,9 @@ h3. Configuration
 The variety of options that a view can offer can also be configured per output class. For example, say I want @Tag@ to have certain fields. I can put this into a configuration block when enabling Hirb:
 
 {% highlight ruby %}
-  Hirb::View.enable do |c|
-    c.output = {"Tag"=>{:options=>{:fields=>%w{id name tag_list}} }
-  end
+  Hirb::View.enable :output=>{
+    "Tag"=>{ :options=>{:fields=>%w{id name tag_list}} }
+  }
 {% endhighlight %}
 
 Hirb also supports a yaml configuration file (config/hirb.yml or ~/.hirb.yml). The previous configuration block as yaml would be:
