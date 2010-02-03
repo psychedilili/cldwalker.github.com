@@ -1,0 +1,283 @@
+---
+layout: post
+title: Using Gemcutter's Api from the Commandline
+keywords: gemcutter api, gemcutter cli, gemcutter console, search gems, gemcutter commandline, gemcutter shell, gemcutter search, boson api, build gemcutter api, boson commandline
+description: Gemcutter <a href="http://update.gemcutter.org/2010/02/01/january-changelog.html">recently added</a> a search call to <a href="http://gemcutter.org/pages/api_docs">its api</a>. With gemcutter's api and <a href="http://github.com/cldwalker/boson">boson</a>, let's see what we can do on the commandline.
+tags:
+- post:type=tutorial
+- post:lang=ruby
+- gem:name=boson
+related_tag: *:*=boson
+---
+{{page.description}}
+
+If you're more interested in how this library is built, "skip to here":#explanation.
+
+To use this boson library:
+
+<notextile><pre class='console'>
+  bash> sudo gem install boson
+  bash> boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/site/gemcutter.rb
+</pre></notextile>
+
+h2. Usage
+
+"This gemcutter CLI":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/site/gemcutter.rb comes with three commands. The first command is @gem_search@:
+
+<notextile><pre class='console'>
+  # basic search
+  bash> boson gem_search command
+  +---------------------+-----------+---------------------------------------------------------------------------------------+---------------------------------------------------------------+
+  | name                | downloads | info                                                                                  | authors                                                       |
+  +---------------------+-----------+---------------------------------------------------------------------------------------+---------------------------------------------------------------+
+  | rubyforge           | 70823     | A script which automates a limited set of rubyforge operations.\n\n* Run 'rubyforg... | Ryan Davis, Eric Hodel, Ara T Howard, Tom Copeland            |
+  | gemcutter           | 69607     | Adds several commands to RubyGems for managing gems and more on Gemcutter.org.        | Nick Quaranto                                                 |
+  | hoe                 | 68058     | Hoe is a rake/rubygems helper for project Rakefiles. It helps you\nmanage and main... | Ryan Davis                                                    |
+  | capistrano          | 55740     | Capistrano is a utility and framework for executing commands in parallel on multip... | Jamis Buck, Lee Hambley                                       |
+  # ...
+  30 rows in set
+
+  # Let's go the second page of the previous query
+  bash> boson gem_search command -p2
+  +--------------+-----------+------------------------------------------------------------------------------------------+--------------------------------------------------------------+
+  | name         | downloads | info                                                                                     | authors                                                      |
+  +--------------+-----------+------------------------------------------------------------------------------------------+--------------------------------------------------------------+
+  | vlad         | 2173      | Vlad the Deployer is pragmatic application deployment automation,\nwithout mercy. Muc... | Ryan Davis, Eric Hodel, Wilson Bilkovich                     |
+  | sys-uname    | 2161      |     The sys-uname library provides an interface for gathering information\n    about ... | Daniel J. Berger                                             |
+  | cmdparse     | 1943      | cmdparse provides classes for parsing commands on the command line; command line opti... | Thomas Leitner                                               |
+  | backup       | 1862      | \n                            Backup is a Ruby Gem written for Unix and Rails environ... | Michael van Rooijen                                          |
+  # ...
+  30 rows in set
+
+  # multi word search
+  bash> boson gem_search rails plugin
+  +--------------------------------+-----------+--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+  | name                           | downloads | info                                                                           | authors                                                                        |
+  +--------------------------------+-----------+--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+  | will_paginate                  | 42886     | The will_paginate library provides a simple, yet powerful and extensible AP... | Mislav Marohnić, PJ Hyett                                                      |
+  | aasm                           | 7638      | AASM is a continuation of the acts as state machine rails plugin, built for... | Scott Barron, Scott Petersen, Travis Tilley                                    |
+  | after_commit                   | 7016      | \n    A Ruby on Rails plugin to add an after_commit callback. This can be u... | Nick Muerdter, David Yip, Pat Allan                                            |
+  | rails_datamapper               | 2124      | Rails Plugin for DataMapper                                                    | Tom Malone                                                                     |
+  # ...
+  30 rows in set
+  
+  # with no search term, defaults to all-time top-downloaded gems
+  # no surprises here
+  bash> boson gem_search
+  +-----------------+-----------+----------------------------------------------------------------------------------------+----------------------------------------------------+
+  | name            | downloads | info                                                                                   | authors                                            |
+  +-----------------+-----------+----------------------------------------------------------------------------------------+----------------------------------------------------+
+  | activesupport   | 319341    | Utility library which carries commonly used classes and goodies from the Rails fram... | David Heinemeier Hansson                           |
+  | activerecord    | 293266    | Implements the ActiveRecord pattern (Fowler, PoEAA) for ORM. It ties database table... | David Heinemeier Hansson                           |
+  | actionpack      | 287332    | Eases web-request routing, handling, and response as a half-way front, half-way pag... | David Heinemeier Hansson                           |
+  | rails           | 287005    |     Rails is a framework for building web-application using CGI, FCGI, mod_ruby, or... | David Heinemeier Hansson                           |
+  | rack            | 285612    | Rack provides minimal, modular and adaptable interface for developing\nweb applicat... | Christian Neukirchen                               |
+  # ...
+  30 rows in set
+</pre></notextile>
+
+If you're not familiar with "boson":http://github.com/cldwalker/boson, you may be surprised with how many options are available by default to control how and what you see:
+
+<notextile><pre class='console'>
+  # Only see the name and info fields
+  bash> boson gem_search tag -f=n,i   # or --fields=name,info
+ +---------------------+------------------------------------------------------------------------------------------------------------------------------+
+  | name                | info                                                                                                                         |
+  +---------------------+------------------------------------------------------------------------------------------------------------------------------+
+  | haml                |       Haml (HTML Abstraction Markup Language) is a layer on top of XHTML or XML\n      that's designed to express the str... |
+  | libxml-ruby         | The Libxml-Ruby project provides Ruby language bindings for the GNOME Libxml2 XML toolkit. It is free software, released ... |
+  | win32-api           |       The Win32::API library is meant as a replacement for the Win32API\n      library that ships as part of the standard... |
+  | haml-edge           |       Haml (HTML Abstraction Markup Language) is a layer on top of XHTML or XML\n      that's designed to express the str... |
+   # ...
+   30 rows in set
+  
+   # Sort by authors
+   bash> boson gem_search tag -s=a   # or --sort=authors
+   +---------------------+-----------+--------------------------------------------------------+--------------------------------------------------------+
+   | name                | downloads | info                                                   | authors                                                |
+   +---------------------+-----------+--------------------------------------------------------+--------------------------------------------------------+
+   | calais              | 489       | A Ruby interface to the Calais Web Service             | Abhay Kumar                                            |
+   | stage               | 506       | Code template generator for Rails and Merb that DRY... | Andrew Stone                                           |
+   | tagz                | 779       |         tagz.rb is generates html, xml, or any sgml... | Ara T. Howard                                          |
+   | dm-tags             | 1985      | This package brings tagging to DataMapper.  It is i... | Bobby Calderwood                                       |
+   | libxml-ruby         | 21789     | The Libxml-Ruby project provides Ruby language bind... | Charlie Savage                                         |
+   | win32-api           | 14810     |       The Win32::API library is meant as a replacem... | Daniel J. Berger, Park Heesob                          |
+   # ...
+   30 rows in set
+
+  # Show all fields, displaying a paged vertical table
+  bash> boson gem_search tag -f=* -V
+  ************************* 1. row *************************
+            authors: Nathan Weizenbaum, Hampton Catlin
+       dependencies: {"development"=>[{"name"=>"maruku", "requirements"=>">= 0.5.9"}, {"name"=>"yard", "requirements"=>">= 0.4.0"}], "runtime"=>[]}
+          downloads: 85590
+            gem_uri: http://gemcutter.org/gems/haml-2.2.17.gem
+               info:       Haml (HTML Abstraction Markup Language) is a layer on top of XHTML or XML
+        that's designed to express the structure of XHTML or XML documents
+        in a non-repetitive, elegant, easy way,
+        using indentation rather than closing tags
+        and allowing Ruby to be embedded with ease.
+        It was originally envisioned as a plugin for Ruby on Rails,
+        but it can function as a stand-alone templating engine.
+
+               name: haml
+        project_uri: http://gemcutter.org/gems/haml
+            version: 2.2.17
+  version_downloads: 25104
+  ************************* 2. row *************************
+  # Remaining records are paged ...
+
+  # To get more help on this command
+  bash> boson gem_search -hv
+  # ...
+</pre></notextile>
+
+The second command we'll look at is @cut@, which displays gemcutter's information on a gem:
+
+<notextile><pre class='console'>
+  bash> boson cut rails
+  +-------------------+--------------------------------------------------------------------------------------------------------------------------------+
+  | field             | value                                                                                                                          |
+  +-------------------+--------------------------------------------------------------------------------------------------------------------------------+
+  | name              | "rails"                                                                                                                        |
+  | downloads         | 287086                                                                                                                         |
+  | info              | "    Rails is a framework for building web-application using CGI, FCGI, mod_ruby, or WEBrick\n    on top of either MySQL, P... |
+  | version           | "2.3.5"                                                                                                                        |
+  | project_uri       | "http://gemcutter.org/gems/rails"                                                                                              |
+  | gem_uri           | "http://gemcutter.org/gems/rails-2.3.5.gem"                                                                                    |
+  | version_downloads | 189219                                                                                                                         |
+  | authors           | "David Heinemeier Hansson"                                                                                                     |
+  | dependencies      | {"development"=>[], "runtime"=>[{"name"=>"activeresource", "requirements"=>"= 2.3.5"}, {"name"=>"actionmailer", "requiremen... |
+  +-------------------+--------------------------------------------------------------------------------------------------------------------------------+
+  9 rows in set
+</pre></notextile>
+
+The third command is @cuts@, which lists multiple gems. This command is perfect for comparing gems i.e. "mocking gems":http://ruby-toolbox.com/categories/mocking.html:
+
+<notextile><pre class='console'>
+  bash> boson cuts rr mocha flexmock facon
+  Fetching gem 'rr'
+  Fetching gem 'mocha'
+  Fetching gem 'flexmock'
+  Fetching gem 'facon'
+  +----------+-----------+------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
+  | name     | downloads | project_uri                        | info                                                                                                                                              |
+  +----------+-----------+------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
+  | rr       | 4973      | http://gemcutter.org/gems/rr       | RR (Double Ruby) is a double framework that features a rich selection of double techniques and a terse syntax. http://xunitpatterns.com/Test%2... |
+  | mocha    | 19703     | http://gemcutter.org/gems/mocha    |       Mocking and stubbing library with JMock/SchMock syntax, which allows mocking and stubbing of methods on real (non-mock) classes.\n          |
+  | flexmock | 4527      | http://gemcutter.org/gems/flexmock | FlexMock is a extremely simple mock object class compatible with the Test::Unit framework.  Although the FlexMock's  interface is simple, it i... |
+  | facon    | 291       | http://gemcutter.org/gems/facon    | A mocking library in the spirit of the Bacon spec library. Small, compact, and works with Bacon.                                                  |
+  +----------+-----------+------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
+  4 rows in set
+</pre></notextile>
+
+Now, if you want to use these commands but with shorter command names or different default fields displayed, "you should read":/2009/10/14/boson-command-your-ruby-universe.html#just_alias_it "up on boson":/2009/11/21/boson-command-your-ruby-universe-part-deux.html#social_libraries.
+
+So how hard was it to create this CLI? Not hard at all ...
+
+
+h2(#explanation). "Explanation":#explanation
+
+To understand "this console interface":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/site/gemcutter.rb to gemcutter, let's look at creating the @gem_search@ command.
+
+First, as "gemcutter's api docs":http://gemcutter.org/pages/api_docs explain, a search request looks like  @/api/v1/search.(json|xml)?query=[QUERY]@. Let's consider what we'll do with this api call:
+
+1. Make a get request to get back a string.
+2. Convert the string into a ruby object by parsing the format (xml or json).
+3. Display the ruby object in a well-formatted, useful way.
+
+Step 1 can be done with the standard library net/http i.e. @Net::HTTP.get(URI.parse(url))@. We'll just use boson's @get()@ command which wraps around this. For step 2, we'll parse json using @JSON.parse@. If you're on 1.9, you should already have the json library. Otherwise, @sudo gem install json@ should set you up. For step 3, we'll use "hirb's handy tables which integrate nicely with boson":/2009/10/15/boson-and-hirb-interactions.html#hirbs_handy_tables.
+
+Taking the first two steps, the boson command looks like this:
+
+{% highlight ruby %}
+require 'json'
+
+module Gemcutter
+  def gem_search(query)
+    JSON.parse get("http://gemcutter.org/api/v1/search.json?query=#{query}")
+  end
+end
+{% endhighlight %}
+
+Pretty straightforward. To try this command, drop it in a local Bosonfile and ...
+
+<notextile><pre class='console'>
+  # Knowing nothing about the returned data structure, boson attempts to format it
+  bash> boson gem_search tag
+  +---------------------------+---------------------------+-----------+---------------------------+---------------------------+---------------------+---------------------------+-----------+-------------------+
+  | authors                   | dependencies              | downloads | gem_uri                   | info                      | name                | project_uri               | version   | version_downloads |
+  +---------------------------+---------------------------+-----------+---------------------------+---------------------------+---------------------+---------------------------+-----------+-------------------+
+  | Nathan Weizenbaum, Ham... | developmentnamemarukur... | 85521     | http://gemcutter.org/g... |       Haml (HTML Abstr... | haml                | http://gemcutter.org/g... | 2.2.17    | 25048             |
+  | Charlie Savage            | developmentruntime        | 21769     | http://gemcutter.org/g... | The Libxml-Ruby projec... | libxml-ruby         | http://gemcutter.org/g... | 1.1.3     | 18167             |
+  | Daniel J. Berger, Park... | developmentnametest-un... | 14794     | http://gemcutter.org/g... |       The Win32::API l... | win32-api           | http://gemcutter.org/g... | 1.4.5     | 3973              |
+  # ...
+  # It's a mess.
+
+  # Knowing that we're supposed to be getting back an array of gems
+  # let's inspect one of the results
+  bash> boson -e "p gem_search('tag')[0]"
+  {"name"=>"haml", "downloads"=>85525, "info"=>"      Haml (HTML Abstraction Markup Language) is a layer on top of XHTML or XML\n      
+  that's designed to express the structure of XHTML or XML documents\n      in a non-repetitive, elegant, easy way,\n      using indentation 
+  rather than closing tags\n      and allowing Ruby to be embedded with ease.\n      It was originally envisioned as a plugin for Ruby on 
+  Rails,\n      but it can function as a stand-alone templating engine.\n", "version"=>"2.2.17", 
+  "project_uri"=>"http://gemcutter.org/gems/haml", "gem_uri"=>"http://gemcutter.org/gems/haml-2.2.17.gem", "version_downloads"=>25052, 
+  "authors"=>"Nathan Weizenbaum, Hampton Catlin", "dependencies"=>{"development"=>[{"name"=>"maruku", "requirements"=>">= 0.5.9"}, 
+  {"name"=>"yard", "requirements"=>">= 0.4.0"}], "runtime"=>[]}}
+
+  # Ok, a gem is a hash. But with what fields?
+  bash> boson -e "p gem_search('tag')[0].keys"
+  ["name", "downloads", "info", "version", "project_uri", "gem_uri", "version_downloads", "authors", "dependencies"]
+</pre></notextile>
+
+Now for the third step. Let's configure the table fields rendered for our api call with @render_options()@. In keeping with "boson's philosophy":/2009/10/19/how-boson-enhances-your-irb-experience.html#organization_and_philosophy, we'll write it in commented form:
+
+{% highlight ruby %}
+require 'json'
+
+module Gemcutter
+  # @render_options :fields=>{:default=>%w{name downloads info authors},
+  #  :values=>%w{name authors version_downloads info project_uri gem_uri version downloads dependencies} },
+  #  :filters=>{:default=>{'dependencies'=>:inspect}}
+  # Search gemcutter
+  def gem_search(query)
+    JSON.parse get("http://gemcutter.org/api/v1/search.json?query=#{query}")
+  end
+end
+{% endhighlight %}
+
+Note that we passed two keys to @render_options@: :fields and :filters. For :fields we pass :default to specify default fields and :values to specify all values for :fields. Now let's give this command a test drive:
+
+<notextile><pre class='console'>
+  bash> boson gem_search tagging
+  +---------------------------------+-----------+---------------------------------------------------------------------+--------------------------------+
+  | name                            | downloads | info                                                                | authors                        |
+  +---------------------------------+-----------+---------------------------------------------------------------------+--------------------------------+
+  | dm-tags                         | 1989      | This package brings tagging to DataMapper.  It is inspired by Ac... | Bobby Calderwood               |
+  | sup                             | 1840      | Sup is a console-based email client for people with a lot of ema... | William Morgan                 |
+  | tagomatic                       | 634       | = tagomatic\n\nSimple command-line mp3 tagger based on mp3info g... | Daniel Lukic                   |
+  | CachedSupermodel                | 610       | Based on cached_model by &lt;a href=&quot;http://dev.robotcoop.c... | adocca Entertainment AB        |
+  # ...
+  30 rows in set
+
+  # Having specified available fields above, we can use aliased versions of fields
+  # when referring to them.
+
+  # Let's only see the numerical fields
+  bash> boson gem_search tag -f=n,do,version_d,v  # or --fields=name,downloads,version_downloads,version
+  +---------------------+-----------+-------------------+-----------+
+  | name                | downloads | version_downloads | version   |
+  +---------------------+-----------+-------------------+-----------+
+  | haml                | 85579     | 25097             | 2.2.17    |
+  | libxml-ruby         | 21784     | 18180             | 1.1.3     |
+  | win32-api           | 14809     | 3978              | 1.4.5     |
+  | haml-edge           | 11241     | 3555              | 2.3.100   |
+  # ...
+  30 rows in set
+</pre></notextile>
+
+Success! How about the pagination option and multi-word search we saw above? "Source code":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/site/gemcutter.rb says it all.
+
+h2. Wrap Up
+
+As you've seen, we took a one-line api call and configured it with "boson":http://github.com/cldwalker/boson to make a useful CLI to gemcutter. If you're interested in more APIs I've wrapped with boson, I'd recommend looking at "github":/2009/10/15/boson-and-hirb-interactions.html#github_boson_library or anything under "here":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/site. And if you don't already know, we can drive any of these api calls in irb thanks to "boson's shell/irb duality":/2009/10/14/boson-command-your-ruby-universe.html#shell_and_irb_duality.
