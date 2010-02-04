@@ -302,11 +302,7 @@ To define an option type that creates objects of your choice, you only need to d
     end
   end
 
-  module OptionsLib
-    def self.after_included
-     ::Boson::OptionParser.send :include, ::Boson::Options::Date
-    end
-  end
+  ::Boson::OptionParser.send :include, ::Boson::Options::Date
 
   # ====
   # Now in any library we can use the :date option type ...
