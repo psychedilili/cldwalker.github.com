@@ -1,11 +1,12 @@
 ---
 layout: post
 title: Using Gemcutter's Api from the Commandline
-keywords: gemcutter api, gemcutter cli, gemcutter console, search gems, gemcutter commandline, gemcutter shell, gemcutter search, boson api, build gemcutter api, boson commandline
-description: Gemcutter <a href="http://update.gemcutter.org/2010/02/01/january-changelog.html">recently added</a> a search call to <a href="http://gemcutter.org/pages/api_docs">its api</a>. With gemcutter's api and <a href="http://github.com/cldwalker/boson">boson</a>, let's see what we can do on the commandline.
+keywords: gemcutter api, gemcutter cli, gemcutter console, search gems, gemcutter commandline, gemcutter shell, gemcutter search, boson api, build gemcutter api, compare rubygems
+description: Gemcutter <a href="http://update.gemcutter.org/2010/02/01/january-changelog.html">recently added</a> a sweet search call to <a href="http://gemcutter.org/pages/api_docs">its API</a>. With gemcutter's API and <a href="http://github.com/cldwalker/boson">boson</a>, we'll see how to search gems, get a gem's information and compare multiple gems on the commandline. Also, I'll explain how some of this was done so you're able to make commands for any API.
 tags:
 - post:type=tutorial
 - post:lang=ruby
+- post:site=gemcutter
 - gem:name=boson
 related_tag: *:*=boson
 ---
@@ -171,7 +172,7 @@ The third command is @cuts@, which lists multiple gems. This command is perfect 
   4 rows in set
 </pre></notextile>
 
-Now, if you want to use these commands but with shorter command names or different default fields displayed, "you should read":/2009/10/14/boson-command-your-ruby-universe.html#just_alias_it "up on boson":/2009/11/21/boson-command-your-ruby-universe-part-deux.html#social_libraries.
+Now, if you want to use these commands but with shorter command names or different default fields displayed, "you should":http://tagaholic.me/boson/doc/ "read up":/2009/10/14/boson-command-your-ruby-universe.html#just_alias_it "on boson":/2009/11/21/boson-command-your-ruby-universe-part-deux.html#social_libraries.
 
 So how hard was it to create this CLI? Not hard at all ...
 
@@ -280,4 +281,4 @@ Success! How about the pagination option and multi-word search we saw above? "So
 
 h2. Wrap Up
 
-As you've seen, we took a one-line api call and configured it with "boson":http://github.com/cldwalker/boson to make a useful CLI to gemcutter. If you're interested in more APIs I've wrapped with boson, I'd recommend looking at "github":/2009/10/15/boson-and-hirb-interactions.html#github_boson_library or anything under "here":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/site. And if you don't already know, we can drive any of these api calls in irb thanks to "boson's shell/irb duality":/2009/10/14/boson-command-your-ruby-universe.html#shell_and_irb_duality.
+As we've seen with the gemcutter API, "boson":http://github.com/cldwalker/boson makes it dead easy to interface to an API from the commandline. If you're interested in more boson-wrapped APIs, I'd recommend "github":/2009/10/15/boson-and-hirb-interactions.html#github_boson_library or anything under "here":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/site. And if you don't already know, we can use any of these api commands in irb thanks to "boson's shell/irb duality":/2009/10/14/boson-command-your-ruby-universe.html#shell_and_irb_duality.

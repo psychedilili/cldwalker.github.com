@@ -352,7 +352,6 @@ You may be pleased to know that the default commands @libraries@ and @commands@ 
   +----------------+-------+---------+-----------------------------------------------------------+------------------------------------------------------------------------+
   | --class        | -c    | string  | Hirb helper class which renders                           |                                                                        |
   | --fields       | -f    | array   | Displays fields in the order given                        | name,lib,alias,description,options,args,usage,full_name,render_options |
-  | --global       | -g    | string  | Pass a string of global options without the dashes        |                                                                        |
   | --help         | -h    | boolean | Display a command's help                                  |                                                                        |
   | --max_width    | -m    | numeric | Max width of a table                                      |                                                                        |
   | --pretend      | -p    | boolean | Display what a command would execute without executing it |                                                                        |

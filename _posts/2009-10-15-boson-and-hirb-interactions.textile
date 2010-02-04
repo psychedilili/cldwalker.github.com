@@ -202,7 +202,6 @@ Each Boson command with options, or an option command, comes with global command
   +----------------+-------+---------+-----------------------------------------------------------+
   | --class        | -c    | string  | Hirb helper class which renders                           |
   | --fields       | -f    | array   | Displays fields in the order given                        |
-  | --global       | -g    | string  | Pass a string of global options without the dashes        |
   | --help         | -h    | boolean | Display a command's help                                  |
   | --max_width    | -m    | numeric | Max width of a table                                      |
   | --pretend      | -p    | boolean | Display what a command would execute without executing it |
@@ -249,8 +248,9 @@ Each Boson command with options, or an option command, comes with global command
   3 rows in set
   => true
 
-  # When a global option conflicts with a command's options, pass it via --global
-  >> speak '-g "c=auto_table" -r -c3 What year is it?'
+  # When a global option conflicts with a command's options, pass them at the
+  # end separated by a '-'
+  >> speak 'What year is it? -r -c3 - -c=auto_table'
   Hey Brain! What year is it?
   Brain, I can count to 3!
   +-------+
