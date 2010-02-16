@@ -7,6 +7,7 @@ tags:
 - post:type=tutorial
 - post:lang=ruby
 - post:site=gemcutter
+- gem:topic=api
 - gem:name=boson
 related_tag: *:*=boson
 ---

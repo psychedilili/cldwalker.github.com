@@ -1,0 +1,351 @@
+---
+layout: post
+keywords: two dimensional menu, 2D console menu, hirb menus, boson menus, 2D commandline menus, console table menus, console grid menu, advanced console menu
+title: Two Dimensional Console Menus with Hirb
+description: If you're familiar with <a href="http://github.com/cldwalker/hirb">hirb</a>, you know it's good at <a href="/2009/10/15/boson-and-hirb-interactions.html#hirbs_handy_tables">displaying objects as tables</a>. Hirb's <a href="http://github.com/cldwalker/hirb/blob/master/CHANGELOG.rdoc#readme">latest release</a> takes a table's usefulness a step further by turning them into two-dimensional menus, menus that can pick values from <i>any</i> table cell. <a href="http://github.com/cldwalker/boson">Boson</a>, in turn, provides these menus to <i>any</i> of its commands with a flick of the switch.
+tags:
+- post:type=tutorial
+- post:lang=ruby
+- gem:name=hirb
+- gem:name=boson
+- gem:topic=menu
+related_tag: *:*=hirb
+---
+
+{{ page.description }}
+
+h2. Intro
+
+Hirb's menus can be "traditional one-dimensional menus":/2009/06/19/page-irb-output-and-improve-ri-with-hirb.html#ri. But what we're interested in here are 2D menus:
+
+<notextile><pre class='console'>
+  $ irb -rubygems -rhirb
+  # import menu()
+  >> extend Hirb::Console
+  => self
+
+  # Let's make a menu from the first ten local gemspecs.
+  # We don't care what versions they are for simplicity sake.
+  # Of course your list will be different
+  >> menu Gem.source_index.gems.values[0,10], :fields=>[:name, :homepage], :two_d=>true
+  +--------+-----------------------------------+------------------------------------------------------+
+  | number | name                              | homepage                                             |
+  +--------+-----------------------------------+------------------------------------------------------+
+  | 1      | ruby-debug                        | http://rubyforge.org/projects/ruby-debug/            |
+  | 2      | net-ssh-gateway                   | http://net-ssh.rubyforge.org/gateway                 |
+  | 3      | mspec                             | http://rubyspec.org                                  |
+  | 4      | yard                              | http://yardoc.org                                    |
+  | 5      | rubyforge                         | http://codeforpeople.rubyforge.org/rubyforge/        |
+  | 6      | midiator                          | http://projects.bleything.net/projects/show/midiator |
+  | 7      | collectiveidea-awesome_nested_set | http://collectiveidea.com                            |
+  | 8      | hirb                              | http://github.com/cldwalker/hirb                     |
+  | 9      | boson                             | http://tagaholic.me/boson/                           |
+  | 10     | linecache                         | http://rubyforge.org/projects/rocky-hacks/linecache  |
+  +--------+-----------------------------------+------------------------------------------------------+
+  10 rows in set
+  Choose:
+  # Possible answers from user ...
+
+  # By default selections are applied to the first column, name in this case
+  Choose: 1,4
+  => ['ruby-debug', 'yard']
+
+  # To choose from the homepage column simply append ':homepage' after choices
+  Choose : 1,4:homepage  # or 1,4:h
+  => ['http://rubyforge.org/projects/ruby-debug/', 'http://yardoc.org']
+
+  # To select values from different columns, simply separate them with spaces
+  Choose: 1-3 4:homepage  # or 1-3 4:h
+  => ['ruby-debug', 'net-ssh-gateway', 'mspec', 'http://yardoc.org']
+</pre></notextile>
+
+Nice! We can pick out values from table cell(s) simply by typing @rows@:@column@, where column is optional and can be abbreviated.
+
+h2. 2D Action Menus
+
+So why bother with a 2D menu? Well, for the above, we can perform different actions depending on the column:
+
+<notextile><pre class='console'>
+  >> choices = menu Gem.source_index.gems.values[0,10], :fields=>[:name, :homepage], :two_d=>true
+  +--------+-----------------------------------+------------------------------------------------------+
+  | number | name                              | homepage                                             |
+  +--------+-----------------------------------+------------------------------------------------------+
+  | 1      | ruby-debug                        | http://rubyforge.org/projects/ruby-debug/            |
+  | 2      | net-ssh-gateway                   | http://net-ssh.rubyforge.org/gateway                 |
+  | 3      | mspec                             | http://rubyspec.org                                  |
+  | 4      | yard                              | http://yardoc.org                                    |
+  | 5      | rubyforge                         | http://codeforpeople.rubyforge.org/rubyforge/        |
+  | 6      | midiator                          | http://projects.bleything.net/projects/show/midiator |
+  | 7      | collectiveidea-awesome_nested_set | http://collectiveidea.com                            |
+  | 8      | hirb                              | http://github.com/cldwalker/hirb                     |
+  | 9      | boson                             | http://tagaholic.me/boson/                           |
+  | 10     | linecache                         | http://rubyforge.org/projects/rocky-hacks/linecache  |
+  +--------+-----------------------------------+------------------------------------------------------+
+  10 rows in set
+  Choose:
+  # Possible answers from user ...
+
+  # Choose some gems and uninstall them
+  Choose: 5-6
+  => ['rubyforge', 'midiator']
+  >> system('sudo', 'gem', 'uninstall', *choices)
+  => true
+
+  # Choose some gems and open them in a browser
+  Choose: 5-6:h
+  => ['http://codeforpeople.rubyforge.org/rubyforge/', 'http://projects.bleything.net/projects/show/midiator']
+  # works in mac osx
+  >> system('open', *choices)
+  => true
+</pre></notextile>
+
+Okay. 2D menus seem like a good way to perform multiple actions from one menu. But is there a more natural way to do this? Yes. How about at the menu prompt?:
+
+<notextile><pre class='console'>
+  # Let's make methods out of the actions we used above
+  >> def uninstall(gems); system('sudo', 'gem', 'uninstall', *gems); end
+  => nil
+  >> def browser(urls); system('open', *urls); end
+  => nil
+
+  # Passing an :action option makes menu expect an action (method) with menu choices as the argument
+  >> menu Gem.source_index.gems.values[0,10], :fields=>[:name, :homepage], :two_d=>true, :action=>true
+  +--------+-----------------------------------+------------------------------------------------------+
+  | number | name                              | homepage                                             |
+  +--------+-----------------------------------+------------------------------------------------------+
+  | 1      | ruby-debug                        | http://rubyforge.org/projects/ruby-debug/            |
+  | 2      | net-ssh-gateway                   | http://net-ssh.rubyforge.org/gateway                 |
+  | 3      | mspec                             | http://rubyspec.org                                  |
+  | 4      | yard                              | http://yardoc.org                                    |
+  | 5      | rubyforge                         | http://codeforpeople.rubyforge.org/rubyforge/        |
+  | 6      | midiator                          | http://projects.bleything.net/projects/show/midiator |
+  | 7      | collectiveidea-awesome_nested_set | http://collectiveidea.com                            |
+  | 8      | hirb                              | http://github.com/cldwalker/hirb                     |
+  | 9      | boson                             | http://tagaholic.me/boson/                           |
+  | 10     | linecache                         | http://rubyforge.org/projects/rocky-hacks/linecache  |
+  +--------+-----------------------------------+------------------------------------------------------+
+  10 rows in set
+  Choose:
+  # Possible answers from user ...
+
+  # Uninstall rubyforge + midiator using uninstall()
+  Choose: uninstall 5-6
+  => true
+
+  # Open rubyforge and midiator urls using browser()
+  Choose: browser 5-6:h
+  => true
+</pre></notextile>
+
+Note that by default, menu actions call top-level @main@ methods and pass all to the choices to the method as one array. @menu()@ can be configured to call another object's methods and pass menu choices in different ways with additional options. "See the documentation for more info":http://tagaholic.me/hirb/doc/classes/Hirb/Menu.html.
+
+h2(#examples_with_boson). "Examples with Boson":#examples_with_boson
+
+Now that we understand how 2d menus are used, let's look at some examples with "boson":http://github.com/cldwalker/boson. Boson's integration with hirb allows menus to be invoked on "any":/2009/10/15/boson-and-hirb-interactions.html#github_boson_library "rendered":/2010/02/03/using-gemcutters-api-from-the-commandline.html "commands":/2009/11/07/ruby-reference-commands-with-boson.html with the flick of a switch (-m).
+
+To follow along with these examples you'll need to:
+
+<notextile><pre class='console'>
+  $ sudo gem install boson
+  # Note that --default rewrites your boson config to make menu_pipe a default library
+  $ boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/plugins/menu_pipe.rb --default
+</pre></notextile>
+
+The Examples:
+* "Chaining APIs":#chaining_apis
+* "Opening and Editing Bookmarks within Rails":#tag-tree
+* "Playing Songs":#playing_songs
+* "Gemspecs Revisited":#gemspecs_revisited
+
+h3(#chaining_apis). Chaining APIs
+
+If you're a rubyist, there's a good chance your gems are on github and gemcutter. Using the "github":/2009/10/15/boson-and-hirb-interactions.html#github_boson_library and "gemcutter":/2010/02/03/using-gemcutters-api-from-the-commandline.html libraries, let's look up a github user's projects and then pass them to gemcutter to get their stats:
+
+<notextile><pre class='console'>
+  # To follow along
+  $ boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/site/gemcutter.rb
+  $ boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/site/github.rb
+
+  $ boson user_repos -u=wycats - -m  # or boson user_repos -u=wycats - --menu
+  +--------+---------------------------+----------+-------+---------------------------------------+----------------------------------------------------------------------------------+--------------------+
+  | number | name                      | watchers | forks | homepage                              | description                                                                      | url                |
+  +--------+---------------------------+----------+-------+---------------------------------------+----------------------------------------------------------------------------------+--------------------+
+  | 1      | bundler                   | 586      | 53    |                                       |                                                                                  | http://github.c... |
+  | 2      | merb-core                 | 570      | 55    | http://www.merbivore.com              | Merb Core: All you need. None you don't.                                         | http://github.c... |
+  | 3      | merb                      | 478      | 89    | http://www.merbivore.com              | master merb branch                                                               | http://github.c... |
+  | 4      | thor                      | 429      | 34    | http://www.yehudakatz.com             | A scripting framework that replaces rake and sake                                | http://github.c... |
+  | 5      | moneta                    | 323      | 24    | http://www.yehudakatz.com             | a unified interface to key/value stores                                          | http://github.c... |
+  | 6      | merb-more                 | 295      | 30    | http://www.merbivore.com              | Merb More: The Full Stack. Take what you need; leave what you don't.             | http://github.c... |
+  | 7      | merb-plugins              | 282      | 38    | http://www.merbivore.com              | Merb Plugins: Even more modules to hook up your Merb installation                | http://github.c... |
+  | 8      | textmate                  | 134      | 8     | http://www.yehudakatz.com             | Command-line package manager for textmate                                        | http://github.c... |
+  | 9      | jspec                     | 45       | 1     | http://www.yehudakatz.com             | A JavaScript BDD Testing Library                                                 | http://github.c... |
+  | 10     | irb2                      | 44       | 1     |                                       |                                                                                  | http://github.c... |
+  # ...
+  38 rows in set
+  Default command: browser
+  Default field: url
+  Choose:
+  # Possible answers from user ...
+
+  # To get gemcutter stats we use cuts()
+  Choose: cuts 1-5:n
+  Fetching gem 'bundler'
+  Fetching gem 'merb-core'
+  Fetching gem 'merb'
+  Fetching gem 'thor'
+  Fetching gem 'moneta'
+  +-----------+-----------+-------------------------------------+------------------------------------------------------------+
+  | name      | downloads | project_uri                         | info                                                       |
+  +-----------+-----------+-------------------------------------+------------------------------------------------------------+
+  | bundler   | 36890     | http://gemcutter.org/gems/bundler   | Bundles are fun                                            |
+  | merb-core | 10281     | http://gemcutter.org/gems/merb-core | Merb. Pocket rocket web framework.                         |
+  | merb      | 5923      | http://gemcutter.org/gems/merb      | (merb-core + merb-more + DM) == Merb stack                 |
+  | thor      | 33921     | http://gemcutter.org/gems/thor      | A scripting framework that replaces rake, sake and rubigen |
+  | moneta    | 1073      | http://gemcutter.org/gems/moneta    | A unified interface to key/value stores                    |
+  +-----------+-----------+-------------------------------------+------------------------------------------------------------+
+  5 rows in set
+
+  # Since this is a 2d menu we could have done other actions like open repository urls
+  # Notice that we don't have to pass a command since user_repos() already sets the default menu action to browser
+  Choose: 1,3,5:u
+  # Opens http://github.com/wycats/bundler, http://github.com/wycats/merb and http://github.com/wycats/moneta in browser
+
+  # Or opened repository homepages
+  Choose: 3,4:h
+  # Opens http://www.merbivore.com and http://www.yehudakatz.com in browser
+</pre></notextile>
+
+Nice! This is an easy way to see how popular (by downloads) a user's gems are, as well as to open multiple projects quickly in a browser.
+
+h3(#tag-tree). Opening and Editing Bookmarks within Rails
+
+If you don't use github or gemcutter much, perhaps menus used within a Rails project will be more interesting. Direct from "tag-tree":http://github.com/cldwalker/tag-tree, my Rails bookmarking project:
+
+<notextile><pre class='console'>
+  $ script/console
+
+  # url_tagged_with() is a wrapper around a Url model's method to fetch records by machine tags
+  # this fetches urls tagged as being articles with a class attribute
+  >> url_tagged_with 'article:class --menu'   # or ut 'ar:cla -m'
+  +--------+------+---------------------------------------------------------------+---------------------------------------------------------------+---------------------------------------------------------------+
+  | number | id   | name                                                          | description                                                   | quick_mode_tag_list                                           |
+  +--------+------+---------------------------------------------------------------+---------------------------------------------------------------+---------------------------------------------------------------+
+  | 1      | 1877 | http://pivotallabs.com/users/jdean/blog/articles/911-equal... | explains what to override to have arrays of your objects e... | article:plang=ruby;class=array                                |
+  | 2      | 1617 | http://blog.grayproductions.net/articles/understanding_m17n   | character encoding tutorial series                            | article:plang=ruby;class=string                               |
+  | 3      | 1929 | http://yokolet.blogspot.com/2009/07/design-and-implementat... | decent overview of ruby's multilinguilization/encoding        | article:class=string                                          |
+  | 4      | 1760 | http://timetobleed.com/5-things-you-dont-know-about-user-i... | explains why Process.euid is dangerous, decent intro to ni... | article:plang=ruby;class=process                              |
+  | 5      | 1956 | http://www.engineyard.com/blog/2009/key-value-stores-in-ruby/ | decent intro to pstore from key/value perspective             | article:class=pstore                                          |
+  | 6      | 1488 | http://redhanded.hobix.com/inspect/hoppingThroughPipesAndC... | piping with procs                                             | article:plang=ruby;class=proc                                 |
+  | 7      | 1152 | http://innig.net/software/ruby/closures-in-ruby.rb            | closures in ruby                                              | article:plang=ruby;tutorial;class=proc                        |
+  | 8      | 1278 | http://www.robertsosinski.com/2008/12/21/understanding-rub... | good overview of ruby lambdas +procs                          | article:plang=ruby;tutorial;class=proc                        |
+  | 9      | 1292 | http://weblog.raganwald.com/2007/10/stringtoproc.html         | handy string proc method                                      | article:plang=ruby;class=proc                                 |
+  | 10     | 2283 | http://yehudakatz.com/2010/02/07/the-building-blocks-of-ruby/ | nuanced but interesting blocks comparison w/ python           | article:class=proc                                            |
+  | 11     | 2040 | http://blog.rubybestpractices.com/posts/rklemme/017-Struct... | points out some useful array + hash-like behavior for stru... | article:class=struct                                          |
+  | 12     | 2056 | http://www.michaelharrison.ws/weblog/?p=163                   | easy lazy evaluation                                          | article:class=enumerator                                      |
+  | 13     | 2079 | http://blog.rubybestpractices.com/posts/rklemme/018-Comple... | tips on common object overrides: equivalence,cloning,persi... | article:method=to_yaml_properties;method=eql;method=marsha... |
+  | 14     | 2081 | http://blog.segment7.net/articles/2008/12/17/friendly-ruby... | common overrides for objects: marshal,pp,equality,exception   | article:class=object;method=exception;method=_dump            |
+  +--------+------+---------------------------------------------------------------+---------------------------------------------------------------+---------------------------------------------------------------+
+  14 rows in set
+  Default field: name
+  Default command: browser
+  Choose:
+  # Possible answers from user ...
+
+  # Opens last 3 urls in browser
+  Choose: 12-14
+
+  # Opens first five records in an editor to edit their attributes using console_update gem
+  Choose: console_update 1-5:i
+
+  # Add tag article:todo to urls 3-5
+  Choose: ta 3-5 tag:todo
+</pre></notextile>
+
+h3(#playing_songs). Playing Songs
+
+This one is more for fun. I like to pick and play songs in the console using "xmms2":http://wiki.xmms2.xmms.se/wiki/Main_Page.
+
+<notextile><pre class='console'>
+  # If you have xmms2 and want to follow along
+  $ boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/personal/xmms2.rb
+
+  # Choose a directory to play
+  $ boson play /mnt/m/rap
+
+  # Search and choose a song
+  $ boson search_songs Jay
+  +--------+-------+----------------------------------------------------------------------+-------+
+  | number | track | title                                                                | time  |
+  +--------+-------+----------------------------------------------------------------------+-------+
+  | 1      | 8     | Memphis Bleek ft. Jay Z - Is That Your Bitch                         | 04:38 |
+  | 2      | 10    | Jay-Z - December 4Th                                                 | 04:34 |
+  | 3      | 40    | Jay-Z - Kingdom Come (Produced By Just Blaze)                        | 04:24 |
+  | 4      | 62    | Jay-Z - Big Pimpin                                                   | 04:43 |
+  | 5      | 63    | Jay-Z - Lucifer                                                      | 03:12 |
+  | 6      | 81    | Jay-Z - Lost Ones (Feat. Chrissette Michelle) (Produced By Dr. Dre)  | 03:44 |
+  +--------+-------+----------------------------------------------------------------------+-------+
+  Default field: track
+  Default command: play_track
+  Choose: 6
+  # Starts playing last song
+</pre></notextile>
+
+h3(#gemspecs_revisited). Gemspecs Revisited
+
+Now that we've seen some menu examples, let's make a boson command that can take a menu option using the above gemspecs example:
+
+{% highlight ruby %}
+# You can just drop this in a local Bosonfile
+module Bosonfile
+  # @render_options :fields=>{:values=>[:name, :summary, :homepage, :authors], :default=>[:name, :homepage]}
+  # @options :limit=>50
+  # @config :menu=>{:command=>'browser', :default_field=>:homepage}
+  def gemspecs(options={})
+    ::Gem.source_index.gems.values[0,options[:limit]]
+  end
+end
+{% endhighlight %}
+
+As you can see, @render_options@ takes the :fields option we were passing to @menu()@. I also added an optional gemspec limit. Notice the configuration for menu, which will come in handy soon. Let's give this command a shot:
+
+<notextile><pre class='console'>
+  # By default this displays the same table as before
+  $ boson gemspecs
+  +-----------------------------------+------------------------------------------------------+
+  | name                              | homepage                                             |
+  +-----------------------------------+------------------------------------------------------+
+  | ruby-debug                        | http://rubyforge.org/projects/ruby-debug/            |
+  | net-ssh-gateway                   | http://net-ssh.rubyforge.org/gateway                 |
+  | mspec                             | http://rubyspec.org                                  |
+  | yard                              | http://yardoc.org                                    |
+  | rubyforge                         | http://codeforpeople.rubyforge.org/rubyforge/        |
+  # ...
+  50 rows in set
+
+  # Now let's turn on a menu
+  $ boson gemspecs -m
+  +--------+-----------------------------------+------------------------------------------------------+
+  | number | name                              | homepage                                             |
+  +--------+-----------------------------------+------------------------------------------------------+
+  | 1      | ruby-debug                        | http://rubyforge.org/projects/ruby-debug/            |
+  | 2      | net-ssh-gateway                   | http://net-ssh.rubyforge.org/gateway                 |
+  | 3      | mspec                             | http://rubyspec.org                                  |
+  | 4      | yard                              | http://yardoc.org                                    |
+  | 5      | rubyforge                         | http://codeforpeople.rubyforge.org/rubyforge/        |
+  # ...
+  50 rows in set
+  Default field: homepage
+  Default command: browser
+  Choose:
+
+  # Notice that the menu config set the menu's defaults.
+  # With these defaults, we can open urls simply:
+  # Open first five urls
+  Choose: 1-5
+  # To commit browser suicide by opening all homepages
+  Choose: *
+</pre></notextile>
+
+h2. Final Thoughts
+
+As we've seen, hirb's 2D menus provide a useful way of picking multiple values from table cells. Combining this with menu actions makes for a quick and interactive way to pass values between methods. Boson takes advantage of all this by allowing _any_ of its commands to pipe values to _any_ other command. From the gemspec example, we saw that _no extra code_ is required to give a boson command access to this powerful menu system. If you're interested in playing with more menu-based commands, "try the github library":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/site/github.rb. With it you can use menus to perform actions on user gists, user and repository searches, repository commit lists, repository networks and more.
