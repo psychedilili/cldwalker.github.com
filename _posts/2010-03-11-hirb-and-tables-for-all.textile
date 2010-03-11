@@ -1,0 +1,183 @@
+---
+layout: post
+title: Hirb - And Tables for All
+keywords: hirb datamapper, hirb sequel, hirb mongodb, hirb couchdb, hirb riak, ruby database shell, hirb mysql tables, ruby database console, rails database shell
+description: <a href="/2009/03/13/hirb-irb-on-the-good-stuff.html">Almost a year ago</a>, <a href="http://github.com/cldwalker/hirb">hirb</a> started as an itch to get mysql-like tables for Rails' <code>ActiveRecord</code> models. Now, <a href="http://github.com/cldwalker/hirb/blob/v0.3.0/CHANGELOG.rdoc#readme">hirb 0.3.0</a> provides table views for <i>ten additional</i> database gems. Whether you use hirb with couch, mongo, riak or any of the databases supported by <a href="http://github.com/jeremyevans/sequel">sequel</a> or <a href="datamapper">datamapper</a>, hirb essentially turns irb into a database-agnostic database shell.
+tags:
+- post:type=snippet
+- post:lang=ruby
+- gem:name=hirb
+- gem:topic=database
+related_tag: *:*=hirb
+---
+{{ page.description }}
+
+h2. Database Gems
+
+Here are the list of additional database gems and their modules/classes that now have table views:
+
+* "datamapper":http://github.com/datamapper/dm-core: @DataMapper::Resource@
+* "sequel":http://github.com/jeremyevans/sequel: @Sequel::Model@
+* "friendly":http://github.com/jamesgolick/friendly: @Friendly::Document@
+* "mongomapper":http://github.com/jnunemaker/mongomapper: @MongoMapper::Document, MongoMapper::EmbeddedDocument@
+* "mongoid":http://github.com/durran/mongoid: @Mongoid::Document@
+* "couch_foo":http://github.com/georgepalmer/couch_foo: @CouchFoo::Base@
+* "couchrest":http://github.com/jchris/couchrest: @CouchRest::ExtendedDocument@
+* "couch_potato":http://github.com/langalex/couch_potato: @CouchPotato::Persistence@
+* "ripple":http://github.com/seancribbs/ripple: @Ripple::Document@
+* "dbi":http://ruby-dbi.rubyforge.org/: @DBI::Row@
+
+h2. Examples
+
+Here's all you need in your ~/.irbrc for hirb to work with the above gems and the following examples:
+
+{% highlight ruby %}
+  require 'rubygems'
+  require 'hirb'
+  Hirb.enable
+{% endhighlight %}
+
+Keep in mind that while that the following examples are simple, your models/tables can be as complex as you'd like and hirb will still render your tables cleanly.
+
+h3(#sequel). "Sequel":#sequel
+
+For this example, you need to have "sqlite3":http://www.sqlite.org/ installed.
+
+<notextile><pre class='console'>
+  $ sudo gem install sqlite3-ruby sequel
+  $ irb -rubygems -rsequel
+
+  # Setup db and a model
+  >> DB = Sequel.sqlite
+  => #< Sequel::SQLite::Database: "sqlite:/">
+  >> DB.create_table(:urls) { primary_key :id; String :name }
+  => []
+  >> class Url < Sequel::Model; end
+  => nil
+
+  # Nicely formatted tables!
+  >> Url.create :name=>'example.com'
+  +----+-------------+
+  | id | name        |
+  +----+-------------+
+  | 1  | example.com |
+  +----+-------------+
+  1 row in set
+  # Same as above
+  >> Url.all
+</pre></notextile>
+
+h3(#data_mapper). "DataMapper":#data_mapper
+
+For this example, you need to have "sqlite3":http://www.sqlite.org/ installed.
+
+<notextile><pre class='console'>
+  $ sudo gem install sqlite3-ruby dm-core do_sqlite3
+  $ irb -rubygems -rdm-core
+
+  # Setup db and a model
+  >> DataMapper.setup(:default, 'sqlite3::memory:')
+  => #< DataMapper::Adapters::Sqlite3Adapter:0x188ceac ... >
+  >> class Url
+  >>  include DataMapper::Resource
+  >>  property :id, Serial
+  >>  property :name, String
+  >> end
+  => #< DataMapper::Property @model=Url @name=:name>
+  >> Url.auto_migrate!
+  => true
+
+  # Nicely formatted tables!
+  >> Url.create :name=>'example.com'
+  +----+-------------+
+  | id | name        |
+  +----+-------------+
+  | 1  | example.com |
+  +----+-------------+
+  1 row in set
+  # Same as above
+  >> Url.all
+</pre></notextile>
+
+h3(#mongo_mapper). "MongoMapper":#mongo_mapper
+
+For this example you need to have "MongoDB":http://www.mongodb.org/display/DOCS/Home installed.
+
+<notextile><pre class='console'>
+  $ sudo gem install mongo_mapper
+  $ irb -rubygems -rmongo_mapper
+
+  # Setup db and a model
+  >> MongoMapper.connection = Mongo::Connection.new
+  => #< Mongo::Connection:0x1123d28 ... >
+  >> MongoMapper.database = 'test'
+  => 'test'
+  >> class Url
+  >>   include MongoMapper::Document
+  >>   key :name, String
+  >> end
+  => #< MongoMapper::Plugins::Keys::Key:0x5a3520 ... >
+
+  # Nicely formatted tables!
+  >> Url.create :name=>'example.com'
+  +-------------+--------------------------+
+  | name        | _id                      |
+  +-------------+--------------------------+
+  | example.com | 4b97cf2978c2ec2854000001 |
+  +-------------+--------------------------+
+  1 row in set
+  # Same as above
+  >> Url.all
+</pre></notextile>
+
+h3(#couchrest). "CouchRest":#couchrest
+
+For this example you need to have "CouchDB":http://couchdb.apache.org/ installed.
+
+<notextile><pre class='console'>
+  $ sudo gem install couchrest
+  $ irb -rubygems -rcouchrest
+
+  # Setup db and a model
+  >> class Url < CouchRest::ExtendedDocument
+  >>   property :name
+  >>   view_by :name
+  >> end
+  => false
+  >> Url.database = CouchRest.database("http://127.0.0.1:5984/urls")
+  => #< CouchRest::Database:0x170541c ... >
+
+  # Nicely formatted tables!
+  >> Url.create :name=>'example.com'
+  +----------------------------------+-------------+
+  | _id                              | name        |
+  +----------------------------------+-------------+
+  | af990a562a9a96703dd6ef0442a73db8 | example.com |
+  +----------------------------------+-------------+
+  1 row in set
+  # Same as above
+  >> Url.all  
+</pre></notextile>
+
+
+h2. Dynamic Views
+
+h3. Creating Them
+
+All default views for the new database gems are due to hirb's "dynamic views":http://tagaholic.me/hirb/doc/classes/Hirb/DynamicView.html. So what if you're using a database gem that isn't supported? Let's answer this using "friendly":http://github.com/jamesgolick/friendly as an example (even though hirb already supports it):
+
+# Identify the module or class that the database gem uses to define models. For friendly, this module is @Friendly::Document@. 
+# Determine "what table options":http://tagaholic.me/hirb/doc/classes/Hirb/Helpers/Table.html#M000007 to pass to tables and how to generate them from the database gem's model/table object. Although you can define as many options as you want, you must define the @:fields@ option. To generate fields for a given friendly @model@ object: @model.attributes.keys@
+# Using the last two steps, define a dynamic view using @Hirb.add_dynamic_view@ that returns a hash of table options:
+
+{% highlight ruby %}
+  Hirb.add_dynamic_view("Friendly::Document", :helper=>:auto_table) {|obj|
+    {:fields=>obj.class.attributes.keys}
+  }
+{% endhighlight %}
+
+"Read the docs":http://tagaholic.me/hirb/doc/classes/Hirb/DynamicView.html for more about dynamic views.
+
+h3. Submitting Them
+
+If you've created a dynamic view for a somewhat popular database gem, feel free to fork and add it to hirb's default dynamic views. Since hirb's default dynamic views are in module form, "read the docs":http://tagaholic.me/hirb/doc/classes/Hirb/DynamicView.html to understand how to write them. Although I do appreciate any forking, I'm looking mainly to add default views for commonly used database gems.
