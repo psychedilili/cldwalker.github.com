@@ -86,7 +86,7 @@ Basically I subclassed hirb's @ActiveRecord@ helper class and overrode the neces
   # :class could also have been "Hirb::Helpers::MyActiveRecordTable"
 {% endhighlight %}
 
-Seeing how simple it is to create and use your own custom hirb helpers, it should be fairly easy to use hirb with other non-Rails ORMs i.e. DataMapper or Sequel. Simply subclass "Hirb::Helpers::ObjectTable":http://github.com/cldwalker/hirb/blob/master/lib/hirb/helpers/object_table.rb and make some reasonable defaults as "Hirb::Helpers::ActiveRecordTable":http://github.com/cldwalker/hirb/blob/master/lib/hirb/helpers/active_record_table.rb does.
+--Seeing how simple it is to create and use your own custom hirb helpers, it should be fairly easy to use hirb with other non-Rails ORMs i.e. DataMapper or Sequel. Simply subclass "Hirb::Helpers::ObjectTable":http://github.com/cldwalker/hirb/blob/master/lib/hirb/helpers/object_table.rb and make some reasonable defaults as "Hirb::Helpers::ActiveRecordTable":http://github.com/cldwalker/hirb/blob/master/lib/hirb/helpers/active_record_table.rb does.-- *Update:* "Hirb supports several database gems including DataMapper and Sequel. If you want to add support for another database gem, create a dynamic view.":/2010/03/11/hirb-and-tables-for-all.html.
 
 If you want tweak Hirb more for your script/console experience, don't forget to "read the docs":http://tagaholic.me/hirb/doc/!
 Stay tuned for more "script/console goodness":http://github.com/cldwalker/boson/tree/master...
