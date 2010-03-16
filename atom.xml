@@ -14,7 +14,7 @@ layout: nil
    <email>gabriel.horner@gmail.com</email>
  </author>
  
- {% for post in site.posts %}
+ {% for post in site.posts limit:15 %}
  <entry>
    <title>{{ post.title }}</title>
    <link href="http://tagaholic.me{{ post.url }}"/>
