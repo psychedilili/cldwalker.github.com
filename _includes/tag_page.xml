@@ -11,7 +11,7 @@
    <email>gabriel.horner@gmail.com</email>
  </author>
  
-  {% for post in site.posts %}
+  {% for post in site.posts limit:15 %}
     {% for tag in post.tags %}
     {% if tag contains page.tag %}
  <entry>
