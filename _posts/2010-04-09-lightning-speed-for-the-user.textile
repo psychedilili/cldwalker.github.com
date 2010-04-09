@@ -1,0 +1,379 @@
+---
+layout: post
+title: Lightning - Speed For The User
+keywords: lightning ruby, lightning shell, lightning autocompletion, lightning functions, commandline speed, fast autocompletion, autocompletion functions, tag filesystem, commandline revolution, lightning help
+description: The <a href="/2010/04/08/lightning-speed-for-your-shell.html">previous post</a> explained what <a href="http://github.com/cldwalker/lightning">lightning</a> does. This post explains how you, the user, can use and customize lightning to speed up your commandline experience.
+tags:
+- gem:name=lightning
+- post:topic=shell
+- post:lang=ruby
+- post:type=tutorial
+related_tag: *:*=(lightning|shell)
+---
+{{page.description}}
+
+h2. Overview
+
+* "Default Functions":#default_functions
+* "Create and Delete Functions":#create_and_delete_functions
+* "Aliases":#aliases
+* "Creating Your Own Bolt":#creating_your_own_bolt
+* "Generating Bolts":#generating_bolts
+* "Miscellaneous":#misc
+
+h2(#default_functions). "Default Functions":#default_functions
+
+After having "installed lightning":/2010/04/08/lightning-speed-for-your-shell.html#install:
+
+<notextile><pre class='console'>
+  # We'll use these aliases throughout this post
+  $ alias lg=lightning
+  $ alias lgr=lightning-reload
+
+  # List available commands
+  $ lg -h
+  # ...
+
+  # List default functions generated from install
+  $ lg function
+  cd-gem
+  cd-local_ruby
+  cd-ruby
+  cd-wild
+  echo-gem
+  echo-local_ruby
+  echo-ruby
+  echo-wild
+
+  # Lightning let's you abbreviate commands and subcommands
+  # so the above can also be
+  $ lg f
+</pre></notextile>
+
+These functions are in the default format @SHELL_COMMAND-BOLT@. Lightning generates these defaults by combining the commands @echo@ and @cd@ with global bolts gem, ruby, local_ruby and wild. If you don't want ruby-related functions, turn them off with: @lg bolt global off gem ruby local_ruby@.
+
+"The previous post":/2010/04/08/lightning-speed-for-your-shell.html had plenty of examples demonstrating the ruby and gem bolts. Let's look at the other two default bolts, wild and local_ruby. These two bolts are different than the others:
+
+<notextile><pre class='console'>
+  $ lg bolt show wild   # or lg b s wild
+  globs: 
+  - "**/*"
+  global: true
+
+  $ lg b s local_ruby
+  globs: 
+  - "**/*.rb"
+  - bin/**
+  global: true
+</pre></notextile>
+
+What's different about them is that their globs are local i.e. based on what's in the current directory. Let's try the wild bolt:
+
+<notextile><pre class='console'>
+  # In the base directory of the lightning gem
+  $ echo-wild [TAB]
+  Display all 274 possibilities? (y or n)
+
+  $ echo-wild comm[TAB]
+  command_has_required_args_i.dat  commands                         commands_i.dat                   commands_util.rb                 
+  command_usage_i.dat              commands.rb                      commands_test.rb                 common.css
+  $ echo-wild command_h[TAB]
+  $ echo-wild command_has_required_args_i.dat
+  .yardoc/objects/Lightning/CommandsUtil/command_has_required_args_i.dat
+
+  # Functions with an infinitely deep glob can be dangerous
+  $ cd /
+  # TAB if you feel like autocompleting your whole filesystem
+  $ echo-wild [DARE_YA]
+</pre></notextile>
+
+As you can see, the wild bolt can be _wild_. But if you use it in the right places, it can save you from navigating several directories.
+
+The local_ruby bolt is a good example of a specialized local glob. It's main purpose is let the user jump into any ruby related project and instantly command any ruby files regardless of their directory depth:
+
+<notextile><pre class='console'>
+  # In the base directory of the lightning gem
+  $ echo-local_ruby [TAB]
+  bolt.rb//lib/lightning               commands_util.rb                     core.rb                              lightning                            test_helper.rb
+  bolt.rb//lib/lightning/commands      completion.rb                        function.rb//lib/lightning           lightning-complete                   util.rb
+  bolt_test.rb                         completion_map.rb                    function.rb//lib/lightning/commands  lightning-translate                  version.rb
+  builder.rb                           completion_map_test.rb               function_test.rb                     lightning.rb                         
+  builder_test.rb                      completion_test.rb                   generator.rb                         misc.rb                              
+  commands.rb                          config.rb                            generator_test.rb                    ruby.rb                              
+  commands_test.rb                     config_test.rb                       generators.rb                        shell_command.rb
+
+  $ echo-local_ruby m[TAB]
+  $ echo-local_ruby misc.rb
+  lib/lightning/generators/misc.rb
+</pre></notextile>
+
+Note how the local_ruby bolt makes autocompleting in this directory much more relevant than wild. If you're a programmer, making a specialized local bolt for your language is only one command away: @lg bolt create local_language '**/*.my_language_extension'@.
+
+Although these two bolts don't do much with @echo@, they can, when combined with more useful commands i.e. vim, grep, less. 
+
+h2(#create_and_delete_functions). "Create and Delete Functions":#create_and_delete_functions
+
+We can create and delete functions in three nonexclusive ways. The first way to create/delete a function is by individual combinations of one bolt and one shell command:
+
+<notextile><pre class='console'>
+  $ lg function create cd gem && lgr
+  Created function 'cd-gem'
+  Created /Users/bozo/.lightning/functions.sh
+  Loaded /Users/bozo/.lightning/functions.sh
+
+  # Give it a spin
+  $ cd-gem b[TAB]
+  bacon-1.1.0    bond-0.1.4     builder-2.1.2  bundler-0.9.7
+  $ cd-gem ba[TAB]
+  $ cd-gem bacon-1.1.0
+  $ pwd
+  /Library/Ruby/Gems/1.8/gems/bacon-1.1.0
+
+  # Delete it
+  $ lg function delete cd-gem
+  Deleted function 'cd-gem'
+</pre></notextile>
+
+The second way is to use global commands and global bolts. When lightning generates functions, it combines each global command with each global bolt. For the default functions this means 2 commands * 4 bolts = 8 functions. Global commands are a great way of mass-assigning commands to a group of bolts.
+
+To compare these two ways, say we have bolts python, clojure, ruby and want to combine them each with commands vim and grep:
+
+<notextile><pre class='console'>
+  # The first and longer way
+  $ lg function create vim python  # or lg f c vim python
+  Created function 'vim-python'
+  $ lg function create vim clojure
+  Created function 'vim-clojure'
+  # 4 more times ...
+
+  # With global commands and bolts:
+  # First make the bolts global since bolts aren't global by default
+  $ lg bolt global on python clojure ruby
+  Global on for bolts python, clojure, ruby
+
+  # Then add the global commands
+  $ lg shell_command create vim   # or lg s c create vim
+  Created shell command 'vim'
+  $ lg shell_command create grep
+  Created shell command 'grep'
+  $ lgr
+  # ...
+
+  # Expected functions show up
+  $ lg f
+  grep-clojure
+  grep-python
+  grep-ruby
+  vim-clojure
+  vim-python
+  vim-ruby
+
+  # If we want to create or delete global commands across global
+  # bolts later, we can do that in one place:
+  # Remove grep across global bolts
+  $ lg shell_command delete grep
+  Deleted shell command 'grep'
+
+  # No more grep
+  $ lg f
+  vim-clojure
+  vim-ruby
+  vim-ru
+</pre></notextile>
+
+The third and not usually recommended way is to edit lightning's config file, ~/.lightningrc. Since ~/.lightningrc is YAML, it's easy to read and modify. However, lightning depends on this file to function and will fail if the file has a syntax error. Modifying this file is recommended if you need to update existing bolts. Before doing this, read the "docs on its format":http://tagaholic.me/lightning/doc/Lightning/Config.html. 
+
+h2(#aliases). "Aliases":#aliases
+
+As we've seen, function naming defaults to @SHELL_COMMAND-BOLT@. While this is fine for bolts and commands with short names, it can get annoying for long names i.e. @echo-local_ruby@. To shorten these defaults, you can alias bolts:
+
+<notextile><pre class='console'>
+  $ lg function list --bolt=local_ruby  # or lg f l --bolt=local_ruby
+  cd-local_ruby
+  echo-local_ruby
+
+  $ lg bolt alias local_ruby rb   # or lg b al local_ruby rb
+  Aliased bolt 'local_ruby' to 'rb'
+  $ lgr
+  # ...
+
+  $ lg f l --bolt=local_ruby
+  cd-rb
+  echo-rb
+
+  # To list bolts with their aliases
+  $ lg bolt list --alias  # or lg b l -a
+  local_ruby      rb
+  # ...
+</pre></notextile>
+
+As you can see, the bolt alias is used in place of the bolt name when generating functions.
+
+When creating global commands, you can alias them as well:
+
+<notextile><pre class='console'>
+  $ lg shell_command create less l
+  Created shell command 'less'
+
+  $ lg function list --command=less   # or lg f l --command=less
+  l-gem
+  l-rb
+  l-ruby
+  l-wild
+
+  # List commands and their aliases
+  $ lg shell_command list --alias
+  cd    cd
+  echo  echo
+  less  l
+</pre></notextile>
+
+Note these aliases won't effect functions that have an explicit function name.
+
+h2(#creating_your_own_bolt). "Creating Your Own Bolt":#creating_your_own_bolt
+
+To show you how to create your own bolt with its functions, I'll show you one I made.
+
+Being a programmer, I have a number of projects spread across directories that I go between several times a day. Here's a tree view of the directories that organize my projects:
+
+<notextile><pre class='console'>
+  ~/code/
+  |-- fork
+  |   |-- bacon/
+  |   |-- ...
+  |   `-- rip/
+  |-- gems
+  |   |-- hirb/
+  |   |-- ...
+  |   `-- my_core/
+  |-- todo
+  |   |-- gems
+  |   |   |-- g-outline/
+  |   |   `-- mp-tree/
+  |   |-- ...
+  |   `-- hooks.rb
+  |-- repo
+  |   |-- bin/
+  |   |-- ...
+  |   `-- queriac/
+  # ....
+</pre></notextile>
+
+There are only 2-3 levels of directories or 2-3 tabs to get to the point where I can autocomplete the project name. But as my number of projects grow, I find myself pausing more to remember which subdirectory a project is in. To me, this mental pause and doing 2-3 tabs is a waste of time. Enter lightning.
+
+To create a bolt and its functions, here's the steps I took:
+
+# *Identify a group of paths that I use often.*
+  Directories of coding projects
+# *Create a bolt that represents those paths using globs.*
+  @lightning bolt create code '~/code/fork/*' ...@
+# *Create function(s) for that bolt.*
+  @lightning function create cd code c@
+# *Generate and load functions into my shell.*
+  @lightning-reload@
+
+Let's see these steps played out in the shell:
+
+<notextile><pre class='console'>
+  # Quote arguments to prevent file expansion
+  $ lg bolt create code '~/code/fork/*' '~/code/gems/*' '~/code/todo/gems/*' '~/code/repo/*'
+  Created bolt 'code'
+
+  $ lg function create cd code c && lgr
+  Created function 'c'
+  Created /Users/bozo/.lightning/functions.sh
+  Loaded /Users/bozo/.lightning/functions.sh
+
+  # Test drive c
+  $ c [TAB]
+  19it                  console_update        github_user_page.js   local_gem             rip
+  alias                 core                  has_machine_tags      machinetag.js         shellable
+  bacon                 dm_rails3_app         heroku_twilio_app     mp_tree               snips
+  # ...
+
+  $ c h[TAB]
+  has_machine_tags   heroku_twilio_app  hirb
+  $ c hi[TAB]
+  $ c hirb[ENTER]
+  # Verify it worked
+  $ pwd
+  /Users/bozo/code/gems/hirb
+</pre></notextile>
+
+Nice! If I want to add another command to this bolt, say @grep@, we know the drill:
+
+<notextile><pre class='console'>
+  $ lg function create grep code && lgr
+  Created function 'grep-code'
+  Created /Users/bozo/.lightning/functions.sh
+  Loaded /Users/bozo/.lightning/functions.sh
+
+  $ grep-code -r attr li[TAB]
+  $ grep-code -r attr lightning
+  $ grep-code -r attr lightning/lib
+  /Users/bozo/code/gems/lightning/lib/lightning/bolt.rb:    attr_reader :name, :aliases, :desc
+  /Users/bozo/code/gems/lightning/lib/lightning/bolt.rb:    attr_accessor :globs, :commands
+  /Users/bozo/code/gems/lightning/lib/lightning/completion_map.rb:    attr_accessor :map
+  # ...
+</pre></notextile>
+
+h2(#generating_bolts). "Generating Bolts":#generating_bolts
+
+In the last post "we saw how generators":/2010/04/08/lightning-speed-for-your-shell.html#generators are implicitly used to create bolts and functions. But sometimes we need to use generators explicitly to generate bolts:
+
+<notextile><pre class='console'>
+  # Let's use the gem generator with `lightning bolt generate` to generate bolts
+
+  # Generates a bolt named ruby using the ruby generator
+  # This is done implicitly for us with `lightning function create`
+  $ lg bolt generate ruby    # or lg b g ruby
+  Generated following globs for bolt 'ruby':
+    /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/**/*.{rb,bundle,so,c}
+    /Library/Ruby/Site/1.8/**/*.{rb,bundle,so,c}
+  
+  # Generates a bolt named ruby19 using the ruby generator
+  $ lg bolt generate ruby19 ruby
+  Generated following globs for bolt 'ruby19':
+    /Users/bozo/.rvm/ruby-1.9.1-p378/lib/ruby/1.9.1/**/*.{rb,bundle,so,c}
+    /Users/bozo/.rvm/ruby-1.9.1-p378/lib/ruby/site_ruby/1.9.1/**/*.{rb,bundle,so,c}
+
+  # To test what a generator generates without making a bolt
+  $ lg bolt generate ruby --test
+  /Users/bozo/.rvm/ruby-1.9.1-p378/lib/ruby/1.9.1/**/*.{rb,bundle,so,c}
+  /Users/bozo/.rvm/ruby-1.9.1-p378/lib/ruby/site_ruby/1.9.1/**/*.{rb,bundle,so,c}
+</pre></notextile>
+
+As you can see, if you're testing a generator or generating a bolt with a name different than the generator's, use @lightning bolt generate@.
+
+h2(#misc). "Miscellaneous":#misc
+
+Some miscellaneous notes:
+
+* Make your own lightning commands i.e. @lg YOUR_COMMAND@ with "command plugins":http://tagaholic.me/lightning/doc/Lightning/Commands.html.
+* Use the @translate@ lightning command to test the translation of arguments for a given function:
+
+<notextile><pre class='console'>
+  # Command to test:
+  $ cp-gem -r rubygems-update-1.3.6 .
+
+  # Just prefix the above with lg t (lg translate)
+  # Each argument is printed on a separate line
+  $ lg t cp-gem -r rubygems-update-1.3.6 .
+  -r
+  /Library/Ruby/Gems/1.8/gems/rubygems-update-1.3.6
+  .
+</pre></notextile>
+
+* Use the @echo@ shell command combined with a bolt to pass a bolt's translating ability to any command:
+
+<notextile><pre class='console'>
+  $ echo-gem -r rubygems-update-1.3.6 .
+  -r /Library/Ruby/Gems/1.8/gems/rubygems-update-1.3.6 .
+  
+  # Emulate cp-gem from the previous example
+  $ cp `echo-gem -r rubygems-update-1.3.6 .`
+</pre></notextile>
+
+h2. Wrap Up
+
+This post has been a thorough introduction to using "lightning":http://github.com/cldwalker/lightning. For more about lightning, visit its "homepage":http://tagaholic.me/lightning/ and "docs":http://tagaholic.me/lightning/doc/. For questions about using lightning, feel free to leave a comment below or "open an issue":http://github.com/cldwalker/lightning/issues.

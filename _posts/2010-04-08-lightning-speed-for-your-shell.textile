@@ -1,0 +1,346 @@
+---
+layout: post
+title: Lightning - Speed For Your Shell
+keywords: lightning ruby, lightning shell, lightning autocompletion, lightning functions, commandline speed, fast autocompletion, autocompletion functions, tag filesystem, commandline revolution
+description: Introducing <a href="http://github.com/cldwalker/lightning">lightning</a>, a commandline framework that could revolutionize how fast you are on the commandline.  Lightning let's you <b>easily</b> define and generate shell functions which autocomplete and interpret paths (files and directories) by their basenames. With these functions you don't have to ever type the full path to <b>any</b> file for <b>any</b> command again.
+tags:
+- gem:name=lightning
+- post:topic=shell
+- post:lang=ruby
+- post:type=tutorial
+related_tag: *:*=(lightning|shell)
+---
+{{page.description}}
+
+<img src="/images/post-lightning.jpg" alt="lightning over water" width="200" height="250"/>
+
+h2. Overview
+
+* "Intro":#intro
+* "Install":#install
+* "Lightning Bolts":#lightning_bolts
+* "Everything is Local":#everything_is_local
+* "Generators":#generators
+* "Conclusion":#conclusion
+
+
+h2(#intro). "Intro":#intro
+
+Lightning generates shell functions which can interpret paths by their basenames. So instead of carpal-typing
+
+<notextile><pre class='console'>
+  $ less /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/irb.rb
+</pre></notextile>
+
+just type
+
+<notextile><pre class='console'>
+  $ less-ruby irb.rb
+</pre></notextile>
+
+@less-ruby@ is a lightning function which wraps @less@ with the ability to refer to system ruby files by their basenames. Being a lightning function, it can also autocomplete system ruby files:
+
+<notextile><pre class='console'>
+  # 1112 available system ruby files
+  $ less-ruby [TAB]
+  Display all 1112 possibilities? (y or n)
+
+  $ less-ruby a[TAB]
+  abbrev.rb                  abstract.rb                abstract_index_builder.rb
+  $ less-ruby abb[TAB]
+  $ less-ruby abbrev.rb
+  # Pages /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/abbrev.rb ...
+
+  # Autocompletion works regardless of the number of arguments
+  $ less-ruby -I abbrev.rb y[TAB]
+  yaml.rb      yamlnode.rb  ypath.rb
+  $ less-ruby -I abbrev.rb yp[TAB]
+  $ less-ruby -I abbrev.rb ypath.rb
+  # Pages /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/abbrev.rb and
+    /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/yaml/ypath.rb ...
+</pre></notextile>
+
+The '-I' being passed to @less-ruby@ demonstrates an important point. A lightning function __only touches and translates__ the arguments it knows how to translate to full paths. This allows a lightning function to be used the same as the command it wraps i.e. with any mix of options, local files or non-file arguments.
+
+Perhaps you noticed @less-ruby@ can refer to 1112 files by basename. Are they all in one directory? Nope. They're in *118 directories*. So what happens when two files from different directories have the same basename? Lightning let's you pick the right file in an autocomplete-friendly way:
+
+<notextile><pre class='console'>
+  $ less-ruby date[TAB]
+  date.rb///System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8
+  date.rb///System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/optparse
+  date2.rb
+  dateentry.rb
+  datefield.rb///System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/tkextlib/iwidgets
+  datefield.rb///System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/tkextlib/tcllib
+  datetime.rb
+
+  $ less-ruby date.rb[TAB]
+  $ less-ruby date.rb///System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8
+  date.rb///System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8
+  date.rb///System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/optparse
+
+  $ less-ruby date.rb///System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/[TAB]
+  $ less-ruby date.rb///System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/optparse
+  # Pages /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/optparse/date.rb ...
+</pre></notextile>
+
+Note the format for displaying conflicting basenames is @basename//directory@.
+
+This is cool but what if we want a @grep-ruby@, @vim-ruby@, or @*-ruby@ to search, edit or do anything to our 1100+ system ruby files? No problem. It's a one-liner: @lightning function create grep ruby && lightning-reload@. What if we want nothing to do with ruby files and want to define our own group of paths to autocomplete and type minimally? No problem. It's really quite easy.
+
+h2(#install). "Install":#install
+
+Lightning works with "bash":http://www.gnu.org/software/bash/ or "zsh":http://zsh.sourceforge.net/ shells and since it's written in "ruby":http://www.ruby-lang.org/, you'll need ruby 1.8.6 or later. To install lightning, use "rip":http://hellorip.com or "rubygems":http://rubygems.org:
+
+<notextile><pre class='console'>
+  $ rip install git://github.com/cldwalker/lightning.git
+  # OR  
+  $ sudo gem install yard # if you want lightning's documentation generated correctly
+  $ sudo gem install lightning
+</pre></notextile>
+
+If you've installed with rubygems and @`time lightning`@ takes longer than 0.05 seconds, I *strongly recommend* installing with rip. rubygems is known to have a hefty startup lag with older versions of ruby. Since lightning's autocompletion depends on this startup time, accepting this lag makes lightning slow as molasses.
+
+Once lightning is installed, we need to do a one-time setup:
+
+<notextile><pre class='console'>
+  # To see available install options
+  $ lightning install -h
+
+  # Installs lightning's core files and sources the needed lightning functions
+  $ lightning install && source ~/.lightning/functions.sh
+  Created ~/.lightningrc
+  Created ~/.lightning/functions.sh for bash
+  # Or for zsh
+  $ lightning install --shell=zsh && source ~/.lightning/functions.sh
+
+  # To have lightning's functionality loaded when your shell starts up
+  echo source ~/.lightning/functions.sh >> ~/.bashrc
+  # or for zsh
+  echo source ~/.lightning/functions.sh >> ~/.zshrc
+
+  # For all future examples I'll be using this alias
+  $ alias lg=lightning
+</pre></notextile>
+
+h2(#lightning_bolts). "Lightning Bolts":#lightning_bolts
+
+To create a function (less-ruby) from scratch that can autocomplete and access by basename 1112 files across 118 directories must take a lot of effort. Right? Not really:
+
+<notextile><pre class='console'>
+  # These globs are specific to my filesystem
+  # Arguments are quoted to prevent shell expansion
+  $ lg bolt create ruby '/Library/Ruby/Site/1.8/**/*.{rb,bundle,so,c}'
+    '/System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/**/*.{rb,bundle,so,c}'
+  Created bolt 'ruby'
+
+  # Creates less-ruby and loads it into the shell
+  $ lg function create less ruby && lightning-reload
+  Created function 'less-ruby'
+  Created /Users/bozo/.lightning/functions.sh
+  Loaded /Users/bozo/.lightning/functions.sh
+</pre></notextile>
+
+The first command creates the 'ruby' lightning bolt with two globs. This is *all the information* that a lightning function needs to know about the filesystem. The second command creates the lightning function by combining the bolt with the desired shell command, @less@ in this case. @lightning-reload@ creates and reloads lightning's functions into the current shell session.
+
+Although these steps are fairly easy, you may have noticed that the globs were specific to my system. Fortunately, lightning provides "generators":#generators to generate fileysystem-specific globs for bolts. Since lightning has a generator for the ruby bolt, the previous example can be even shorter:
+
+<notextile><pre class='console'>
+  $ lg function create less ruby && lightning-reload
+  Generated following globs for bolt 'ruby':
+    /Library/Ruby/Site/1.8/**/*.{rb,bundle,so,c}
+    /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/**/*.{rb,bundle,so,c}
+  Created function 'less-ruby'
+  Created /Users/bozo/.lightning/functions.sh
+  Loaded /Users/bozo/.lightning/functions.sh
+</pre></notextile>
+
+Keep this one-liner in mind for following along with examples in this post. If you see a function you don't have i.e. @less-gem@, create it: @lg function create less gem && lightning-reload@.
+
+Lightning bolts aren't limited to one shell command i.e. @less@. To make a lightning function which wraps around __any shell command__, just repeat the above one-liner. For example, let's make a function that edits system ruby files:
+
+<notextile><pre class='console'>
+  $ lg function create vim ruby && lightning-reload
+  Created function 'vim-ruby'
+  Created /Users/bozo/.lightning/functions.sh
+  Loaded /Users/bozo/.lightning/functions.sh
+
+  $ vim-ruby abbrev.rb
+  # Opens /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/abbrev.rb in vim
+</pre></notextile>
+
+In this section we've seen that a bolt takes globs and converts them to paths to be accessed locally by basename. Since bolts can be used with any command, we can think of a bolt as a virtual, local directory whose __contents change__ depending on what its globs match. For more about bolts and globs, "read here":http://tagaholic.me/lightning/doc/Lightning/Bolt.html.
+
+h2(#everything_is_local). "Everything is Local":#everything_is_local
+
+If a bolt is a virtual, _local_ directory, can we autocomplete and execute commands around any bolt path as if we were right there? Sure!
+
+<notextile><pre class='console'>
+  # echo-ruby calls `echo` with the ruby bolt
+  $ echo-ruby abbrev.rb
+  /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/abbrev.rb
+
+  # Note: This kind of completion doesn't work for zsh yet
+  # Autocomplete the directory containing abbrev.rb
+  $ echo-ruby abbrev.rb/../[TAB]
+  Display all 136 possibilities? (y or n)
+  $ echo-ruby abbrev.rb/../md[TAB]
+  $ echo-ruby abbrev.rb/../md5.rb
+  /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/md5.rb
+
+  # Autocomplete multiple levels up or down
+  $ echo-ruby abbrev.rb/../../[TAB]
+  abbrev.rb/../../1.8/        abbrev.rb/../../gems/       abbrev.rb/../../site_ruby/  abbrev.rb/../../user-gems/
+  $ echo-ruby abbrev.rb/../../../
+  /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib
+  $ echo-ruby abbrev.rb/../irb/ext/s[TAB]
+  $ echo-ruby abbrev.rb/../irb/ext/save-history.rb
+  /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/irb/ext/save-history.rb
+</pre></notextile>
+
+Bolt paths that are directories can also autocomplete and execute this way:
+
+<notextile><pre class='console'>
+  # less-gem calls `less` with the gem bolt (contains directories of rubygems)
+  # less-gem ba[TAB]
+  $ less-gem bacon-1.1.0
+  $ less-gem bacon-1.1.0/l[TAB]
+  $ less-gem bacon-1.1.0/lib/
+  $ less-gem bacon-1.1.0/lib/b[TAB]
+  $ less-gem bacon-1.1.0/lib/bacon.rb
+  # Pages /Library/Ruby/Gems/1.8/gems/bacon-1.1.0/lib/bacon.rb ...
+</pre></notextile>
+
+If we can use filename expansion on local paths, why not bolt paths?
+
+<notextile><pre class='console'>
+  # Let's search in different versions of a gem for the use of method_missing()
+  # grep-gem calls `grep` on the gem bolt
+  $ grep-ruby -r def.*method_missing rai[TAB]
+  rails-1.2.6  rails-2.1.0  rails-2.2.2  rails-2.3.4
+  $ grep-ruby -r def.*method_missing rails-
+
+  # Traditional filename expansion doesn't work
+  $ grep-ruby -r def.*method_missing rails-*
+  grep: rails-*: No such file or directory
+
+  # Append '..' instead
+  $ grep-ruby -r def.*method_missing rails-..
+  /Library/Ruby/Gems/1.8/gems/rails-2.1.0/lib/initializer.rb:  def method_missing(name, *args)
+  /Library/Ruby/Gems/1.8/gems/rails-2.1.0/lib/rails_generator/manifest.rb:      def method_missing(action, *args, &block)
+  /Library/Ruby/Gems/1.8/gems/rails-2.1.0/lib/rails_generator/simple_logger.rb:        def method_missing(method, *args, &block)
+  /Library/Ruby/Gems/1.8/gems/rails-2.2.2/lib/initializer.rb:  def method_missing(name, *args)
+  # ...
+
+  # Why not use '*' for lightning as well?
+  # Say you use a liberal expansion:
+  #   $ grep-ruby -r def.*method_missing r*
+  # If there happens to be a local file starting with 'r' i.e. 'readme',
+  # the shell expands 'r*' to 'readme' and lightning will never see 'r*'.
+</pre></notextile>
+
+So lightning does filename expansion but only for arguments ending in @..@. When expanding matches, lightning treats everything before @..@ as a regular expression:
+
+<notextile><pre class='console'>
+  $ grep-gem -r def.*method_missing rubygems-u[TAB]
+  rubygems-update-1.3.1  rubygems-update-1.3.2  rubygems-update-1.3.5  rubygems-update-1.3.6
+  $ grep-gem -r def.*method_missing rubygems-update-1.3.
+  # Only search two versions
+  $ grep-gem -r def.*method_missing rubygems-update-1.3.[56]..
+  /Library/Ruby/Gems/1.8/gems/rubygems-update-1.3.5/lib/rubygems/package.rb:  def method_missing(meth, *args, &block)
+  /Library/Ruby/Gems/1.8/gems/rubygems-update-1.3.5/lib/rubygems/specification.rb:  def method_missing(sym, *a, &b) # :nodoc:
+  /Library/Ruby/Gems/1.8/gems/rubygems-update-1.3.5/lib/rubygems/test_utilities.rb:  def method_missing(meth, *args, &block)
+  # ...
+
+  # To search either rubygems or rails
+  $ grep-gem -r def.*method_missing '(rails|rubygems)..'
+  /Library/Ruby/Gems/1.8/gems/rails-2.1.0/lib/initializer.rb:  def method_missing(name, *args)
+  /Library/Ruby/Gems/1.8/gems/rails-2.1.0/lib/rails_generator/manifest.rb:      def method_missing(action, *args, &block)
+  /Library/Ruby/Gems/1.8/gems/rails-2.1.0/lib/rails_generator/simple_logger.rb:        def method_missing(method, *args, &block)
+  /Library/Ruby/Gems/1.8/gems/rails-2.2.2/lib/initializer.rb:  def method_missing(name, *args)
+  # ...
+
+  # If you're unsure of what you're executing, test it with `lightning translate`
+  # Prints arguments to be passed to grep, one per line
+  $ lg translate grep-gem -r def.*method_missing '(rails|rubygems)..'
+  -r
+  def.*method_mis
+  /Library/Ruby/Gems/1.8/gems/rails-2.1.0
+  /Library/Ruby/Gems/1.8/gems/rubygems-update-1.3.1
+  /Library/Ruby/Gems/1.8/gems/rubygems-update-1.3.2
+  /Library/Ruby/Gems/1.8/gems/rubygems-update-1.3.5
+  /Library/Ruby/Gems/1.8/gems/rubygems-update-1.3.6
+  /Library/Ruby/Gems/1.8/gems/rails-2.2.2
+  /System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/gems/1.8/gems/rails-1.2.6
+  /Library/Ruby/Gems/1.8/gems/rubygems-sing-1.0.0
+  /Library/Ruby/Gems/1.8/gems/rails-2.3.4
+</pre></notextile>
+
+h2(#generators). "Generators":#generators
+
+Generators generate filesystem-specific bolts. When creating a function, this is done for us automatically if the bolt and generator have the same name. Let's create a function with one of lightning's default generators:
+
+<notextile><pre class='console'>
+  # List default generators
+  $ lg generator
+  bin         Files in $PATH
+  gem         Directories of gems
+  local_ruby  *ALL* local ruby files. Careful where you do this.
+  rails       Files in a rails project
+  ruby        System ruby files
+  test_ruby   Test or spec files in a ruby project
+  wild        *ALL* files and directories under the current directory. Careful where you do this.
+
+  # Try the test_ruby generator with the Test::Unit runner
+  $ lg function create testrb test_ruby && lightning-reload
+  Generated following globs for bolt 'test_ruby':
+    {spec,test}/**/*_{test,spec}.rb
+    {spec,test}/**/{test,spec}_*.rb
+    spec/**/*.spec
+  Created function 'testrb-test_ruby'
+  Created /Users/bozo/.lightning/functions.sh
+  Loaded /Users/bozo/.lightning/functions.sh
+
+  # Runs any number of local ruby test files, no matter how many directories deep
+  # $ testrb-test_ruby  ...
+</pre></notextile>
+
+If you're a rubyist, I *highly recommend* checking out all the ruby-related generators.
+
+Since generators are important in distributing bolts that work for everyone, lightning let's users make their own generators and store them under ~/.lightning/generators. "Read the docs":http://tagaholic.me/lightning/doc/Lightning/Generators.html to learn how to make generator plugins. What if we want to try out someone else's generators? Not too hard:
+
+<notextile><pre class='console'>
+  # Let's try out my mac-specific generators
+  $ mkdir -p ~/.lightning/generators
+  $ curl http://github.com/cldwalker/dotfiles/raw/master/.lightning/generators/mac.rb > ~/.lightning/generators/mac.rb
+
+  $ lg generator
+  app             Mac apps
+  bin             Files in $PATH
+  brew            Homebrew formulas under /usr/local
+  # ...
+
+  # Let's combine open with mac apps
+  $ lg function create open app && lightning-reload
+  Generated following globs for bolt 'app':
+    /Applications/*.app
+    /Applications/Utilities/*.app
+  Created function 'open-app'
+  Created /Users/bozo/.lightning/functions.sh
+  Loaded /Users/bozo/.lightning/functions.sh
+
+  # Let's open a mac app
+  $ open-app Co[TAB]
+  Cog.app                 Colloquy.app            ColorSync\ Utility.app  Console.app
+  $ open-app Coll[TAB]
+  $ open-app Colloquy.app
+  # Opens Colloquy
+</pre></notextile>
+
+To try out more generators, "see my public ones":http://github.com/cldwalker/dotfiles/tree/master/.lightning/generators.
+
+h2(#conclusion). "Conclusion":#conclusion
+
+Hopefully this post has shown that "lightning":http://github.com/cldwalker/lightning can revolutionize how you interact with your filesystem on the commandline. By abstracting a group of paths to a bolt's name and its globs, __any group of paths is only a bolt's name away__ from being used as if they were in the current directory. Although the examples have been specific to ruby paths, lightning can generate functions for any group of paths. Lightning's generators provide a way for users to share their bolts and thus how they use their filesystem.
+
+This post was mostly an introduction to lightning and what it's capable of. The "next post":/2010/04/09/lightning-speed-for-the-user.html will cover using it in more depth. For more about lightning, visit its "homepage":http://tagaholic.me/lightning/ and "docs":http://tagaholic.me/lightning/doc/.
