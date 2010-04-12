@@ -45,7 +45,7 @@ After having "installed lightning":/2010/04/08/lightning-speed-for-your-shell.ht
   echo-ruby
   echo-wild
 
-  # Lightning let's you abbreviate commands and subcommands
+  # Lightning lets you abbreviate commands and subcommands
   # so the above can also be
   $ lg f
 </pre></notextile>

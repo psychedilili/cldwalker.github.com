@@ -2,7 +2,7 @@
 layout: post
 title: Lightning - Speed For Your Shell
 keywords: lightning ruby, lightning shell, lightning autocompletion, lightning functions, commandline speed, fast autocompletion, autocompletion functions, tag filesystem, commandline revolution
-description: Introducing <a href="http://github.com/cldwalker/lightning">lightning</a>, a commandline framework that could revolutionize how fast you are on the commandline.  Lightning let's you <b>easily</b> define and generate shell functions which autocomplete and interpret paths (files and directories) by their basenames. With these functions you don't have to ever type the full path to <b>any</b> file for <b>any</b> command again.
+description: Introducing <a href="http://github.com/cldwalker/lightning">lightning</a>, a commandline framework that could revolutionize how fast you are on the commandline.  Lightning lets you <b>easily</b> define and generate shell functions which autocomplete and interpret paths (files and directories) by their basenames. With these functions you don't have to ever type the full path to <b>any</b> file for <b>any</b> command again.
 tags:
 - gem:name=lightning
 - post:topic=shell
@@ -62,7 +62,7 @@ just type
 
 The '-I' being passed to @less-ruby@ demonstrates an important point. A lightning function __only touches and translates__ the arguments it knows how to translate to full paths. This allows a lightning function to be used the same as the command it wraps i.e. with any mix of options, local files or non-file arguments.
 
-Perhaps you noticed @less-ruby@ can refer to 1112 files by basename. Are they all in one directory? Nope. They're in *118 directories*. So what happens when two files from different directories have the same basename? Lightning let's you pick the right file in an autocomplete-friendly way:
+Perhaps you noticed @less-ruby@ can refer to 1112 files by basename. Are they all in one directory? Nope. They're in *118 directories*. So what happens when two files from different directories have the same basename? Lightning lets you pick the right file in an autocomplete-friendly way:
 
 <notextile><pre class='console'>
   $ less-ruby date[TAB]
@@ -307,7 +307,7 @@ Generators generate filesystem-specific bolts. When creating a function, this is
 
 If you're a rubyist, I *highly recommend* checking out all the ruby-related generators.
 
-Since generators are important in distributing bolts that work for everyone, lightning let's users make their own generators and store them under ~/.lightning/generators. "Read the docs":http://tagaholic.me/lightning/doc/Lightning/Generators.html to learn how to make generator plugins. What if we want to try out someone else's generators? Not too hard:
+Since generators are important in distributing bolts that work for everyone, lightning lets users make their own generators and store them under ~/.lightning/generators. "Read the docs":http://tagaholic.me/lightning/doc/Lightning/Generators.html to learn how to make generator plugins. What if we want to try out someone else's generators? Not too hard:
 
 <notextile><pre class='console'>
   # Let's try out my mac-specific generators
