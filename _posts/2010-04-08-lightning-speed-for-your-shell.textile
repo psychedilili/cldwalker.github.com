@@ -123,6 +123,20 @@ Once lightning is installed, we need to do a one-time setup:
   $ alias lg=lightning
 </pre></notextile>
 
+*Updated*: To install and view lightning's man page:
+
+<notextile><pre class='console'>
+  # If installed with rip
+  $ LDIR=`ruby -rrip -e 'puts Rip::PackageManager.new.package("lightning").cache_path'`
+  # Assumes /usr/local/man is in $MANPATH
+  $ cp $LDIR/man/lightning.1 /usr/local/man/man1/
+  $ man lightning
+
+  # If installed with rubygems
+  $ sudo gem install gem-man
+  $ gem man lightning
+</pre></notextile>
+
 h2(#lightning_bolts). "Lightning Bolts":#lightning_bolts
 
 To create a function (less-ruby) from scratch that can autocomplete and access by basename 1112 files across 118 directories must take a lot of effort. Right? Not really:
