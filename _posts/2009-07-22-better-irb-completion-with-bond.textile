@@ -20,7 +20,7 @@ Using it is mindblowingly ... straightforward. Replace @require 'irb/completion'
 
 {% highlight ruby %}
   require 'bond'
-  require 'bond/completion'
+  Bond.start
 {% endhighlight %}
 
 h2. Enhancements

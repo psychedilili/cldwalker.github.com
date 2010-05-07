@@ -248,8 +248,8 @@ As we've seen Bond defaults to traditional autocompletion searching i.e. @possib
   >> Url.tag_add_and_save
   
   # But this search goes the extra mile with textmate-like searching.
-  # Type just the first letter of each underscored word separated by '-'
-  >> Url.first.t-a-a-s[TAB]
+  # Type just the first letter of each underscored word separated by '_'
+  >> Url.first.t_a_a_s[TAB]
   >> Url.first.tag_add_and_save
 
   # With this search, most multi-worded methods are just a few keystrokes away.
@@ -259,7 +259,7 @@ As we've seen Bond defaults to traditional autocompletion searching i.e. @possib
   Url.first.partial_updates?                 Url.first.pretty_print                     Url.first.primary_key_prefix_type          
   Url.first.pluralize_table_names            Url.first.pretty_print_cycle               Url.first.private_methods                  
   Url.first.present?                         Url.first.pretty_print_inspect             Url.first.protected_methods
-  >> Url.first.p-p[TAB]
+  >> Url.first.p_p[TAB]
   >> Url.first.pretty_print
   >> Url.first.pretty_print_c[TAB]
   >> Url.first.pretty_print_cycle

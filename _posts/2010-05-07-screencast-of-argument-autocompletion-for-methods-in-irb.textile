@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Screencast Of Argument Autocompletion for Methods in Irb
-keywords: ruby irb bond, improved irb completion, ruby irb autocompletion, argument autocompletion, method arguments autocompletion, ruby shell completion, ruby bond
+keywords: ruby irb bond, improved irb completion, ruby irb autocompletion, ruby argument autocompletion, ruby shell completion, ruby bond
 description: <a href="http://github.com/cldwalker/bond">Bond</a>, a gem to improve irb's autocompletion, just hit <a href="http://github.com/cldwalker/bond/blob/master/CHANGELOG.rdoc">version 0.2.0</a>. With this version comes a completion configuration system similar to bash/zsh, more fixes to irb's incorrect completions and most importantly, <b>any method</b> can have its arguments autocompleted! The screencast demonstrates most of this.
 tags:
 - gem:name=bond
@@ -37,6 +37,7 @@ In your irbrc, replace irb's completion (require 'irb/completion') with :
 <notextile><pre class="console">
   require 'bond'
   Bond.start
+  #Bond.start replaces require 'bond/completion' from previous bond versions
 </pre></notextile>
 
 If using wirble, place the above after wirble.

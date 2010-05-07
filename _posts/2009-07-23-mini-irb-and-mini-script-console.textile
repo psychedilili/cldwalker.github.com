@@ -31,7 +31,8 @@ It's got the very basics of a repl: take a user's input, eval it and print the r
 But who says that needs to be much larger to get those features?:
 
 {% highlight ruby linenos %}
-  %w{readline rubygems bond bond/completion}.each {|e| require e }
+  %w{readline rubygems bond}.each {|e| require e }
+  Bond.start
   history_file = File.join(ENV["HOME"], '.mini_irb_history')
   IO.readlines(history_file).each {|e| Readline::HISTORY << e.chomp } if File.exists?(history_file)
   while (input = Readline.readline('>> ', true)) != 'exit'
@@ -41,11 +42,11 @@ But who says that needs to be much larger to get those features?:
 {% endhighlight %}
 
 A line by line play:
-* Line 1: Loads readline, bond and "bond's improved version":http://tagaholic.me/2009/07/22/better-irb-completion-with-bond.html of irb-like completion.
-* Line 2-3: Read in previous history from a history file.
-* Line 4: Get the users input and start a loop that only ends with exit.
-* Line 5: Evaluate the input and print an exception if it occurs.
-* Line 7: Write all of the loaded history back to the history file.
+* Line 1-2: Loads readline, bond and "bond's improved version":http://tagaholic.me/2009/07/22/better-irb-completion-with-bond.html of irb-like completion.
+* Line 3-4: Read in previous history from a history file.
+* Line 5: Get the users input and start a loop that only ends with exit.
+* Line 6: Evaluate the input and print an exception if it occurs.
+* Line 8: Write all of the loaded history back to the history file.
 
 If you're not familiar with readline, you may be wondering where is the autocompletion being handled? Well, all of readline's goodness is channeled through @Readline.readline@. Bond simply sets @Readline.completion_proc@ and readline handles the rest. If you'd like to play with this, "fork away":http://gist.github.com/152773!
 
@@ -84,7 +85,8 @@ h2. Mini script/console
 Just for fun I figured I'd see how much more code it'd take to make a mini script/console for Rails. I'm sorry. It took one more line:
 
 {% highlight ruby %}
-  ['readline', 'rubygems', 'bond','bond/completion', File.dirname(__FILE__) + '/../config/boot'].each {|e| require e }
+  ['readline', 'rubygems', 'bond', File.dirname(__FILE__) + '/../config/boot'].each {|e| require e }
+  Bond.start
   ["#{RAILS_ROOT}/config/environment", 'console_app', 'console_with_helpers'].each {|e| require  e}
   history_file = File.join(ENV["HOME"], '.myrb_history')
   IO.readlines(history_file).each {|e| Readline::HISTORY << e.chomp } if File.exists?(history_file)
