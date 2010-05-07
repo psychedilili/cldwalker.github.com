@@ -1,0 +1,48 @@
+---
+layout: post
+title: Screencast Of Argument Autocompletion for Methods in Irb
+keywords: ruby irb bond, improved irb completion, ruby irb autocompletion, argument autocompletion, method arguments autocompletion, ruby shell completion, ruby bond
+description: <a href="http://github.com/cldwalker/bond">Bond</a>, a gem to improve irb's autocompletion, just hit <a href="http://github.com/cldwalker/bond/blob/master/CHANGELOG.rdoc">version 0.2.0</a>. With this version comes a completion configuration system similar to bash/zsh, more fixes to irb's incorrect completions and most importantly, <b>any method</b> can have its arguments autocompleted! The screencast demonstrates most of this.
+tags:
+- gem:name=bond
+- lib:name=irb
+- post:lang=ruby
+- post:type=screencast
+related_tag: *:*=bond
+---
+{{ page.description }}
+
+h2. Screencast
+
+<object width="400" height="300"><param name="allowfullscreen" value="true" /><param name="allowscriptaccess" value="always" /><param name="movie" value="http://vimeo.com/moogaloop.swf?clip_id=11547817&amp;server=vimeo.com&amp;show_title=1&amp;show_byline=1&amp;show_portrait=0&amp;color=&amp;fullscreen=1" /><embed src="http://vimeo.com/moogaloop.swf?clip_id=11547817&amp;server=vimeo.com&amp;show_title=1&amp;show_byline=1&amp;show_portrait=0&amp;color=&amp;fullscreen=1" type="application/x-shockwave-flash" allowfullscreen="true" allowscriptaccess="always" width="400" height="300"></embed></object><p><a href="http://vimeo.com/11547817">Bond - Argument Autocompletion for Methods in Irb</a> from <a href="http://vimeo.com/user1889677">cldwalker</a>.</p>
+
+h2. Screencast Notes
+
+* @Bond.list_methods@: Lists all methods (80+) that have argument autocompletion. 
+* Examples of methods with argument completion: @Kernel#require, Array#delete, Hash#[], Module#const_get, Object#instance_variable_get@
+* @Object#send@: Exemplifies an argument completion that varies per argument. Can be used to invoke argument completions for private methods.
+* Rails examples: @ActiveRecord::Base.attr_accessible, ActiveRecord::Base.create, ActiveRecord::Base.where, ActiveRecord::Base.all@
+* Basic argument completion example: @Bond.complete(:method=>"Array#jump") { %w{foo bar baz} }@
+
+h2. Install
+
+Install the gem with:
+
+<notextile><pre class="console">
+    sudo gem install bond
+</pre></notextile>
+
+In your irbrc, replace irb's completion (require 'irb/completion') with :
+
+<notextile><pre class="console">
+  require 'bond'
+  Bond.start
+</pre></notextile>
+
+If using wirble, place the above after wirble.
+
+h2. Further Reading
+
+* "The README":http://github.com/cldwalker/bond#readme contains a thorough introduction to Bond and a section on irb's incorrect autocompletions.
+* "Official documentation":http://tagaholic.me/bond/doc/
+* "Official homepage":http://tagaholic.me/bond/
