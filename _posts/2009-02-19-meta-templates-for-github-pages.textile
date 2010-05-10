@@ -19,7 +19,7 @@ I found myself down this path as I wanted to generate multiple tag pages for my 
 * verbose flag to see pages generated
 * local flag to generate pages locally ie for testing purposes
 
-The first was a no-brainer, "thor":http://github.com/wycats/thor/tree/master. With it's dead-easy option and command creation, I've used it for "several daily tasks":http://github.com/cldwalker/thor-tasks/tree/master.  So after "coding like a monkey":http://buzztowncenter.org/files/u2/CrazyMonkey.jpg, I came up with "these thor tasks":http://github.com/cldwalker/cldwalker.github.com/blob/master/_meta/Thorfile. "Here":http://github.com/cldwalker/cldwalker.github.com/blob/master/_meta is the directory containing all relevant files to these tasks. So let's try a task:
+The first was a no-brainer, "thor":http://github.com/wycats/thor. With it's dead-easy option and command creation, I've used it for several daily tasks.  So after "coding like a monkey":http://buzztowncenter.org/files/u2/CrazyMonkey.jpg, I came up with "these thor tasks":http://github.com/cldwalker/cldwalker.github.com/blob/master/_meta/Thorfile. "Here":http://github.com/cldwalker/cldwalker.github.com/blob/master/_meta is the directory containing all relevant files to these tasks. So let's try a task:
 
 <notextile>
 <pre class="console">
@@ -83,3 +83,5 @@ Line by line:
 You may have noticed we didn't define a verbose option yet I used it in the above example. Since "my Thorfile":http://github.com/cldwalker/cldwalker.github.com/blob/master/_meta/Thorfile defines verbose and local as global options, we don't have to explicitly define them. The @string_from_template@ helper method handles those two options. You may have also noticed that in line 10 there is an options variable even though there is none defined. This comes automagically when defining your options for a thor task.
 
 If others have come up with different solutions to template generators, I'd be interested to know. I'm aware of commandline generators such as "rubigen":http://drnic.github.com/rubigen/ but it seemed easier to just roll my own.
+
+*Update*: I do all of this with "boson":http://github.com/cldwalker/boson nowadays.
