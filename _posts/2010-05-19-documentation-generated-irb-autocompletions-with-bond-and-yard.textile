@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Documentation-Generated Irb Autocompletions With Bond and Yard
+keywords: ruby irb bond, yard plugin, autocompletions from documentation, custom irb autocompletion, gems with autocompletion, emacs bond ruby
 description: Since it's <a href="/2010/05/07/screencast-of-argument-autocompletion-for-methods-in-irb.html">last release</a>, <a href="http://github.com/cldwalker/bond">bond</a> has gained a number of features. The most novel of these is the ability to generate gem-specific autocompletions from a gem's <a href="http://yardoc.org">yard documentation</a>. This release also lets <a href="#gems_with_custom_autocompletions">gems ship with their own irb autocompletions</a> and introduces bond to <a href="#emacs_inf_ruby">emacs' inf-ruby mode</a>.
 tags:
 - gem:name=bond
