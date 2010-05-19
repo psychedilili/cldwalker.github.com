@@ -1,0 +1,150 @@
+---
+layout: post
+title: Documentation-Generated Irb Autocompletions With Bond and Yard
+description: Since it's <a href="/2010/05/07/screencast-of-argument-autocompletion-for-methods-in-irb.html">last release</a>, <a href="http://github.com/cldwalker/bond">bond</a> has gained a number of features. The most novel of these is the ability to generate gem-specific autocompletions from a gem's <a href="http://yardoc.org">yard documentation</a>. This release also lets <a href="#gems_with_custom_autocompletions">gems ship with their own irb autocompletions</a> and introduces bond to <a href="#emacs_inf_ruby">emacs' inf-ruby mode</a>.
+tags:
+- gem:name=bond
+- gem:name=yard
+- lib:name=irb
+- post:lang=ruby
+- post:type=tutorial
+related_tag: *:*=bond
+---
+{{ page.description }}
+
+h2(#yard_based_irb_autocompletions). "Yard-Based Irb Autocompletions":#yard_based_irb_autocompletions
+
+This feature generates autocompletions for a gem's methods from a gem's yard documentation. The only arguments it currently autocompletes are hash keys for a hash argument that has been documented with @option. Let's take a look:
+
+<notextile><pre class='console'>
+  # You'll need yard version 0.5.2 or greater for this feature
+  $ sudo gem install bond yard
+
+  $ irb
+  >> require 'bond'; Bond.start
+  => true
+
+  # Load autocompletions for yard methods
+  >> Bond.load_yard_gems 'yard'
+  Bond: Building/loading yard's .yardoc database ...
+  => ["yard"]
+
+  # Let's see what yard methods we can autocomplete
+  >> Bond.list_methods.grep /YARD/
+  => ["YARD::CodeObjects::Base#format", "YARD::CodeObjects::ClassObject#constants", "YARD::CodeObjects::ClassObject#meths",   
+  "YARD::CodeObjects::NamespaceObject#constants", "YARD::CodeObjects::NamespaceObject#included_meths", 
+  "YARD::CodeObjects::NamespaceObject#meths", "YARD::Serializers::FileSystemSerializer.new", "YARD::Templates::Engine.render", 
+  "YARD::Templates::Engine.set_default_options"]
+
+  # Trying one of the above
+  >> YARD::Templates::Engine.render :[TAB]
+  :format    :template  :type
+  >> YARD::Templates::Engine.render :f[TAB]
+  >> YARD::Templates::Engine.render :format=>:html, :te[TAB]
+  >> YARD::Templates::Engine.render :format=>:html, :template
+  # ...
+
+  # If you want to have yard gem completions defined at start up, just pass :yard_gems to Bond.start.
+  # Bond.start :yard_gems=>%w{yard}
+</pre></notextile>
+
+Are there any other gems besides yard that use yard documentation? Sure:
+
+<notextile><pre class='console'>
+  # gem install spidr
+  >> Bond.load_yard_gems 'spidr'
+  Bond: Building/loading spidr's .yardoc database ...
+  => ["spidr"]
+  >> require 'spidr'
+  => true
+
+  >> Spidr::Agent.new :h[TAB]
+  :history       :host          :host_header   :host_headers
+  >> Spidr::Agent.new :hi[TAB]
+  >> Spidr::Agent.new :history
+  # ...
+
+  # gem install haml
+  >> Bond.load_yard_gems 'haml'
+  Bond: Building/loading haml's .yardoc database ...
+  => ["haml"]
+  >> require 'haml/html'
+  => true
+
+  >> Haml::HTML.new :[TAB]
+  :erb     :xhtml
+  >> Haml::HTML.new :x[TAB]
+  >> Haml::HTML.new :xhtml
+  # ...
+
+  # gem install rdf
+  >> Bond.load_yard_gems 'rdf'
+  Bond: Building/loading rdf's .yardoc database ...
+  => ["rdf"]
+  >> require 'rdf'
+  => true
+
+  >> RDF::Repository.new :[TAB]
+  :title   :uri
+  >> RDF::Repository.new :t[TAB]
+  >> RDF::Repository.new :title
+  # ...
+</pre></notextile>
+
+For more gems that use yard documentation, "see here":http://wiki.github.com/lsegal/yard/whos-using-yard.
+
+h2(#gems_with_custom_autocompletions). "Gems with Custom Autocompletions":#gems_with_custom_autocompletions
+
+If your gem doesn't use yard documentation, no worries. You can still ship your gems with custom autocompletions. Completion files are  under lib/bond/completions/ which is relative your gem's base directory. For the format of a completion file, "see here":http://tagaholic.me/bond/doc/classes/Bond/Rc.html. For an example of a gem that ships with autocompletions, let's use "hirb":/2009/03/13/hirb-irb-on-the-good-stuff.html:
+
+<notextile><pre class='console'>
+  # Install latest hirb
+  $ sudo gem install hirb
+
+  $ irb
+  >> require 'bond'; Bond.start
+  => true
+  >> Bond.load_gems 'hirb'
+  => ["hirb"]
+  >> require 'hirb'
+  => true
+
+  # Autocomplete all options to hirb's tables
+  >> puts Hirb::Helpers::AutoTable.render [1,2,3], :[TAB]
+  :all_fields            :filter_any            :hide_empty            :table_class
+  :change_fields         :filter_classes        :max_fields            :vertical
+  :description           :filters               :max_width             
+  :escape_special_chars  :header_filter         :number                
+  :fields                :headers               :resize                
+  >> puts Hirb::Helpers::AutoTable.render [1,2,3], :d[TAB]
+  >> puts Hirb::Helpers::AutoTable.render [1,2,3], :description
+  # ...
+
+  # Let's use hirb's console methods
+  >> extend Hirb::Console
+  => main
+
+  # Autocomplete all options to hirb's menus
+  >> menu [1,2,3], :[TAB]
+  :action         :command        :helper_class   :readline       
+  :action_object  :default_field  :multi_action   :two_d          
+  :ask            :directions     :prompt         
+  >> menu [1,2,3], :p[TAB]
+  >> menu [1,2,3], :prompt
+  # ...
+
+  # If you want to have gem completions defined at start up, just pass :gems to Bond.start.
+  # Bond.start :gems=>%w{hirb}
+</pre></notextile>
+
+Since this is the initial release of this feature, probably no other gems ship with bond's irb autocompletions. So what can you do if you want to autocomplete your favorite gem's methods? Just make your own completion files under ~/.bond/completions/. If you want to share your favorite gem's completions with others, fork the gem, copy your completion file(s) to the gem's lib/bond/completions/ directory and send the patch to the author.
+
+h2(#emacs_inf_ruby). "Emacs Inf-Ruby and Bond":#emacs_inf_ruby
+
+Bond can be used within emacs' inf-ruby mode thanks to "pd's inf-ruby-bond":http://github.com/pd/inf-ruby-bond. Since I don't use emacs, I won't try to go into an example. If any vim gurus are listening, a vim plugin to use bond within vim would be awesome :).
+
+h2(#final_thoughts). "Final Thoughts":#final_thoughts
+
+Although the idea of creating autocompletion functionality from documentation "isn't new":http://limpet.net/mbrubeck/2009/10/30/compleat.html, "bond":http://tagaholic.me/bond is probably the first to do so among ruby gems. This isn't anything too special given that bond currently only autocompletes hash keys of hash arguments.  But with yard's "excellent api":http://yardoc.org/docs/yard/YARD/CodeObjects/MethodObject:parameters, there isn't anything stopping a future release from autocompleting any arguments to a method!
+
+Although "yard":http://yardoc.org isn't currently the commonly used documentation tool in the ruby world, this post shows the benefits it provides by letting gem authors easily associate meta-data per method. Yard makes it possible to ask: what gem-specific functionality can someone build from gem's documentation? Bond's irb autocompletions is one such answer. Perhaps in a future post another answer will be "boson's":http://github.com/cldwalker/boson ability to make a command from any documented method and its options.
