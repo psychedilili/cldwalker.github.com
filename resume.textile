@@ -7,10 +7,10 @@ Run this ruby script to open my resume!
 
 {% highlight ruby %}
 #!/usr/bin/env ruby
-I = []; fit = [:developer, :position, :at, :Thoughtbot]
+I = []; fit = [:developer, :position, :at, :your_company]
 if you = offer = me = $$
   class Array
-    def can i, help = :your_company?
+    def can i, help = :you?
       :of_course
     end
     def would we = :write, great = :software?
@@ -26,7 +26,7 @@ if you = offer = me = $$
   end
 end
 
-if I.would && fit.in?(:Thoughtbot)
+if I.would && fit.in?(:your_company)
   :just.send :me, :an => 'email'
 end
 :Lets.see if I.can :help=>:you!
