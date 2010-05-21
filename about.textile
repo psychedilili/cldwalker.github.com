@@ -4,7 +4,7 @@ title: About Me
 ---
 I'm passionate about knowledge management, tagging, ruby and rails. One day I hope to bring back that passion back to physics.
 
-*I'm available for hire*. I'm particularly interested in ruby and/or rails work that involves knowledge management, tagging or physics. "Here's my resume":http://docs.google.com/Doc?id=dhjdhqhp_4sdt4jmhp.
+*I'm available for hire*. I'm particularly interested in ruby and/or rails work that involves knowledge management, tagging or physics. See "my interactive resume":/resume.html or "the more boring one":http://docs.google.com/Doc?id=dhjdhqhp_4sdt4jmhp.
 
 If you want to talk to me, share code or share bookmarks:
 

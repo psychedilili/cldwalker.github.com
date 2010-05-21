@@ -1,0 +1,41 @@
+---
+layout: master
+title: Resume
+---
+
+Run this ruby script to open my resume!
+
+{% highlight ruby %}
+#!/usr/bin/env ruby
+I = []; fit = [:developer, :position, :at, :Thoughtbot]
+if you = offer = me = $$
+  class Array
+    def can i, help = :your_company?
+      :of_course
+    end
+    def would we = :write, great = :software?
+      :totally
+    end
+    alias :in? :include?
+  end
+  class Symbol
+    def me love = ruby ; $and = DATA end
+    def see _for = :yourself
+      `open #{$and.read}`
+    end
+  end
+end
+
+if I.would && fit.in?(:Thoughtbot)
+  :just.send :me, :an => 'email'
+end
+:Lets.see if I.can :help=>:you!
+
+# Gabriel Horner
+# http://tagaholic.me
+# Idea from http://macournoyer.com/blog/2010/02/23/how-to-apply-to-a-job/
+# Run this ruby script on a mac to open my resume
+
+__END__
+http://docs.google.com/Doc?id=dhjdhqhp_4sdt4jmhp
+{% endhighlight %}
