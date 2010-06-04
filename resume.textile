@@ -3,7 +3,7 @@ layout: master
 title: Resume
 ---
 
-Run this ruby script to open my resume!
+Run this ruby script to open my real resume.
 
 {% highlight ruby %}
 #!/usr/bin/env ruby
