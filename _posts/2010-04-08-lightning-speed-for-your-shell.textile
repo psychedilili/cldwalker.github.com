@@ -93,7 +93,7 @@ h2(#install). "Install":#install
 Lightning works with "bash":http://www.gnu.org/software/bash/ or "zsh":http://zsh.sourceforge.net/ shells and since it's written in "ruby":http://www.ruby-lang.org/, you'll need ruby 1.8.6 or later. To install lightning, use "rip":http://hellorip.com or "rubygems":http://rubygems.org:
 
 <notextile><pre class='console'>
-  $ rip install git://github.com/cldwalker/lightning.git
+  $ rip install lightning
   # OR  
   $ sudo gem install yard # if you want lightning's documentation generated correctly
   $ sudo gem install lightning
@@ -126,10 +126,7 @@ Once lightning is installed, we need to do a one-time setup:
 *Updated*: To install and view lightning's man page:
 
 <notextile><pre class='console'>
-  # If installed with rip
-  $ LDIR=`ruby -rrip -e 'puts Rip::PackageManager.new.package("lightning").cache_path'`
-  # Assumes /usr/local/man is in $MANPATH
-  $ cp $LDIR/man/lightning.1 /usr/local/man/man1/
+  # If installed with rip, man pages are automatically installed
   $ man lightning
 
   # If installed with rubygems
