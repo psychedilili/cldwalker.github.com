@@ -15,11 +15,12 @@ related_tag: *:*=bond
 
 h2(#yard_based_irb_autocompletions). "Yard-Based Irb Autocompletions":#yard_based_irb_autocompletions
 
+*Update:* Yard functionality has been moved to "bond-yard":http://github.com/cldwalker/bond-yard.
+
 This feature generates autocompletions for a gem's methods from a gem's yard documentation. The only arguments it currently autocompletes are hash keys for a hash argument that has been documented with @option. Let's take a look:
 
 <notextile><pre class='console'>
-  # You'll need yard version 0.5.2 or greater for this feature
-  $ sudo gem install bond yard
+  $ gem install bond yard bond-yard
 
   $ irb
   >> require 'bond'; Bond.start
@@ -44,9 +45,6 @@ This feature generates autocompletions for a gem's methods from a gem's yard doc
   >> YARD::Templates::Engine.render :format=>:html, :te[TAB]
   >> YARD::Templates::Engine.render :format=>:html, :template
   # ...
-
-  # If you want to have yard gem completions defined at start up, just pass :yard_gems to Bond.start.
-  # Bond.start :yard_gems=>%w{yard}
 </pre></notextile>
 
 Are there any other gems besides yard that use yard documentation? Sure:
@@ -100,7 +98,7 @@ If your gem doesn't use yard documentation, no worries. You can still ship your 
 
 <notextile><pre class='console'>
   # Install latest hirb
-  $ sudo gem install hirb
+  $ gem install hirb
 
   $ irb
   >> require 'bond'; Bond.start
