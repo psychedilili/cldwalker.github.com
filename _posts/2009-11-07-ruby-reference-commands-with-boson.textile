@@ -28,7 +28,7 @@ To follow along with the examples using boson:
 
 <notextile><pre class='console'>
   bash> gem install boson
-  bash> boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/ruby_ref.rb
+  bash> boson install https://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/ruby_ref.rb
 </pre></notextile>
 
 h2(#global_variables). "Global Variables":#global_variables

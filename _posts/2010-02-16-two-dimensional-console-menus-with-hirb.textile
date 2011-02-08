@@ -148,7 +148,7 @@ To follow along with these examples you'll need to:
 <notextile><pre class='console'>
   $ sudo gem install boson
   # Note that --default rewrites your boson config to make menu_pipe a default library
-  $ boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/plugins/menu_pipe.rb --default
+  $ boson install https://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/plugins/menu_pipe.rb --default
 </pre></notextile>
 
 The Examples:
@@ -163,8 +163,8 @@ If you're a rubyist, there's a good chance your gems are on github and gemcutter
 
 <notextile><pre class='console'>
   # To follow along
-  $ boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/site/gemcutter.rb
-  $ boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/site/github.rb
+  $ boson install https://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/site/gemcutter.rb
+  $ boson install https://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/site/github.rb
 
   $ boson user_repos -u=wycats - -m  # or boson user_repos -u=wycats - --menu
   +--------+---------------------------+----------+-------+---------------------------------------+----------------------------------------------------------------------------------+--------------------+
@@ -267,7 +267,7 @@ This one is more for fun. I like to pick and play songs in the console using "xm
 
 <notextile><pre class='console'>
   # If you have xmms2 and want to follow along
-  $ boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/personal/xmms2.rb
+  $ boson install https://github.com/cldwalker/irbfiles/raw/master/boson/commands/personal/xmms2.rb
 
   # Choose a directory to play
   $ boson play /mnt/m/rap

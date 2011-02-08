@@ -126,7 +126,7 @@ As "I explained before":/2009/10/14/boson-command-your-ruby-universe.html#using_
 For this example, we'll use "the github library":/2009/10/15/boson-and-hirb-interactions.html#github_boson_library. To install it:
 
 <notextile><pre class='console'>
-  bash> boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/site/github.rb
+  bash> boson install https://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/site/github.rb
   Saved to /Users/bozo/.boson/commands/github.rb
 
   # How one of the library's commands looks before we customize

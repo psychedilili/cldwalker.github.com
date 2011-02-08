@@ -19,7 +19,7 @@ To use this boson library:
 
 <notextile><pre class='console'>
   bash> sudo gem install boson
-  bash> boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/site/gemcutter.rb
+  bash> boson install https://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/site/gemcutter.rb
 </pre></notextile>
 
 h2. Usage

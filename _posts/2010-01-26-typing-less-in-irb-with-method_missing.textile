@@ -90,7 +90,11 @@ After pasting @method_missing()@ and @underscore_search()@ in irb:
 
 h2. Finished Snippet
 
-To make this snippet easy to apply to any object or class of objects, I wrapped @method_missing@ into a module and did a little more meta programming. The result is "this module":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/underscore_alias.rb. If you use "boson":http://github.com/cldwalker/boson to manage your ruby snippets: @boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/underscore_alias.rb@.
+To make this snippet easy to apply to any object or class of objects, I wrapped @method_missing@
+into a module and did a little more meta programming. The result is "this
+module":http://github.com/cldwalker/irbfiles/blob/master/boson/commands/public/underscore_alias.rb.
+If you use "boson":http://github.com/cldwalker/boson to manage your ruby snippets: @boson install
+https://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/underscore_alias.rb@.
 
 Here's how I use the finished snippet in a Rails console session:
 

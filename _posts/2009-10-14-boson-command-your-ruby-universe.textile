@@ -374,7 +374,7 @@ Boson makes it dead easy to install someone else's commands:
 
 <notextile><pre class='console'>
   # Let's download a library which explains irb's default commands
-  bash> boson install http://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/irb_core.rb
+  bash> boson install https://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/irb_core.rb
   Saved to /Users/bozo/.boson/commands/irb_core.rb
 
   # Let's see the commands in irb
@@ -417,7 +417,7 @@ For example, take "this gist":http://gist.github.com/203861 for displaying autho
 Let's commandify it:
 
 <notextile><pre class='console'>
-  bash> boson install http://gist.github.com/raw/203861/c063260bef7f004c9db4c2a7719ff649b59d3ade/git-authors -m
+  bash> boson install https://gist.github.com/raw/203861/c063260bef7f004c9db4c2a7719ff649b59d3ade/git-authors -m
   Saved to /Users/bozo/.boson/commands/git_authors.rb.
   
   # Verify we have the command
