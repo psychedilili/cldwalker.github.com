@@ -1,0 +1,184 @@
+---
+layout: post
+title: One9 - Upgrade to Ruby 1.9 Now
+keywords: ruby 1.9 changes, upgrade ruby 1.9, ruby 1.9.2 changes, ruby 1.9 changelog, one9 ruby, ruby 2to3, convert ruby 1.9
+description: So <a href="http://www.ruby-lang.org/en/downloads/">ruby 1.9.2</a> is the future and your still stuck on 1.8 at work.  Why? It's a pain ... Well, let's change that. Introducing <a href="http://github.com/cldwalker/one9">one9</a> - a gem to find 1.9 method changes and make the upgrade process smoother.
+tags:
+  - gem:name=one9
+  - gem:topic=ruby19
+  - post:lang=ruby
+  - post:type=tutorial
+---
+{{page.description}}
+
+h2. Install
+
+No surprises here.
+<notextile><pre class="console">
+  gem install one9
+</pre></notextile>
+
+h2. How it works
+
+one9 runs your 1.8 test suite, spies on methods that have changed and saves the locations of their calls
+for later viewing. If you have a supported editor, it drops into an editor to let you sequentially
+view and possibly fix each change. Although one9 gives you a brief message for each change, I
+recommend familiarizing yourself with "1.9":http://eigenclass.org/hiki/Changes+in+Ruby+1.9 "changes":https://github.com/ruby/ruby/raw/ruby_1_9_1/NEWS. To see what one9 knows about 1.9 changes:
+
+<notextile><pre class="console">
+  $ one9 changes
+  +-----------------------------------+------------------------------------------------------------------+--------+
+  | method                            | message                                                          | type   |
+  +-----------------------------------+------------------------------------------------------------------+--------+
+  | Module#constants                  | Returns array of symbols instead of array of strings             | change |
+  | Module#public_methods             | Returns array of symbols instead of array of strings             | change |
+  | Module#instance_methods           | Returns array of symbols instead of array of strings             | change |
+  | Module#singleton_methods          | Returns array of symbols instead of array of strings             | change |
+  | Module#public_instance_methods    | Returns array of symbols instead of array of strings             | change |
+  | Module#protected_methods          | Returns array of symbols instead of array of strings             | change |
+  ...
+</pre></notextile>
+
+h2. Run tests
+
+First off, run your tests in the root directory of a gem or Rails app:
+
+<notextile><pre class="console">
+  # Runs `rake test` by default
+  $ one9 test
+
+  # To run any other test command, just prefix it with one9 test:
+  # Run all cucumber specs
+  $ one9 test cucumber
+
+  # Only run model specs
+  $ one9 test rspec spec/models
+</pre></notextile>
+
+After your tests run, one9 prints a report. Here's what it all looks like for "boson":http://github.com/cldwalker/boson:
+
+<notextile><pre class="console">
+  $ one9 test
+  ...............................................................................................
+  ...............................................................................................
+  ...............................................................................................
+  ...............
+  Finished in 0.704555 seconds.
+
+  300 tests, 580 assertions, 0 failures, 0 errors
+
+  ** One9 Report **
+  +---------------------------------+-------+--------------------------------------------------------------+--------+--------------------------------------------------------------+
+  | method                          | count | message                                                      | type   | lines                                                        |
+  +---------------------------------+-------+--------------------------------------------------------------+--------+--------------------------------------------------------------+
+  | Module#instance_methods         | 5     | Returns array of symbols instead of array of strings         | change | lib/boson/util.rb:39:in `detect',lib/boson/util.rb:40:in ... |
+  | Module#private_instance_methods | 2     | Returns array of symbols instead of array of strings         | change | lib/boson/inspectors/argument_inspector.rb:23:in `scrape_... |
+  | Hash#to_s                       | 4     | An alias of #inspect instead of a spaceless join of the e... | change | lib/boson/loader.rb:87:in `initialize_library_module',lib... |
+  | Hash#select                     | 4     | Returns a hash instead of an association array               | change | lib/boson/loader.rb:109:in `set_library_commands',lib/bos... |
+  +---------------------------------+-------+--------------------------------------------------------------+--------+--------------------------------------------------------------+
+  4 rows in set
+</pre></notextile>
+
+As you can see the report lists changed methods, how many times they were
+called and where they were called from. To reprint this list any time later, run @one9 list@.
+
+Note: When you run @one9 test@ it _overwrites_ the previous @one test@ result.
+
+h2. Edit Changes
+
+Now that you have a list of changed method calls, editing those changes is easy:
+
+<notextile><pre class="console">
+  # Open all changes
+  $ one9 edit
+
+  # To only open a subset of changes:
+  # Only open Hash changes
+  $ one9 edit Hash
+
+  # Only open Hash#to_s changes
+  $ one9 edit Hash#to_s
+</pre></notextile>
+
+Currently this opens the quickfix list in vim. (For vim noobs, navigate between changes with @:cn@
+and @:cp@.) "Patches":https://github.com/cldwalker/one9/pulls for emacs and other editors welcome :)
+Remember each change is a *possible* change. Only change the code if the new 1.9 behavior is going
+to break the existing code.
+
+For those without editing support, you can still view each line where there's a method change:
+
+<notextile><pre class="console">
+  $ one9 lines
+  +---------------------------------+---------------------------------------------------------------------+
+  | method                          | line                                                                |
+  +---------------------------------+---------------------------------------------------------------------+
+  | Module#instance_methods         | lib/boson/util.rb:39:in `detect'                                    |
+  | Module#instance_methods         | lib/boson/util.rb:40:in `detect'                                    |
+  | Module#instance_methods         | lib/boson/loader.rb:101:in `check_for_method_conflicts'             |
+  | Module#instance_methods         | lib/boson/util.rb:44:in `detect'                                    |
+  | Module#instance_methods         | lib/boson/namespace.rb:28:in `boson_commands'                       |
+  ...
+</pre></notextile>
+
+Once you've fixed your changes, give your code a 1.9 test run. If tests are still broken, then jump
+down to "this section":#additional_changes.
+
+h2. Rails Tips
+
+Skip this section if you're not on a Rails app.
+
+So you've finished editing your code and tests pass. You're done, right? Not in my opinion. My code
+is only as good as the code it depends on. I'd check each of my app's dependencies and check for any
+1.9 breakages. For each gem:
+
+1. cd to the gem: @cd `bundle show $GEM`@
+2. Install the gem's development dependencies: @gem install $GEM --dev@
+3. Run tests with one9: @one9 test WITH PROPER COMMAND@
+4. Edit gem's changes : @one9 edit@
+5. Verify tests pass on 1.9.
+6. Fork, patch, pull as needed
+
+h2. Configure
+
+one9 comes with a decent list of 1.9 changes and descriptions. If you'd like to add your
+own changes, add them to your ~/.one9rc. For example:
+
+<notextile><pre class="console">
+  # For methods that have changed in 1.9
+  change 'Class#instance_method', 'Some description'
+
+  # For methods that have been deleted in 1.9
+  delete 'Class.class_method', 'Some description'
+</pre></notextile>
+
+For more examples, "see the defaults that one9 defines":https://github.com/cldwalker/one9/blob/master/lib/one9/defaults.rb. If I've missed an important 1.9 change, "feel free to fork and pull":https://github.com/cldwalker/one9/pulls.
+
+h2(#additional_changes). "Additional 1.9 Changes":#additional_changes
+
+So even if you've dealt with all changed methods, there are still other changes that could effect your code:
+
+* Encoding: Probably the most significant and thus well documented. See "JEG's thorough articles":http://blog.grayproductions.net/articles/understanding_m17n
+* "scoping of block variables, splat operator and block arguments":http://dablog.rubypal.com/2009/1/14/10-things-to-be-aware-of-in-moving-to-ruby-1-9
+* files in @$LOAD_PATH@ and @$LOADED_FEATURES@ are expanded
+* using colon (:) instead of "then" in an if/unless/case is deprecated
+* retry in a loop or iterator is deprecated
+* @$KCODE@, @$=@ and @VERSION*@ constants are deprecated
+* @?x@ now returns a single character string instead of an integer
+* For anything I may have missed see "the official changelog":https://github.com/ruby/ruby/raw/ruby_1_9_1/NEWS or the "unoffical one":http://eigenclass.org/hiki/Changes+in+Ruby+1.9
+
+h2. Motivation
+
+This gem aims to get the ruby community to seriously use 1.9.2 and to port as many of the 1.8 gems
+to 1.9. Since this gem maintains a list of 1.9 changes, it could be used as a multi-purpose tool.
+Some ideas for future commands:
+
+* grep command to grep code for changed methods. Basically for porting test-deprived code.
+* info command to explain a method's change in detail with examples and possible solutions
+* rails command to ease porting a rails app and all its dependencies.
+* automating code changes like "python's 2to3":http://docs.python.org/py3k/library/2to3.html
+
+If you're interested in implementing these or other such commands, "please do contribute":https://github.com/cldwalker/one9/pulls.
+
+h2. Conclusion
+
+Ruby 1.9.2 isn't the future, it's already here. So why are you waiting?
