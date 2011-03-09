@@ -18,6 +18,9 @@ No surprises here.
   gem install one9
 </pre></notextile>
 
+Well almost. If you're using bundler (the default in rails3), add one9 to your Gemfile if your
+tests are invoked by bundler i.e. one9 test, one9 test rake * or one9 test bundle exec *.
+
 h2. How it works
 
 one9 runs your 1.8 test suite, spies on methods that have changed and saves the locations of their calls
