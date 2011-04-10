@@ -1,0 +1,159 @@
+---
+layout: post
+title: Tux - A Sinatra Console
+keywords: sinatra console, sinatra shell, sinatra irb, interactive sinatra, sinatra helpers, sinatra ruby, ripl sinatra, sinatra rails console
+description: While working on a sinatra app recently, I noticed that <a href="http://www.sinatrarb.com/">sinatra</a> has no rails equivalent to rails console. So here's <a href="http://github.com/cldwalker/tux">tux</a>, dressing your sinatra app in a console.
+tags:
+  - gem:name=tux
+  - gem:tags=sinatra
+  - post:lang=ruby
+  - post:type=tutorial
+---
+{{ page.description}}
+
+<img src="/images/post-sinatra.jpg" alt="sinatra with a tux" width="180" height="240"/>
+
+h2. Install and Try On
+
+<notextile><pre class="console">
+  $ gem install tux
+</pre></notextile>
+
+In the directory of your sinatra app, try on tux:
+
+<notextile><pre class="console">
+  $ tux
+
+  # If app's rack config file isn't config.ru, specify it with -c
+  $ tux -c app.ru
+
+  # ruby options like -I and -r are available to tux
+  $ tux -h
+  Usage: tux [COMMAND] [ARGS] [OPTIONS]
+
+  Options:
+    -f                  Suppress loading ~/.irbrc
+    -F                  Suppress loading ~/.riplrc
+    -d, --debug         Set $DEBUG to true (same as `ruby -d')
+    -I PATH             Add to front of $LOAD_PATH. Delimit multiple paths with ':'
+    -r, --require FILE  Require file (same as `ruby -r')
+    -v, --version       Print version
+    -h, --help          Print help
+    -c, --config FILE   Set rack config file i.e. config.ru
+</pre></notextile>
+
+h2{padding-top:30px}. Interact with App Methods
+
+Tux provides the @app@ object to interact with your app's methods. For example, to interact with helpers:
+
+<notextile><pre class="console">
+  >> app.my_helper_method
+  ...
+</pre></notextile>
+
+Since @app@ is an instance of @Sintra::Base@, it can interact with any built-in sinatra methods i.e. request and response specific helper methods:
+
+<notextile><pre class="console">
+  # depends on request
+  >> app.uri '/'
+  => "http://:/"
+
+  # depends on response
+  >> app.headers
+  => {"Content-Type"=>"text/html"}
+</pre></notextile>
+
+For the above to work, tux sets up default empty request and response objects. To use custom requests and responses:
+
+<notextile><pre class="console">
+  >> app.request = Sinatra::Request.new({})
+  => ...
+  >> app.response = Sinatra::Response.new
+  => ...
+</pre></notextile>
+
+Last but not least, use @app@ to interact with views:
+
+<notextile><pre class="console">
+  >> app.erb :my_template
+  => 'template rendered'
+
+  # also
+  >> app.haml
+  >> app.markdown
+  ...
+</pre></notextile>
+
+h2{padding-top:30px}. Interact with App Responses
+
+Tux let's you make requests using http verbs thanks to "rack-test":https://github.com/brynary/rack-test. Use them to interact with your app's response objects:
+
+<notextile><pre class="console">
+  >> get '/'
+  => #<\Rack::MockResponse:0x13d452c @headers={"Content-Type"=>"text/html;charset=utf-8",
+  "Content-Length"=>"4"}, @errors="127.0.0.1 - - [05/Apr/2011 02:22:27] \"GET / \" 200 4
+  0.0015\n", @status=200, @original_headers={"Content-Type"=>"text/html;charset=utf-8",
+  "Content-Length"=>"4"}, @body="dude">
+
+  >> _.headers
+  => {"Content-Type"=>"text/html;charset=utf-8", "Content-Length"=>"4"}
+
+  # last_response saves the response of your last request
+  >> puts last_response.body
+  dude
+
+  >> post '/create', :user => 'cow', :password => 'abunga'
+  ...
+</pre></notextile>
+
+All http verb methods can take optional params and request headers as "rack-test reveals":https://github.com/brynary/rack-test/blob/2add7d87995b7e9e28560efb4ff65b43432e509e/lib/rack/test.rb#L55-58. To see the full list of rack-test actions you can make:
+
+<notextile><pre class="console">
+  >> rack.actions
+  => [:request, :get, :post, :put, :delete, :head, :follow_redirect!, :header, :set_cookie,
+  :clear_cookies, :authorize, :basic_authorize, :digest_authorize, :last_response, :last_request]
+</pre></notextile>
+
+h2{padding-top:30px}. Commands and Configuration
+
+Tux comes with commands to give you a good overview of your app:
+
+<notextile><pre class="console">
+  # Displays routes defined by HTTP verb and order they were defined
+  >> routes
+  HEAD  "/"
+  HEAD  "/book/:id"
+  GET   "/"
+  GET   "/book/:id"
+
+  # Displays app settings configured via sinatra's #set method
+  >> settings
+  absolute_redirects  true
+  add_charset         [/^text\//, "application/javascript", "application/xml",
+  "application/xhtml+xml"]
+  app_file            "./sample.rb"
+  bind                "0.0.0.0"
+  default_encoding    "utf-8"
+  dump_errors         true
+  empty_path_info     nil
+  environment         :development
+  lock                false
+  logging             false
+  method_override     false
+  port                4567
+  prefixed_redirects  false
+  public              "/my/path/public"
+  raise_errors        false
+  reload_templates    true
+  root                "/my/path"
+  run                 false
+  running             false
+  server              ["thin", "mongrel", "webrick"]
+  session_secret      "XXX"
+  sessions            false
+  show_exceptions     true
+  static              true
+  views               "/my/path/views"
+</pre></notextile>
+
+Since tux is a "ripl shell":http://github.com/cldwalker/ripl, tux is highly configurable. You can create tux commands in the format @tux-COMMAND@ and enhance your shell by adding ripl plugins to ~/.riplrc. Read "ripl's readme":http://github.com/cldwalker/ripl#readme for more.
