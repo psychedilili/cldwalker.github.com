@@ -2,7 +2,7 @@
 layout: master
 title: About Me
 ---
-I'm passionate about knowledge management, tagging, linked data (semantic web) and ruby. One day I hope to bring back that passion back to physics.
+I'm passionate about knowledge management, linked data (semantic web) and ruby. One day I hope to bring back that passion back to physics.
 
 *I'm available for hire*. I'm particularly interested in ruby and/or rails work that involves the above passions. See "my creative resume":/resume.html or "the more standard one":http://docs.google.com/Doc?id=dhjdhqhp_4sdt4jmhp.
 
