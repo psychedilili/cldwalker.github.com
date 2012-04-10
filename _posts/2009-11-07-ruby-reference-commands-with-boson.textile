@@ -27,8 +27,9 @@ For all these commands, I will only show the original ruby method. To see the Bo
 To follow along with the examples using boson:
 
 <notextile><pre class='console'>
-  bash> gem install boson
-  bash> boson install https://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/ruby_ref.rb
+  $ gem install boson boson-more
+  $ echo "require 'boson/more'" >> ~/.bosonrc
+  $ boson install https://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/ruby_ref.rb
 </pre></notextile>
 
 h2(#global_variables). "Global Variables":#global_variables

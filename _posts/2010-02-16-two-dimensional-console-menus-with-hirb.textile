@@ -146,7 +146,8 @@ Now that we understand how 2d menus are used, let's look at some examples with "
 To follow along with these examples you'll need to:
 
 <notextile><pre class='console'>
-  $ sudo gem install boson
+  $ gem install boson boson-more
+  $ echo "require 'boson/more'" >> ~/.bosonrc
   # Note that --default rewrites your boson config to make menu_pipe a default library
   $ boson install https://github.com/cldwalker/irbfiles/raw/master/boson/commands/public/plugins/menu_pipe.rb --default
 </pre></notextile>

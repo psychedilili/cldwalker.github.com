@@ -20,7 +20,8 @@ h2. Spinning On
 Feel free to "follow Boson on the Hub":http://github.com/cldwalker/boson and to install it:
 
 <notextile><pre class="console">
-  gem install boson
+  $ gem install boson boson-more
+  $ echo "require 'boson/more'" >> ~/.bosonrc
 </pre></notextile>
 
 To get an idea of Boson's features, here's an outline:

@@ -448,4 +448,4 @@ As you can see, writing a Boson command to interact with the Github API is prett
 
 h2. Conclusion
 
-As you've seen, Boson-Hirb interactions can lead to some novel and useful Ruby commands. Hirb's instant views, controlled by Boson commands, can make one think of Boson as a commandline MVC framework with an optional V. To learn more about Boson, "read it's docs":http://tagaholic.me/boson/doc/. I'm eager to see what useful Boson libraries others will come up with. To try out Boson <span class='github'>gem install boson</span>.
+As you've seen, Boson-Hirb interactions can lead to some novel and useful Ruby commands. Hirb's instant views, controlled by Boson commands, can make one think of Boson as a commandline MVC framework with an optional V. To learn more about Boson, "read it's docs":http://tagaholic.me/boson/doc/. I'm eager to see what useful Boson libraries others will come up with. To try out Boson <span class='github'>gem install boson boson-more</span>.
