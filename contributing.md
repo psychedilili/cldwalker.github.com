@@ -18,14 +18,19 @@ Make sure to:
 * add tests and documentation.
 * follow the coding style of the project. When in doubt, [see this
   guide](https://github.com/chneukirchen/styleguide/blob/master/RUBY-STYLE).
-* not modify or add to the development setup i.e. Gemfile, .gitignore,
-  Rakefile, or \*.gemspec.
+* not modify or add to the development setup i.e. .gitignore
+  * for ruby: Gemfile, Rakefile, or \*.gemspec.
+  * for clojure: project.clj
 
-For tests on a ruby project:
+For tests on a project:
 
 * See the current testing status of a project: http://travis-ci.org/cldwalker/PROJECT i.e.
   [hirb](http://travis-ci.org/cldwalker/hirb)
-* Try running them without bundler first: `gem install GEM_NAME --development && rake`
-* If that doesn't work, try bundler. If there's no Gemfile: `bundle init --gemspec=.gemspec`. Then
-  `bundle install && bundle exec rake`
-* After changes, make sure tests pass on all supported ruby versions. See the rvm key of travis.yml.
+
+* For ruby projects:
+  * Try running them without bundler first: `gem install GEM_NAME --development && rake`
+  * If that doesn't work, try bundler. If there's no Gemfile: `bundle init --gemspec=.gemspec`. Then
+    `bundle install && bundle exec rake`
+  * After changes, make sure tests pass on all supported ruby versions. See the rvm key of travis.yml.
+* For clojure projects:
+  * Run tests with `lein test`
