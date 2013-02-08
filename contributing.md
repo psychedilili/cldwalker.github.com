@@ -21,6 +21,9 @@ Make sure to:
 * not modify or add to the development setup i.e. .gitignore
   * for ruby: Gemfile, Rakefile, or \*.gemspec.
   * for clojure: project.clj
+* not add support for older versions of a language unless the library
+  mentions that it does. For clojure libraries, I'm supporting 1.4 and 1.5.
+  For ruby libraries, I'm supporting 1.9.3 and 2.0
 
 For tests on a project:
 
