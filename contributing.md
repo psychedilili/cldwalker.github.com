@@ -16,8 +16,9 @@ To make your helpful changes:
 
 Make sure to:
 * add tests and documentation.
-* follow the coding style of the project. When in doubt, [see this
-  guide](https://github.com/chneukirchen/styleguide/blob/master/RUBY-STYLE).
+* follow the coding style of the project. When in doubt, see [this
+  guide for ruby](https://github.com/chneukirchen/styleguide/blob/master/RUBY-STYLE) and
+  [this guide for clojure](https://github.com/bbatsov/clojure-style-guide).
 * not modify or add to the development setup i.e. .gitignore
   * for ruby: Gemfile, Rakefile, or \*.gemspec.
   * for clojure: project.clj
