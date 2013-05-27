@@ -3,8 +3,30 @@ layout: master
 title: Contributing
 ---
 
-Contributing
-============
+## Contributing
+
+### Reporting Issues
+
+Reporting issues is a great way to help a project. However for it be helpful, you need to provide
+enough information to make it _reproducible_. Before reporting, [check below](#windows_and_internationalization)
+to see if your platform/issue is supported. I expect to see the following in an issue report:
+
+* A reproducible set of steps that led you to the bug.
+* If there is an exception, its full backtrace. Make sure to wrap output in [triple
+  backticks](https://help.github.com/articles/github-flavored-markdown#syntax-highlighting)
+* Language version
+* Version of gem/clojar/library you are using e.g. `hirb 0.7.1`
+* Your OS version e.g. `OSX 10.7`
+
+Those who provide the above *get priority* over those who don't.
+
+Additional data points I expect in a report by language:
+
+* Ruby: Run `gem env` for Rubygems version, OS platform and ruby version manager
+* Clojure: Run `lein -v` for Leiningen and Java version
+* JS/HTML/CSS: Browser version
+
+### Contributing Code
 
 To make your helpful changes:
 
@@ -15,6 +37,7 @@ To make your helpful changes:
 5. [Make a pull request](http://help.github.com/send-pull-requests/)
 
 Make sure to:
+
 * add tests and documentation.
 * follow the coding style of the project. When in doubt, see [this
   guide for ruby](https://github.com/chneukirchen/styleguide/blob/master/RUBY-STYLE) and
@@ -38,3 +61,9 @@ For tests on a project:
   * After changes, make sure tests pass on all supported ruby versions. See the rvm key of travis.yml.
 * For clojure projects:
   * Run tests with `lein test`
+
+### Windows and Internationalization
+
+I am open contributions that add support for Windows or internationalization. However, I don't need
+either and thus will not actively support them other than to take contributions.
+
