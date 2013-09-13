@@ -2,8 +2,8 @@
 layout: master
 ---
 <script src="/javascripts/jquery.machineTag.js"></script>
-<div class='post'>
-  <span class='date'>{{page.date | date_to_string}}</span>
+<div itemscope itemtype="http://schema.org/Article" class='post'>
+  <span itemprop="datePublished" content="{{page.date | date: "%Y-%m-%d"}}" class='date'>{{page.date | date_to_string}}</span>
   {% if page.time %}
   <span class='date'>at {{page.time}}</span>
   {% endif %}
@@ -16,8 +16,8 @@ layout: master
   {% assign post = page %}{% include tag_links.html %}
   </span>
   {% endif %}
-  <h1><a href='{{page.url}}'>{{page.title}}</a></h1>
-  <div class='body'>{{ content }}</div>
+  <h1><a itemprop="name" href='{{page.url}}'>{{page.title}}</a></h1>
+  <div itemprop="articleBody" class='body'>{{ content }}</div>
 </div>
 <script type="text/javascript" charset="utf-8">
 $("a.machine_tag_search").hideMachineTags();
@@ -55,7 +55,7 @@ function toggleMachineTags() {
     var related_posts = $.grep(related_posts, function(e) { return !location.href.match(e.url) }).reverse().slice(0,3);
     var table = "<h3>Related Posts</h3>" + "<table class='post-list'>" +
     related_posts.map( function(e) {
-      return "<tr>" + "<th><a href='"+e.url+"'>"+e.title+"</a></th>"+ 
+      return "<tr>" + "<th><a href='"+e.url+"'>"+e.title+"</a></th>"+
       "<td><span class='table_tag_description'>tagged with</span></td><td>" +
       e.tags.map( function(tag) { return "<a class='machine_tag_search' href='/blog.html#"+tag+"'>"+tag+"</a>" }).join(', ') +
       "</td></tr>";
@@ -63,7 +63,7 @@ function toggleMachineTags() {
     $('#related_posts').html(table);
     $("td a.machine_tag_search").hideMachineTags();
   }
-  
+
   $( function() {
     $.machineTagSearch($('#related_tag').text(), {jsonUrl: "/feeds/posts.json", displayCallback: displayRelatedPosts, appendHash: false});
   });
