@@ -8,7 +8,7 @@ tags:
 - gem:tags=rails
 - post:type=snippet
 - post:lang=ruby
-related_tag: gem:*=hirb
+related_tag: 'gem:*=hirb'
 ---
 {{ page.description }}
 

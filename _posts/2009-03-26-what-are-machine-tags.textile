@@ -6,7 +6,7 @@ description: Have you heard of machine tags? Unless you use Flickr actively, pro
 tags: 
   - post:tags=tag
   - post:type=tutorial
-related_tag: post:*=tag
+related_tag: 'post:*=tag'
 ---
 {{ page.description}}
 

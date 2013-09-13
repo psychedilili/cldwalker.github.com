@@ -7,7 +7,7 @@ description: Less than a month ago, Github <a href="http://github.com/blog/315-c
 tags:
   - post:site=github
   - post:type=thoughts
-related_tag: *:*=(github|thoughts)
+related_tag: '*:*=(github|thoughts)'
 ---
 {{page.description}}
 

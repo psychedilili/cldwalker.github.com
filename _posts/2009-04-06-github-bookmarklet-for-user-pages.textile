@@ -9,7 +9,7 @@ tags:
   - post:type=snippet
   - post:lang=javascript
   - post:tags=jquery
-related_tag: post:*=(github|jquery)
+related_tag: 'post:*=(github|jquery)'
 ---
 {{page.description}}
 

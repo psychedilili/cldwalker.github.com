@@ -10,7 +10,7 @@ tags:
 - lib:name=irb
 - post:lang=ruby
 - post:type=tutorial
-related_tag: gem:*=(boson|hirb)
+related_tag: 'gem:*=(boson|hirb)'
 ---
 {{ page.description }}
 

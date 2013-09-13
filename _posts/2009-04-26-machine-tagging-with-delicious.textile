@@ -9,7 +9,7 @@ tags:
   - post:tags=tag
   - post:type=tutorial
   - post:site=delicious
-related_tag: post:*=tag
+related_tag: 'post:*=tag'
 ---
 {{page.description}}
 

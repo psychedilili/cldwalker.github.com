@@ -8,7 +8,7 @@ tags:
 - post:type=snippet
 - post:lang=ruby
 - lib:name=irb
-related_tag: *:*=irb
+related_tag: '*:*=irb'
 ---
 First off, Happy New Year! Now back to our regularly scheduled program.
 

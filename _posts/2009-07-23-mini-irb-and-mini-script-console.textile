@@ -9,7 +9,7 @@ tags:
 - post:topic=completion
 - post:lang=ruby
 - post:type=snippet
-related_tag: *:*=irb
+related_tag: '*:*=irb'
 ---
 {{ page.description }}
 

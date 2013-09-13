@@ -9,7 +9,7 @@ tags:
 - lib:name=irb
 - post:lang=ruby
 - post:type=tutorial
-related_tag: *:*=irb
+related_tag: '*:*=irb'
 ---
 {{ page.description }}
 

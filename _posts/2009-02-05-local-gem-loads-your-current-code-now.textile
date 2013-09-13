@@ -7,7 +7,7 @@ tags:
   - gem:name=local_gem
   - post:lang=ruby
   - post:type=tutorial
-related_tag: *:*=ruby
+related_tag: '*:*=ruby'
 ---
 {{page.description}}
 

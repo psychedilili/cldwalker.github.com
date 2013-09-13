@@ -8,7 +8,7 @@ tags:
 - post:topic=shell
 - post:lang=ruby
 - post:type=tutorial
-related_tag: *:*=(lightning|shell)
+related_tag: '*:*=(lightning|shell)'
 ---
 {{page.description}}
 

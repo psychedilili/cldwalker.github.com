@@ -11,7 +11,7 @@ tags:
   - gem:topic=table
   - post:lang=ruby
   - post:type=tutorial
-related_tag: gem:*=(hirb|irb|activerecord)
+related_tag: 'gem:*=(hirb|irb|activerecord)'
 ---
 {{ page.description}}
 

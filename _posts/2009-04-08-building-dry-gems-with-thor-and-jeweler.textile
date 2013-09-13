@@ -8,7 +8,7 @@ tags:
   - post:type=tutorial
   - gem:name=thor
   - gem:name=jeweler
-related_tag: gem:*=(thor|jeweler)
+related_tag: 'gem:*=(thor|jeweler)'
 ---
 {{ page.description}}
 

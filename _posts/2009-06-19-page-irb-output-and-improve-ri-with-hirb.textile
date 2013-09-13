@@ -9,7 +9,7 @@ tags:
   - lib:name=ri
   - post:lang=ruby
   - post:type=tutorial
-related_tag: gem:*=(hirb|irb)
+related_tag: 'gem:*=(hirb|irb)'
 ---
 <style text="type/css">
   #ri { padding-top: 50px }

@@ -8,7 +8,7 @@ tags:
 - post:lang=ruby
 - gem:name=hirb
 - gem:topic=database
-related_tag: *:*=hirb
+related_tag: '*:*=hirb'
 ---
 {{ page.description }}
 

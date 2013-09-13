@@ -8,7 +8,7 @@ tags:
   - post:lang=ruby
   - post:tags=gems
   - gem:name=gem_grep
-related_tag: *:*=ruby
+related_tag: '*:*=ruby'
 ---
 <notextile><style type="text/css">
 #gem_grep { padding-top: 50px;}

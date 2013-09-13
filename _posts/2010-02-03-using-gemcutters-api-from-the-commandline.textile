@@ -9,7 +9,7 @@ tags:
 - post:site=gemcutter
 - gem:topic=api
 - gem:name=boson
-related_tag: *:*=boson
+related_tag: '*:*=boson'
 ---
 {{page.description}}
 

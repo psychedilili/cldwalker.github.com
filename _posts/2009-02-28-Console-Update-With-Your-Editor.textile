@@ -10,7 +10,7 @@ tags:
   - gem:topic=database
   - post:type=tutorial
   - post:lang=ruby
-related_tag: gem:*=activerecord
+related_tag: 'gem:*=activerecord'
 ---
 {{page.description}}
 

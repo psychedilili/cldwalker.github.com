@@ -9,7 +9,7 @@ tags:
 - gem:name=hirb
 - gem:name=boson
 - gem:topic=menu
-related_tag: *:*=hirb
+related_tag: '*:*=hirb'
 ---
 
 {{ page.description }}

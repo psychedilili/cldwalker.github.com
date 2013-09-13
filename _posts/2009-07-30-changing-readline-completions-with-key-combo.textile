@@ -9,7 +9,7 @@ tags:
 - post:topic=completion
 - post:lang=ruby
 - post:type=tutorial
-related_tag: *:*=bond
+related_tag: '*:*=bond'
 ---
 {{ page.description }}
 
